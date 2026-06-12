@@ -6,7 +6,7 @@ larger generalization check. Raw data lands under data/ and is git-ignored.
 """
 from __future__ import annotations
 from pathlib import Path
-import numpy as np, pandas as pd
+import pandas as pd
 
 DATA = Path(__file__).resolve().parents[2] / "data"
 

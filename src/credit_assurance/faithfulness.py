@@ -26,7 +26,8 @@ def comprehensiveness(predict, x, ranking, ks, perturb) -> dict:
     return {k: base - _erased_prob(predict, x, list(ranking[:k]), perturb) for k in ks}
 
 def sufficiency(predict, x, ranking, ks, perturb) -> dict:
-    base = float(predict(x[None, :])[0]); d = x.shape[0]
+    base = float(predict(x[None, :])[0])
+    d = x.shape[0]
     out = {}
     for k in ks:
         keep = set(int(i) for i in ranking[:k])
@@ -38,17 +39,20 @@ def aopc(curve: dict) -> float:
     return float(np.mean(list(curve.values()))) if curve else 0.0
 
 def random_floor(predict, x, ks, perturb, n_perms=100, seed=0) -> dict:
-    rng = np.random.default_rng(seed); d = x.shape[0]
+    rng = np.random.default_rng(seed)
+    d = x.shape[0]
     acc = {k: 0.0 for k in ks}
     for _ in range(n_perms):
         perm = rng.permutation(d)
         c = comprehensiveness(predict, x, perm, ks, perturb)
-        for k in ks: acc[k] += c[k]
+        for k in ks:
+            acc[k] += c[k]
     return {k: acc[k] / n_perms for k in ks}
 
 def bootstrap_ci(per_instance: np.ndarray, n_boot=2000, seed=0, alpha=0.05) -> tuple[float, float, float]:
     """Instance-level bootstrap CI for the mean of a per-instance metric array."""
-    rng = np.random.default_rng(seed); n = len(per_instance)
+    rng = np.random.default_rng(seed)
+    n = len(per_instance)
     means = np.array([per_instance[rng.integers(0, n, n)].mean() for _ in range(n_boot)])
     lo, hi = np.quantile(means, [alpha / 2, 1 - alpha / 2])
     return float(per_instance.mean()), float(lo), float(hi)

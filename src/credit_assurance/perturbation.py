@@ -8,14 +8,14 @@ conditional : on-manifold — replace with the erased-feature values of the x's 
               distribution plausible). This is the primary regime.
 """
 from __future__ import annotations
-from typing import Sequence
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
 
 def baseline_perturber(X: np.ndarray):
     med = np.median(X, axis=0)
     def perturb(x, idxs):
-        y = x.copy().astype(float); y[list(idxs)] = med[list(idxs)]
+        y = x.copy().astype(float)
+        y[list(idxs)] = med[list(idxs)]
         return y[None, :]
     return perturb
 

@@ -1,4 +1,5 @@
-import numpy as np, pandas as pd
+import numpy as np
+import pandas as pd
 from credit_assurance import data as d
 
 def test_sex_derived_from_personal_status():

@@ -11,7 +11,8 @@ def _linear_predict(weights):
 
 def _zero_perturb(x, idxs):
     # "erase" = set features to 0; return a single donor row (shape (1, d))
-    y = x.copy(); y[list(idxs)] = 0.0
+    y = x.copy()
+    y[list(idxs)] = 0.0
     return y[None, :]
 
 def test_comprehensiveness_drops_when_important_feature_erased():
@@ -36,7 +37,8 @@ def test_aopc_is_mean_of_curve():
     assert np.isclose(f.aopc({1: 0.2, 2: 0.4}), 0.3)
 
 def test_random_floor_is_between_zero_and_full():
-    w = np.array([3.0, 1.0, 0.0]); x = np.array([1.0, 1.0, 1.0])
+    w = np.array([3.0, 1.0, 0.0])
+    x = np.array([1.0, 1.0, 1.0])
     predict = _linear_predict(w)
     floor = f.random_floor(predict, x, ks=[1, 2], perturb=_zero_perturb, n_perms=50, seed=0)
     assert 1 in floor and 2 in floor
