@@ -1,55 +1,69 @@
 # src/credit_assurance/faithfulness.py
-"""Pure perturbation-faithfulness metrics (model- and perturbation-agnostic).
+"""Pure perturbation-faithfulness metrics over LOGICAL feature-groups (model- & explainer-agnostic).
 
-comprehensiveness(k): base prob - prob after ERASING the top-k ranked features.
-sufficiency(k):       base prob - prob after KEEPING ONLY the top-k (erase the rest).
+Rankings are expressed as ordered lists of logical group names (from an explainer's Attribution);
+erasure is delegated to a group-aware `perturber(x, group_ids, m) -> PerturbResult` (see
+`perturbation.make_perturber`). This keeps the metric core decoupled from both the model and the
+encoding: it never touches raw column indices, so one-hot groups stay intact.
+
+comprehensiveness(k): base P(bad) - P(bad) after ERASING the top-k ranked groups.
+sufficiency(k):       base P(bad) - P(bad) after KEEPING ONLY the top-k groups (erase the rest).
 aopc:                 mean of a {k: value} curve.
-random_floor:         expected comprehensiveness curve under random feature rankings.
+random_floor:         expected comprehensiveness under RANDOM group orderings (the non-informative
+                      baseline that any faithful explainer must beat; a random / label-shuffled
+                      attribution should land here).
 
-`predict(X)->probs` and `perturb(x, idxs)->(m,d) donor draws` are injected callables.
+`predict(X)->P(bad)` takes (n, d) and returns (n,); positive class fixed = bad == 1.
 """
 from __future__ import annotations
+
 from typing import Callable, Sequence
+
 import numpy as np
 
 Predict = Callable[[np.ndarray], np.ndarray]
-Perturb = Callable[[np.ndarray, Sequence[int]], np.ndarray]
 
-def _erased_prob(predict: Predict, x: np.ndarray, idxs: Sequence[int], perturb: Perturb) -> float:
-    if len(idxs) == 0:
+
+def _erased_mean(predict: Predict, x: np.ndarray, groups: Sequence[str], perturber, m: int) -> float:
+    if len(groups) == 0:
         return float(predict(x[None, :])[0])
-    donors = perturb(x, idxs)                    # (m, d)
-    return float(np.mean(predict(donors)))       # expectation over donor draws
+    pr = perturber(x, list(groups), m)
+    return float(np.mean(predict(pr.X)))
 
-def comprehensiveness(predict, x, ranking, ks, perturb) -> dict:
-    base = float(predict(x[None, :])[0])
-    return {k: base - _erased_prob(predict, x, list(ranking[:k]), perturb) for k in ks}
 
-def sufficiency(predict, x, ranking, ks, perturb) -> dict:
+def comprehensiveness(predict, x, ordered_groups, ks, perturber, m: int = 20) -> dict:
     base = float(predict(x[None, :])[0])
-    d = x.shape[0]
+    return {k: base - _erased_mean(predict, x, ordered_groups[:k], perturber, m) for k in ks}
+
+
+def sufficiency(predict, x, ordered_groups, all_groups, ks, perturber, m: int = 20) -> dict:
+    base = float(predict(x[None, :])[0])
     out = {}
     for k in ks:
-        keep = set(int(i) for i in ranking[:k])
-        rest = [i for i in range(d) if i not in keep]
-        out[k] = base - _erased_prob(predict, x, rest, perturb)
+        keep = set(ordered_groups[:k])
+        erase = [g for g in all_groups if g not in keep]
+        out[k] = base - _erased_mean(predict, x, erase, perturber, m)
     return out
+
 
 def aopc(curve: dict) -> float:
     return float(np.mean(list(curve.values()))) if curve else 0.0
 
-def random_floor(predict, x, ks, perturb, n_perms=100, seed=0) -> dict:
+
+def random_floor(predict, x, all_groups, ks, perturber, m: int = 20, n_perms: int = 100, seed: int = 0) -> dict:
     rng = np.random.default_rng(seed)
-    d = x.shape[0]
+    groups = list(all_groups)
     acc = {k: 0.0 for k in ks}
     for _ in range(n_perms):
-        perm = rng.permutation(d)
-        c = comprehensiveness(predict, x, perm, ks, perturb)
+        rng.shuffle(groups)
+        c = comprehensiveness(predict, x, groups, ks, perturber, m)
         for k in ks:
             acc[k] += c[k]
     return {k: acc[k] / n_perms for k in ks}
 
-def bootstrap_ci(per_instance: np.ndarray, n_boot=2000, seed=0, alpha=0.05) -> tuple[float, float, float]:
+
+def bootstrap_ci(per_instance: np.ndarray, n_boot: int = 2000, seed: int = 0,
+                 alpha: float = 0.05) -> tuple[float, float, float]:
     """Instance-level bootstrap CI for the mean of a per-instance metric array."""
     rng = np.random.default_rng(seed)
     n = len(per_instance)

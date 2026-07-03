@@ -3,24 +3,46 @@
 
 German Credit (Statlog, UCI id 144) is the mainline. Give Me Some Credit (GMSC) is the
 larger generalization check. Raw data lands under data/ and is git-ignored.
+
+`sex`, `age`, `foreign_worker` are treated as PROTECTED / PROXY attributes (non-discrimination +
+AI Act Art. 10(2)(f)) — NOT GDPR Art. 9 special-category (which is invoked only where special-
+category data is actually processed or proxy-inferred; see governance/06-gdpr-dpia.md).
 """
 from __future__ import annotations
+
+from collections.abc import Iterable
 from pathlib import Path
+
 import pandas as pd
 
 DATA = Path(__file__).resolve().parents[2] / "data"
 
 _PS = {"A91": "male", "A92": "female", "A93": "male", "A94": "male", "A95": "female"}
+
+
 def sex_from_personal_status(s: pd.Series) -> pd.Series:
     return s.map(_PS)
+
 
 def cost_sensitive_threshold(cost_fn: float, cost_fp: float) -> float:
     # threshold on P(bad): predict 'bad' when P(bad) > cost_fp/(cost_fn+cost_fp)
     return cost_fp / (cost_fn + cost_fp)
 
+
+def feature_groups_from_columns(columns: Iterable[str]) -> dict[str, tuple[int, ...]]:
+    """Logical feature -> encoded column indices. One-hot columns named `<logical>_<value>`
+    (e.g. `Attribute1_A11`) collapse to `<logical>`; columns without `_` are numeric singletons.
+    Feeds the group-aware perturber (perturbation.make_perturber)."""
+    groups: dict[str, list[int]] = {}
+    for idx, col in enumerate(columns):
+        logical = col.split("_", 1)[0] if "_" in col else col
+        groups.setdefault(logical, []).append(idx)
+    return {k: tuple(v) for k, v in groups.items()}
+
+
 def load_german_credit() -> dict:
-    """Returns {X (numeric, encoded), y (1='bad'), protected (sex/age_band/foreign_worker),
-    feature_names, cost_fn, cost_fp, name}. Statlog attribute codes per the UCI data dictionary.
+    """Returns {X (encoded), y (1='bad'), protected (sex/age_band/foreign_worker), feature_names,
+    feature_groups, cost_fn, cost_fp, name}. Statlog attribute codes per the UCI data dictionary.
 
     Column names confirmed from ucimlrepo fetch_ucirepo(id=144):
       Attribute9  = personal status and sex (Statlog codes A91-A95)
@@ -36,16 +58,18 @@ def load_german_credit() -> dict:
     foreign = (raw["Attribute20"] == "A201").map({True: "yes", False: "no"})  # A201=yes, A202=no
     protected = pd.DataFrame({"sex": sex.values,
                               "age_band": pd.cut(age, [0, 25, 40, 60, 200],
-                                                 labels=["<=25", "26-40", "41-60", "60+"]),
+                                                 labels=["<=25", "26-40", "41-60", ">60"]),
                               "foreign_worker": foreign.values})
     X = pd.get_dummies(raw, drop_first=False)                 # one-hot categoricals; numeric kept
     return {"X": X, "y": y, "protected": protected, "feature_names": list(X.columns),
+            "feature_groups": feature_groups_from_columns(X.columns),
             "cost_fn": 5.0, "cost_fp": 1.0, "name": "german_credit"}
 
+
 def load_gmsc() -> dict:
-    """Give Me Some Credit. Download cs-training.csv into data/ (Kaggle public mirror) if absent;
-    target = SeriousDlqin2yrs (1=default). No protected attributes shipped, so it is the
-    generalization check for the faithfulness method only, not the governance dossier."""
+    """Give Me Some Credit. Download cs-training.csv into data/ (Kaggle) if absent; target =
+    SeriousDlqin2yrs (1=default). All-numeric, so each column is its own feature group. No protected
+    attributes shipped -> the faithfulness generalization check only, not the governance dossier."""
     path = DATA / "cs-training.csv"
     if not path.exists():
         raise FileNotFoundError(
@@ -54,4 +78,5 @@ def load_gmsc() -> dict:
     df = pd.read_csv(path, index_col=0)
     y = df.pop("SeriousDlqin2yrs").astype(int)
     X = df.fillna(df.median(numeric_only=True))
-    return {"X": X, "y": y, "feature_names": list(X.columns), "name": "gmsc"}
+    return {"X": X, "y": y, "feature_names": list(X.columns),
+            "feature_groups": feature_groups_from_columns(X.columns), "name": "gmsc"}
