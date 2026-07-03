@@ -1,0 +1,105 @@
+{
+  "german_credit": {
+    "Attribute2": [
+      0
+    ],
+    "Attribute5": [
+      1
+    ],
+    "Attribute8": [
+      2
+    ],
+    "Attribute11": [
+      3
+    ],
+    "Attribute13": [
+      4
+    ],
+    "Attribute16": [
+      5
+    ],
+    "Attribute18": [
+      6
+    ],
+    "Attribute1": [
+      7,
+      8,
+      9,
+      10
+    ],
+    "Attribute3": [
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "Attribute4": [
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25
+    ],
+    "Attribute6": [
+      26,
+      27,
+      28,
+      29,
+      30
+    ],
+    "Attribute7": [
+      31,
+      32,
+      33,
+      34,
+      35
+    ],
+    "Attribute9": [
+      36,
+      37,
+      38,
+      39
+    ],
+    "Attribute10": [
+      40,
+      41,
+      42
+    ],
+    "Attribute12": [
+      43,
+      44,
+      45,
+      46
+    ],
+    "Attribute14": [
+      47,
+      48,
+      49
+    ],
+    "Attribute15": [
+      50,
+      51,
+      52
+    ],
+    "Attribute17": [
+      53,
+      54,
+      55,
+      56
+    ],
+    "Attribute19": [
+      57,
+      58
+    ],
+    "Attribute20": [
+      59,
+      60
+    ]
+  }
+}

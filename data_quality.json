@@ -1,0 +1,492 @@
+{
+  "german_credit": {
+    "source": "UCI Statlog German Credit (id 144), CC BY 4.0 \u2014 cleaned/encoded parquet",
+    "n_rows": 1000,
+    "n_cols": 61,
+    "target": {
+      "name": "y",
+      "meaning": "1 = bad credit",
+      "classes": {
+        "0": 700,
+        "1": 300
+      }
+    },
+    "columns": {
+      "Attribute2": {
+        "dtype": "int64",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 33,
+        "min": 4.0,
+        "max": 72.0
+      },
+      "Attribute5": {
+        "dtype": "int64",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 921,
+        "min": 250.0,
+        "max": 18424.0
+      },
+      "Attribute8": {
+        "dtype": "int64",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 4,
+        "min": 1.0,
+        "max": 4.0
+      },
+      "Attribute11": {
+        "dtype": "int64",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 4,
+        "min": 1.0,
+        "max": 4.0
+      },
+      "Attribute13": {
+        "dtype": "int64",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 53,
+        "min": 19.0,
+        "max": 75.0
+      },
+      "Attribute16": {
+        "dtype": "int64",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 4,
+        "min": 1.0,
+        "max": 4.0
+      },
+      "Attribute18": {
+        "dtype": "int64",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2,
+        "min": 1.0,
+        "max": 2.0
+      },
+      "Attribute1_A11": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute1_A12": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute1_A13": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute1_A14": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute3_A30": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute3_A31": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute3_A32": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute3_A33": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute3_A34": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute4_A40": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute4_A41": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute4_A410": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute4_A42": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute4_A43": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute4_A44": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute4_A45": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute4_A46": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute4_A48": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute4_A49": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute6_A61": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute6_A62": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute6_A63": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute6_A64": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute6_A65": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute7_A71": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute7_A72": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute7_A73": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute7_A74": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute7_A75": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute9_A91": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute9_A92": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute9_A93": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute9_A94": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute10_A101": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute10_A102": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute10_A103": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute12_A121": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute12_A122": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute12_A123": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute12_A124": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute14_A141": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute14_A142": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute14_A143": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute15_A151": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute15_A152": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute15_A153": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute17_A171": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute17_A172": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute17_A173": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute17_A174": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute19_A191": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute19_A192": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute20_A201": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      },
+      "Attribute20_A202": {
+        "dtype": "bool",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 2
+      }
+    }
+  },
+  "gmsc": {
+    "source": "Kaggle 'GiveMeSomeCredit' cs-training.csv (per Kaggle terms) \u2014 raw",
+    "n_rows": 150000,
+    "n_cols": 10,
+    "target": {
+      "name": "SeriousDlqin2yrs",
+      "meaning": "1 = serious delinquency in 2 yrs",
+      "classes": {
+        "0": 139974,
+        "1": 10026
+      }
+    },
+    "columns": {
+      "RevolvingUtilizationOfUnsecuredLines": {
+        "dtype": "float64",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 125728,
+        "min": 0.0,
+        "max": 50708.0
+      },
+      "age": {
+        "dtype": "int64",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 86,
+        "min": 0.0,
+        "max": 109.0
+      },
+      "NumberOfTime30-59DaysPastDueNotWorse": {
+        "dtype": "int64",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 16,
+        "min": 0.0,
+        "max": 98.0
+      },
+      "DebtRatio": {
+        "dtype": "float64",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 114194,
+        "min": 0.0,
+        "max": 329664.0
+      },
+      "MonthlyIncome": {
+        "dtype": "float64",
+        "missing": 29731,
+        "missing_frac": 0.198207,
+        "n_unique": 13594,
+        "min": 0.0,
+        "max": 3008750.0
+      },
+      "NumberOfOpenCreditLinesAndLoans": {
+        "dtype": "int64",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 58,
+        "min": 0.0,
+        "max": 58.0
+      },
+      "NumberOfTimes90DaysLate": {
+        "dtype": "int64",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 19,
+        "min": 0.0,
+        "max": 98.0
+      },
+      "NumberRealEstateLoansOrLines": {
+        "dtype": "int64",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 28,
+        "min": 0.0,
+        "max": 54.0
+      },
+      "NumberOfTime60-89DaysPastDueNotWorse": {
+        "dtype": "int64",
+        "missing": 0,
+        "missing_frac": 0.0,
+        "n_unique": 13,
+        "min": 0.0,
+        "max": 98.0
+      },
+      "NumberOfDependents": {
+        "dtype": "float64",
+        "missing": 3924,
+        "missing_frac": 0.02616,
+        "n_unique": 13,
+        "min": 0.0,
+        "max": 20.0
+      }
+    }
+  }
+}
