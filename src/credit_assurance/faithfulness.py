@@ -10,7 +10,7 @@ comprehensiveness(k): base P(bad) - P(bad) after ERASING the top-k ranked groups
 sufficiency(k):       base P(bad) - P(bad) after KEEPING ONLY the top-k groups (erase the rest).
 aopc:                 mean of a {k: value} curve.
 random_floor:         expected comprehensiveness under RANDOM group orderings (the non-informative
-                      baseline that any faithful explainer must beat; a random / label-shuffled
+                      baseline any faithful explainer must beat; a random / label-shuffled
                       attribution should land here).
 
 `predict(X)->P(bad)` takes (n, d) and returns (n,); positive class fixed = bad == 1.
@@ -21,24 +21,30 @@ from typing import Callable, Sequence
 
 import numpy as np
 
+from credit_assurance.perturbation import Perturb
+
 Predict = Callable[[np.ndarray], np.ndarray]
 
 
-def _erased_mean(predict: Predict, x: np.ndarray, groups: Sequence[str], perturber, m: int) -> float:
+def _erased_mean(predict: Predict, x: np.ndarray, groups: Sequence[str],
+                 perturber: Perturb, m: int) -> float:
     if len(groups) == 0:
         return float(predict(x[None, :])[0])
     pr = perturber(x, list(groups), m)
     return float(np.mean(predict(pr.X)))
 
 
-def comprehensiveness(predict, x, ordered_groups, ks, perturber, m: int = 20) -> dict:
+def comprehensiveness(predict: Predict, x: np.ndarray, ordered_groups: Sequence[str],
+                      ks: Sequence[int], perturber: Perturb, m: int = 20) -> dict[int, float]:
     base = float(predict(x[None, :])[0])
     return {k: base - _erased_mean(predict, x, ordered_groups[:k], perturber, m) for k in ks}
 
 
-def sufficiency(predict, x, ordered_groups, all_groups, ks, perturber, m: int = 20) -> dict:
+def sufficiency(predict: Predict, x: np.ndarray, ordered_groups: Sequence[str],
+                all_groups: Sequence[str], ks: Sequence[int], perturber: Perturb,
+                m: int = 20) -> dict[int, float]:
     base = float(predict(x[None, :])[0])
-    out = {}
+    out: dict[int, float] = {}
     for k in ks:
         keep = set(ordered_groups[:k])
         erase = [g for g in all_groups if g not in keep]
@@ -46,11 +52,12 @@ def sufficiency(predict, x, ordered_groups, all_groups, ks, perturber, m: int = 
     return out
 
 
-def aopc(curve: dict) -> float:
+def aopc(curve: dict[int, float]) -> float:
     return float(np.mean(list(curve.values()))) if curve else 0.0
 
 
-def random_floor(predict, x, all_groups, ks, perturber, m: int = 20, n_perms: int = 100, seed: int = 0) -> dict:
+def random_floor(predict: Predict, x: np.ndarray, all_groups: Sequence[str], ks: Sequence[int],
+                 perturber: Perturb, m: int = 20, n_perms: int = 100, seed: int = 0) -> dict[int, float]:
     rng = np.random.default_rng(seed)
     groups = list(all_groups)
     acc = {k: 0.0 for k in ks}
