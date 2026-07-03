@@ -72,7 +72,7 @@ def _erased_cols(group_ids: Sequence[str], feature_groups: FeatureGroups) -> lis
 def _call_rng(seed: int, group_ids: Sequence[str], x: np.ndarray) -> np.random.Generator:
     """Deterministic per-call RNG from (seed, group_ids, x) — order-independent, reproducible."""
     h = hashlib.sha256()
-    h.update(np.ascontiguousarray(x, dtype=float).tobytes())
+    h.update(np.ascontiguousarray(x, dtype="<f8").tobytes())  # fixed little-endian for portability
     h.update(repr(sorted(group_ids)).encode())
     mix = int.from_bytes(h.digest()[:8], "little")
     return np.random.default_rng((int(seed) ^ mix) & 0xFFFFFFFFFFFFFFFF)
@@ -104,18 +104,21 @@ def make_perturber(donor_pool: np.ndarray, feature_groups: FeatureGroups,
         if m < 1:
             raise ValueError("m must be >= 1")
         x = np.asarray(x, dtype=float)
-        cols = _erased_cols(group_ids, feature_groups)
+        if not np.all(np.isfinite(x)):
+            raise ValueError("x must be finite")
+        groups = sorted(set(group_ids))          # canonical order -> permutation-invariant output
+        cols = _erased_cols(groups, feature_groups)
         out = np.repeat(x[None, :], m, axis=0)
         if not cols:  # unperturbed -> report x's own (real) distance to the pool, not 0
             return PerturbResult(out, _ood(out))
 
-        rng = _call_rng(seed, group_ids, x)
+        rng = _call_rng(seed, groups, x)
         if regime == "baseline":
-            for g in group_ids:
+            for g in groups:
                 gc = list(feature_groups[g])
                 out[:, gc] = _baseline_block(gc)
         elif regime == "marginal":
-            for g in group_ids:
+            for g in groups:
                 gc = list(feature_groups[g])
                 donors = rng.integers(0, len(donor_pool), size=m)
                 out[:, gc] = donor_pool[np.ix_(donors, gc)]

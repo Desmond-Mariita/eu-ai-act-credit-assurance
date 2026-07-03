@@ -17,11 +17,12 @@ random_floor:         expected comprehensiveness under RANDOM group orderings (t
 """
 from __future__ import annotations
 
-from typing import Callable, Sequence
+from typing import TYPE_CHECKING, Callable, Sequence
 
 import numpy as np
 
-from credit_assurance.perturbation import Perturb
+if TYPE_CHECKING:  # type-only; keeps this core independently liftable (no runtime coupling)
+    from credit_assurance.perturbation import Perturb
 
 Predict = Callable[[np.ndarray], np.ndarray]
 

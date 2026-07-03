@@ -73,7 +73,36 @@ def test_empty_group_ids_returns_x_with_real_ood():
     perturb = p.make_perturber(X, FG, regime="conditional")
     pr = perturb(X0, [], m=5)
     assert pr.X.shape == (5, 4) and np.allclose(pr.X, X0)
-    assert pr.ood_distance >= 0.0                        # x's own distance to the pool, not a hard 0
+    assert pr.ood_distance > 0.0                         # X0 is not a donor row -> strictly positive
+
+
+def test_marginal_output_is_permutation_invariant():
+    rng = np.random.default_rng(2)
+    cat = np.zeros((30, 3))
+    cat[np.arange(30), rng.integers(0, 3, 30)] = 1.0
+    donor = np.column_stack([rng.normal(size=30), rng.normal(size=30), cat])
+    fg = {"a": (0,), "b": (1,), "cat": (2, 3, 4)}
+    pert = p.make_perturber(donor, fg, regime="marginal", seed=3)
+    x = np.array([1.0, 2.0, 1.0, 0.0, 0.0])
+    assert np.array_equal(pert(x, ["a", "cat"], m=6).X, pert(x, ["cat", "a"], m=6).X)
+
+
+def test_zero_variance_column_is_handled():
+    rng = np.random.default_rng(4)
+    n = 30
+    cat = np.zeros((n, 3))
+    cat[np.arange(n), rng.integers(0, 3, n)] = 1.0
+    donor = np.column_stack([rng.normal(size=n), np.ones(n), cat])   # col 1 is constant
+    fg = {"num": (0,), "const": (1,), "cat": (2, 3, 4)}
+    pert = p.make_perturber(donor, fg, regime="conditional", seed=0, k_neighbors=8)
+    pr = pert(np.array([0.5, 1.0, 1.0, 0.0, 0.0]), ["num"], m=5)
+    assert pr.X.shape == (5, 5) and np.isfinite(pr.ood_distance)     # no NaN from the constant column
+
+
+def test_non_finite_x_rejected():
+    pert = p.make_perturber(X, FG)
+    with pytest.raises(ValueError):
+        pert(np.array([np.nan, 1.0, 0.0, 0.0]), ["cat"], m=3)
 
 
 def test_k_neighbors_larger_than_pool_is_clamped():
