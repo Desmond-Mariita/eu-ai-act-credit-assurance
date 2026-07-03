@@ -27,10 +27,13 @@ def rank_groups(values: dict) -> list:
 
 
 def treeshap_ranking(shap_explainer, x, feature_groups, logical_names):
-    sv = np.asarray(shap_explainer.shap_values(np.asarray(x, dtype=float)[None, :]))
-    if sv.ndim == 3:       # (n, d, n_class) -> class 1
+    raw = shap_explainer.shap_values(np.asarray(x, dtype=float)[None, :])
+    if isinstance(raw, list):      # some shap versions return [class0, class1]
+        raw = raw[1]
+    sv = np.asarray(raw)
+    if sv.ndim == 3:               # (n, d, n_class) -> class 1
         col = sv[0, :, 1]
-    else:                  # (n, d) already the positive-class contribution
+    else:                          # (n, d) already the positive-class contribution
         col = sv[0]
     vals = aggregate_to_logical(col, feature_groups, logical_names)
     return rank_groups(vals), vals
@@ -70,8 +73,10 @@ def make_shap_explainer(model):
 
 def make_lime_explainer(X_train, seed=0):
     from lime.lime_tabular import LimeTabularExplainer
+    # discretize_continuous=True (LIME's default): weights act as instance-specific CONTRIBUTIONS
+    # (active bin == 1), not raw scaled-feature sensitivities — the correct attribution to rank.
     return LimeTabularExplainer(np.asarray(X_train, dtype=float), mode="classification",
-                                discretize_continuous=False, random_state=seed)
+                                discretize_continuous=True, random_state=seed)
 
 
 def lime_topk_stability(X_train, predict_proba, x, feature_groups, logical_names,

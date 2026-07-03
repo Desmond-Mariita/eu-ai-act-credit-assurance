@@ -36,9 +36,16 @@ def _erased_mean(predict: Predict, x: np.ndarray, groups: Sequence[str],
 
 
 def comprehensiveness(predict: Predict, x: np.ndarray, ordered_groups: Sequence[str],
-                      ks: Sequence[int], perturber: Perturb, m: int = 20) -> dict[int, float]:
+                      ks: Sequence[int], perturber: Perturb, m: int = 20,
+                      absolute: bool = False) -> dict[int, float]:
+    """Signed drop base P(bad) - erased P(bad). absolute=True -> |movement| (direction-agnostic),
+    which avoids sign cancellation when erasing risk-increasing vs protective features."""
     base = float(predict(x[None, :])[0])
-    return {k: base - _erased_mean(predict, x, ordered_groups[:k], perturber, m) for k in ks}
+    out: dict[int, float] = {}
+    for k in ks:
+        diff = base - _erased_mean(predict, x, ordered_groups[:k], perturber, m)
+        out[k] = abs(diff) if absolute else diff
+    return out
 
 
 def sufficiency(predict: Predict, x: np.ndarray, ordered_groups: Sequence[str],
@@ -58,13 +65,14 @@ def aopc(curve: dict[int, float]) -> float:
 
 
 def random_floor(predict: Predict, x: np.ndarray, all_groups: Sequence[str], ks: Sequence[int],
-                 perturber: Perturb, m: int = 20, n_perms: int = 100, seed: int = 0) -> dict[int, float]:
+                 perturber: Perturb, m: int = 20, n_perms: int = 100, seed: int = 0,
+                 absolute: bool = False) -> dict[int, float]:
     rng = np.random.default_rng(seed)
     groups = list(all_groups)
     acc = {k: 0.0 for k in ks}
     for _ in range(n_perms):
         rng.shuffle(groups)
-        c = comprehensiveness(predict, x, groups, ks, perturber, m)
+        c = comprehensiveness(predict, x, groups, ks, perturber, m, absolute=absolute)
         for k in ks:
             acc[k] += c[k]
     return {k: acc[k] / n_perms for k in ks}

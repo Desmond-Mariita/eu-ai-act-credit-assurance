@@ -56,6 +56,15 @@ def test_aopc_is_mean_of_curve():
     assert np.isclose(f.aopc({1: 0.2, 2: 0.4}), 0.3)
 
 
+def test_absolute_comprehensiveness_is_magnitude_of_signed():
+    pert = _perturber()
+    signed = f.comprehensiveness(_predict, X0, ["num", "cat"], ks=[1, 2], perturber=pert, m=20)
+    absol = f.comprehensiveness(_predict, X0, ["num", "cat"], ks=[1, 2], perturber=pert, m=20,
+                                absolute=True)
+    for k in (1, 2):
+        assert absol[k] >= 0 and np.isclose(absol[k], abs(signed[k]))   # deterministic per-call RNG
+
+
 def test_bootstrap_ci_brackets_the_mean():
     arr = np.array([0.1, 0.2, 0.3, 0.4, 0.5])
     mean, lo, hi = f.bootstrap_ci(arr, n_boot=500, seed=0)
