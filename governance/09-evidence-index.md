@@ -19,8 +19,8 @@ governance documents are content-addressed at the v1 release freeze (Task 26).*
 ## Pre-registration proof (filled at plan Task 4, verified at Task 26)
 | Item | Value |
 |------|-------|
-| `HYPOTHESES.md` SHA256 | *(Task 4)* |
-| `prereg-v1` tag SHA | *(Task 4)* |
-| Commit SHA (pre-registration) | *(Task 4)* |
-| Public remote URL | *(Task 4 — requires the repo to be published)* |
+| `HYPOTHESES.md` SHA256 | `8c4e2d7f05314680866f2c651db53129d31b2e2a2ae14ff7dfc59b7a2ec6b357` |
+| `prereg-v1` tag SHA | *(recorded post-tag, below)* |
+| Commit SHA (pre-registration) | *(recorded post-commit, below)* |
+| Public remote URL | *(recorded post-publish, below)* |
 | OpenTimestamps `.ots` verify output | *(Task 26 — asynchronous, after Bitcoin confirmation)* |
