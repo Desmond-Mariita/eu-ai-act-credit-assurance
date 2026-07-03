@@ -37,15 +37,17 @@ fully-automated lending (see the Art. 22 trigger analysis in `06-gdpr-dpia.md`).
 Both roles are simulated; obligations are assessed as *readiness*, not real conformity.
 
 ## 4. Criteria — the yardstick (version-pinned)
-- **EU AI Act** — Annex III **§5(b)** high-risk credit-scoring; Arts. **6(3), 9, 10, 11, 12, 13,
-  14, 15, 16, 17, 26, 72, 73, 86**; **Annex IV** (technical documentation) & **Annex VI** (internal-
+- **EU AI Act** — Annex III **§5(b)** high-risk credit-scoring; Arts. **6(2)** (Annex III
+  classification) & **6(3)** (exemption analysed & rejected), **9, 10, 11, 12, 13, 14, 15, 16, 17,
+  26, 27** (FRIA), **72, 73, 86**; **Annex IV** (technical documentation) & **Annex VI** (internal-
   control route). **Application date for stand-alone Annex III systems: 2 December 2027** (Digital
-  Omnibus; Art. **111** separately governs systems already placed on the market). *Criteria text
-  version to be dated on freeze; verify against the final Official Journal text.*
+  Omnibus; Art. **111** separately governs systems already placed on the market). *AI Act
+  consolidated-text version to be dated on freeze; verify against the final Official Journal text.*
 - **GDPR** — Arts. **5** (principles), **6/9** (lawful basis / special-category — only where
   actually processed or proxy-inferred), **13–15** ("meaningful information"), **22(3)** (automated-
   decision safeguards — subject to the Art. 22 trigger analysis), **35** (DPIA).
-- **Standards/frameworks:** **ISO/IEC 42001** (AIMS), **NIST AI RMF**, **BCBS 239** (risk-data).
+- **Standards/frameworks (edition-pinned):** **ISO/IEC 42001:2023** (AIMS), **NIST AI RMF 1.0
+  (2023)** + Generative-AI Profile, **BCBS 239 (Jan 2013)** (risk-data aggregation & reporting).
 
 ## 5. Model version & dataset snapshot (pinned on freeze)
 - **Model:** LightGBM — artifact **SHA256 appended here at the training freeze (plan Task 8)**.

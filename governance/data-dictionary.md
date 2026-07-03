@@ -48,6 +48,10 @@ past-due counts (30-59/60-89/90+), debt ratio, monthly income, open credit lines
 dependents. **Class balance:** 139,974 / 10,026 (**6.7 % positive** — imbalanced).
 **Completeness (Art. 10(3)):** `MonthlyIncome` **29,731 missing** (~19.8 %); `NumberOfDependents`
 **3,924 missing** (~2.6 %) — imputed at load; flagged as a documented data-quality risk (R5).
+**Errors / anomalies (Art. 10(3)):** `age` has an implausible value (min = 0); the three past-due-count
+columns each contain **269 sentinel values (96/98)** (likely data-entry codes); `RevolvingUtilization`
+and `MonthlyIncome` show **extreme outliers** (max ≫ p99). Machine-recorded under `data_quality.json`
+→ `anomalies`; these are not corrected at this stage, only documented (out-of-scope per ToE §6).
 
 ## 3. Critical Data Elements (CDE) register
 Elements most material to the decision and/or carrying protected-attribute risk:
@@ -68,7 +72,7 @@ Representation of protected/proxy groups in German Credit (n = 1,000):
 |-----------|--------|--------|
 | Sex (from Attr. 9) | male / female | **690 / 310** (69 % / 31 %) |
 | Foreign worker (Attr. 20) | foreign / non-foreign | **963 / 37** (96.3 % / 3.7 %) |
-| Age band (Attr. 13) | ≤25 / 26–40 / 41–60 / 60+ | **190 / 536 / 229 / 45** |
+| Age band (Attr. 13) | ≤25 / 26–40 / 41–60 / >60 | **190 / 536 / 229 / 45** |
 
 **Representation risks:**
 - **Severe skew in `foreign_worker`** (only 37 non-foreign) → any subgroup fairness/performance claim

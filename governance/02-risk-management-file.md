@@ -9,9 +9,9 @@ accountable in the scenario.
 
 | ID | Hazard | Likelihood | Impact | Mitigation | Residual | Owner |
 |----|--------|-----------|--------|-----------|----------|-------|
-| R1 | Proxy discrimination via `personal_status`/`foreign_worker`/`age` | TBD | High | Fairness audit + one mitigation pass; protected/proxy policy | TBD | Deployer |
+| R1 | Proxy discrimination via `personal_status`/`foreign_worker`/`age` | TBD | High | Fairness audit + one mitigation pass; protected/proxy policy | TBD | **Provider** (build-time, Art. 10(2)(f)) |
 | R2 | Unfaithful explanations shown to officers/applicants | TBD | High | Perturbation-faithfulness benchmark + negative controls | TBD | Provider |
-| R3 | Covariate drift degrades performance post-deployment | TBD | Med | Drift mini-audit; monitoring plan (simulated) | TBD | Deployer |
+| R3 | Covariate drift degrades performance post-deployment | TBD | Med | Drift mini-audit; monitoring plan (simulated) | TBD | **Provider** (build) / **Deployer** (Art. 26 monitoring) |
 | R4 | Adversarial gaming of visible feature weights | TBD | Med | Gaming probe; feature-exposure review | TBD | Provider |
 | R5 | Data-quality defects (completeness/errors) | TBD | Med | `data_quality.json` profile (Art. 10(3)) | TBD | Provider |
 | R6 | Over-reliance on automation (human oversight fails) | TBD | High | Human-in-the-loop design; Art. 22 trigger analysis | TBD | Deployer |

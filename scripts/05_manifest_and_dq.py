@@ -1,10 +1,14 @@
-"""scripts/05_manifest_and_dq.py — Phase 0.5 data manifest, verifier, data-quality profile,
-and feature-group derivation. Pure pandas + hashlib + json; no network, no model.
+"""scripts/05_manifest_and_dq.py — Phase 0.5 data manifest, verifier, data-quality + error
+profile, and feature-group derivation. Pure pandas + hashlib + json; no network, no model.
 
 Artifacts (repo root):
-  data_manifest.sha256   per-file SHA256 of the data snapshot (sha256sum format)
-  data_quality.json      Art. 10(3) completeness/error profile (missingness/bounds/uniques)
-  feature_groups.json    logical feature -> encoded column indices (one-hot dummies grouped)
+  data_manifest.sha256   per-file SHA256 (`sha256sum -c`-compatible, repo-relative paths)
+  data_quality.json      Art. 10(3) completeness + ERROR/anomaly profile
+  feature_groups.json    logical feature -> {columns:[names], indices:[int]} (one-hot grouped)
+
+Feature-group naming contract: one-hot columns are named `<logical>_<value>` (e.g. `Attribute1_A11`);
+any column without `_` is a numeric singleton. Grouping validates full coverage and no overlap and
+RAISES on violation (not `assert`, so it holds under `python -O`).
 
 Usage:
   python scripts/05_manifest_and_dq.py          # (re)generate all artifacts
@@ -20,12 +24,18 @@ from pathlib import Path
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-DATA = ROOT / "data"
-# The data snapshot under audit (raw GMSC csv + the cleaned German-Credit parquet).
-DATA_FILES = ["german_credit.parquet", "cs-training.csv"]
+# The data snapshot under audit, as repo-relative paths (sha256sum-compatible).
+DATA_FILES = ["data/german_credit.parquet", "data/cs-training.csv"]
 MANIFEST = ROOT / "data_manifest.sha256"
 DQ_JSON = ROOT / "data_quality.json"
 FG_JSON = ROOT / "feature_groups.json"
+
+SOURCES = {
+    "german_credit": "UCI Statlog German Credit (id 144) — https://archive.ics.uci.edu/dataset/144 "
+                     "— CC BY 4.0 — cleaned/encoded parquet",
+    "gmsc": "Kaggle 'GiveMeSomeCredit' cs-training.csv — https://www.kaggle.com/c/GiveMeSomeCredit "
+            "— per Kaggle competition terms — raw",
+}
 
 
 def sha256(path: Path) -> str:
@@ -37,7 +47,12 @@ def sha256(path: Path) -> str:
 
 
 def write_manifest() -> None:
-    lines = [f"{sha256(DATA / f)}  {f}" for f in DATA_FILES]
+    missing = [f for f in DATA_FILES if not (ROOT / f).exists()]
+    if missing:
+        print(f"ERROR: acquire data first — missing: {missing}\n"
+              f"  (Give Me Some Credit needs a manual Kaggle download of cs-training.csv into data/.)")
+        sys.exit(2)
+    lines = [f"{sha256(ROOT / f)}  {f}" for f in DATA_FILES]
     MANIFEST.write_text("\n".join(lines) + "\n")
     print(f"manifest -> {MANIFEST.relative_to(ROOT)} ({len(lines)} files)")
 
@@ -51,12 +66,21 @@ def verify_manifest() -> bool:
         if not line.strip():
             continue
         want, name = line.split("  ", 1)
-        got = sha256(DATA / name)
-        status = "OK  " if got == want else "FAIL"
+        path = ROOT / name
+        if not path.exists():
+            print(f"MISSING {name}")
+            ok = False
+            continue
+        got = sha256(path)
+        print(f"{'OK  ' if got == want else 'FAIL'} {name}")
         ok &= got == want
-        print(f"{status} {name}")
-    print("manifest verify:", "OK" if ok else "MISMATCH")
+    print("manifest verify:", "OK" if ok else "MISMATCH/MISSING")
     return ok
+
+
+def _numeric_cols(df: pd.DataFrame) -> list[str]:
+    return [c for c in df.columns
+            if pd.api.types.is_numeric_dtype(df[c]) and not pd.api.types.is_bool_dtype(df[c])]
 
 
 def _column_profile(df: pd.DataFrame) -> dict:
@@ -70,64 +94,101 @@ def _column_profile(df: pd.DataFrame) -> dict:
             "n_unique": int(s.nunique(dropna=True)),
         }
         if pd.api.types.is_numeric_dtype(s) and not pd.api.types.is_bool_dtype(s):
-            rec["min"] = float(s.min())
-            rec["max"] = float(s.max())
+            nn = s.dropna()
+            # guard all-null: keep JSON standard (null, not NaN)
+            rec["min"] = float(nn.min()) if not nn.empty else None
+            rec["max"] = float(nn.max()) if not nn.empty else None
+            rec["p99"] = round(float(nn.quantile(0.99)), 4) if not nn.empty else None
         out[col] = rec
     return out
 
 
+def _anomalies(df: pd.DataFrame) -> list[str]:
+    """Art. 10(3) 'errors' — flag domain-implausible values, sentinels, and extreme outliers."""
+    flags = []
+    for c in _numeric_cols(df):
+        s = df[c].dropna()
+        if s.empty:
+            continue
+        neg = int((s < 0).sum())
+        if neg:
+            flags.append(f"{c}: {neg} negative value(s)")
+        if "age" in c.lower():
+            bad = int(((s < 18) | (s > 110)).sum())
+            if bad:
+                flags.append(f"{c}: {bad} implausible age(s) <18 or >110 (min={s.min():.0f})")
+        if any(k in c for k in ("PastDue", "DaysLate", "30-59", "60-89", "90Days")):
+            sent = int(s.isin([96, 98]).sum())
+            if sent:
+                flags.append(f"{c}: {sent} sentinel value(s) 96/98 (likely data-entry codes)")
+        p99, mx = float(s.quantile(0.99)), float(s.max())
+        if p99 > 0 and mx > 100 * p99:
+            flags.append(f"{c}: max {mx:.0f} >> p99 {p99:.0f} — probable outlier/sentinel")
+    return flags
+
+
+def _profile(name: str, df: pd.DataFrame, target: str, target_meaning: str) -> dict:
+    y = df[target]
+    return {
+        "source": SOURCES[name],
+        "n_rows": int(df.shape[0]),
+        "n_cols": int(df.shape[1] - 1),
+        "target": {"name": target, "meaning": target_meaning,
+                   "classes": {str(k): int(v) for k, v in y.value_counts().sort_index().items()}},
+        "columns": _column_profile(df.drop(columns=[target])),
+        "anomalies": _anomalies(df.drop(columns=[target])),
+    }
+
+
 def data_quality() -> dict:
     profiles = {}
-
-    # German Credit (cleaned, encoded parquet; target column 'y')
-    gc = pd.read_parquet(DATA / "german_credit.parquet")
-    y = gc["y"]
-    profiles["german_credit"] = {
-        "source": "UCI Statlog German Credit (id 144), CC BY 4.0 — cleaned/encoded parquet",
-        "n_rows": int(gc.shape[0]),
-        "n_cols": int(gc.shape[1] - 1),
-        "target": {"name": "y", "meaning": "1 = bad credit",
-                   "classes": {str(k): int(v) for k, v in y.value_counts().sort_index().items()}},
-        "columns": _column_profile(gc.drop(columns=["y"])),
-    }
-
-    # Give Me Some Credit (raw csv; target SeriousDlqin2yrs) — has real missingness
-    gmsc = pd.read_csv(DATA / "cs-training.csv", index_col=0)
-    yg = gmsc["SeriousDlqin2yrs"]
-    profiles["gmsc"] = {
-        "source": "Kaggle 'GiveMeSomeCredit' cs-training.csv (per Kaggle terms) — raw",
-        "n_rows": int(gmsc.shape[0]),
-        "n_cols": int(gmsc.shape[1] - 1),
-        "target": {"name": "SeriousDlqin2yrs", "meaning": "1 = serious delinquency in 2 yrs",
-                   "classes": {str(k): int(v) for k, v in yg.value_counts().sort_index().items()}},
-        "columns": _column_profile(gmsc.drop(columns=["SeriousDlqin2yrs"])),
-    }
-    DQ_JSON.write_text(json.dumps(profiles, indent=2))
+    gc_path, gmsc_path = ROOT / DATA_FILES[0], ROOT / DATA_FILES[1]
+    if gc_path.exists():
+        profiles["german_credit"] = _profile(
+            "german_credit", pd.read_parquet(gc_path), "y", "1 = bad credit")
+    else:
+        profiles["german_credit"] = {"status": "absent"}
+    if gmsc_path.exists():
+        profiles["gmsc"] = _profile(
+            "gmsc", pd.read_csv(gmsc_path, index_col=0),
+            "SeriousDlqin2yrs", "1 = serious delinquency in 2 yrs")
+    else:
+        profiles["gmsc"] = {"status": "absent — manual Kaggle download required"}
+    DQ_JSON.write_text(json.dumps(profiles, indent=2, allow_nan=False))
     print(f"data-quality -> {DQ_JSON.relative_to(ROOT)}")
-    # Surface any completeness issues (Art. 10(3))
-    for name, prof in profiles.items():
-        miss = {c: r["missing"] for c, r in prof["columns"].items() if r["missing"] > 0}
-        if miss:
-            print(f"  {name}: columns with missing values -> {miss}")
+    for nm, pr in profiles.items():
+        for a in pr.get("anomalies", []):
+            print(f"  [{nm}] anomaly: {a}")
     return profiles
 
 
 def feature_groups() -> dict:
-    """Group encoded columns into logical features: one-hot dummies `AttributeN_value` collapse
-    to `AttributeN`; numeric columns are their own group. Excludes the target 'y'."""
-    gc = pd.read_parquet(DATA / "german_credit.parquet").drop(columns=["y"])
-    groups: dict[str, list[int]] = {}
-    for idx, col in enumerate(gc.columns):
-        logical = col.split("_", 1)[0] if "_" in col else col
-        groups.setdefault(logical, []).append(idx)
-    # invariant checks: full coverage, no overlap
-    covered = [i for cols in groups.values() for i in cols]
-    assert sorted(covered) == list(range(gc.shape[1])), "feature-group coverage/overlap invariant violated"
-    FG_JSON.write_text(json.dumps({"german_credit": groups}, indent=2))
-    n_multi = sum(1 for v in groups.values() if len(v) > 1)
-    print(f"feature-groups -> {FG_JSON.relative_to(ROOT)} "
-          f"({len(groups)} logical features, {n_multi} one-hot groups)")
-    return groups
+    """Group encoded columns into logical features (see the naming contract in the module docstring).
+    Stores both column NAMES and indices so the artifact is self-describing (not parquet-order-dependent)."""
+    out = {}
+    for name, path, target in [("german_credit", ROOT / DATA_FILES[0], "y"),
+                               ("gmsc", ROOT / DATA_FILES[1], "SeriousDlqin2yrs")]:
+        if not path.exists():
+            out[name] = {"status": "absent"}
+            continue
+        df = (pd.read_parquet(path) if path.suffix == ".parquet"
+              else pd.read_csv(path, index_col=0)).drop(columns=[target])
+        groups: dict[str, dict] = {}
+        for idx, col in enumerate(df.columns):
+            logical = col.split("_", 1)[0] if "_" in col else col
+            g = groups.setdefault(logical, {"columns": [], "indices": []})
+            g["columns"].append(col)
+            g["indices"].append(idx)
+        # invariant: full coverage, no overlap — RAISE (holds under python -O)
+        covered = sorted(i for g in groups.values() for i in g["indices"])
+        if covered != list(range(df.shape[1])):
+            raise ValueError(f"{name}: feature-group coverage/overlap invariant violated")
+        out[name] = groups
+        n_multi = sum(1 for g in groups.values() if len(g["indices"]) > 1)
+        print(f"feature-groups[{name}] -> {len(groups)} logical, {n_multi} one-hot groups")
+    FG_JSON.write_text(json.dumps(out, indent=2))
+    print(f"feature-groups -> {FG_JSON.relative_to(ROOT)}")
+    return out
 
 
 def main() -> None:

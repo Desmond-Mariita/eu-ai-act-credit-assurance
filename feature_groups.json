@@ -1,105 +1,328 @@
 {
   "german_credit": {
-    "Attribute2": [
-      0
-    ],
-    "Attribute5": [
-      1
-    ],
-    "Attribute8": [
-      2
-    ],
-    "Attribute11": [
-      3
-    ],
-    "Attribute13": [
-      4
-    ],
-    "Attribute16": [
-      5
-    ],
-    "Attribute18": [
-      6
-    ],
-    "Attribute1": [
-      7,
-      8,
-      9,
-      10
-    ],
-    "Attribute3": [
-      11,
-      12,
-      13,
-      14,
-      15
-    ],
-    "Attribute4": [
-      16,
-      17,
-      18,
-      19,
-      20,
-      21,
-      22,
-      23,
-      24,
-      25
-    ],
-    "Attribute6": [
-      26,
-      27,
-      28,
-      29,
-      30
-    ],
-    "Attribute7": [
-      31,
-      32,
-      33,
-      34,
-      35
-    ],
-    "Attribute9": [
-      36,
-      37,
-      38,
-      39
-    ],
-    "Attribute10": [
-      40,
-      41,
-      42
-    ],
-    "Attribute12": [
-      43,
-      44,
-      45,
-      46
-    ],
-    "Attribute14": [
-      47,
-      48,
-      49
-    ],
-    "Attribute15": [
-      50,
-      51,
-      52
-    ],
-    "Attribute17": [
-      53,
-      54,
-      55,
-      56
-    ],
-    "Attribute19": [
-      57,
-      58
-    ],
-    "Attribute20": [
-      59,
-      60
-    ]
+    "Attribute2": {
+      "columns": [
+        "Attribute2"
+      ],
+      "indices": [
+        0
+      ]
+    },
+    "Attribute5": {
+      "columns": [
+        "Attribute5"
+      ],
+      "indices": [
+        1
+      ]
+    },
+    "Attribute8": {
+      "columns": [
+        "Attribute8"
+      ],
+      "indices": [
+        2
+      ]
+    },
+    "Attribute11": {
+      "columns": [
+        "Attribute11"
+      ],
+      "indices": [
+        3
+      ]
+    },
+    "Attribute13": {
+      "columns": [
+        "Attribute13"
+      ],
+      "indices": [
+        4
+      ]
+    },
+    "Attribute16": {
+      "columns": [
+        "Attribute16"
+      ],
+      "indices": [
+        5
+      ]
+    },
+    "Attribute18": {
+      "columns": [
+        "Attribute18"
+      ],
+      "indices": [
+        6
+      ]
+    },
+    "Attribute1": {
+      "columns": [
+        "Attribute1_A11",
+        "Attribute1_A12",
+        "Attribute1_A13",
+        "Attribute1_A14"
+      ],
+      "indices": [
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    "Attribute3": {
+      "columns": [
+        "Attribute3_A30",
+        "Attribute3_A31",
+        "Attribute3_A32",
+        "Attribute3_A33",
+        "Attribute3_A34"
+      ],
+      "indices": [
+        11,
+        12,
+        13,
+        14,
+        15
+      ]
+    },
+    "Attribute4": {
+      "columns": [
+        "Attribute4_A40",
+        "Attribute4_A41",
+        "Attribute4_A410",
+        "Attribute4_A42",
+        "Attribute4_A43",
+        "Attribute4_A44",
+        "Attribute4_A45",
+        "Attribute4_A46",
+        "Attribute4_A48",
+        "Attribute4_A49"
+      ],
+      "indices": [
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25
+      ]
+    },
+    "Attribute6": {
+      "columns": [
+        "Attribute6_A61",
+        "Attribute6_A62",
+        "Attribute6_A63",
+        "Attribute6_A64",
+        "Attribute6_A65"
+      ],
+      "indices": [
+        26,
+        27,
+        28,
+        29,
+        30
+      ]
+    },
+    "Attribute7": {
+      "columns": [
+        "Attribute7_A71",
+        "Attribute7_A72",
+        "Attribute7_A73",
+        "Attribute7_A74",
+        "Attribute7_A75"
+      ],
+      "indices": [
+        31,
+        32,
+        33,
+        34,
+        35
+      ]
+    },
+    "Attribute9": {
+      "columns": [
+        "Attribute9_A91",
+        "Attribute9_A92",
+        "Attribute9_A93",
+        "Attribute9_A94"
+      ],
+      "indices": [
+        36,
+        37,
+        38,
+        39
+      ]
+    },
+    "Attribute10": {
+      "columns": [
+        "Attribute10_A101",
+        "Attribute10_A102",
+        "Attribute10_A103"
+      ],
+      "indices": [
+        40,
+        41,
+        42
+      ]
+    },
+    "Attribute12": {
+      "columns": [
+        "Attribute12_A121",
+        "Attribute12_A122",
+        "Attribute12_A123",
+        "Attribute12_A124"
+      ],
+      "indices": [
+        43,
+        44,
+        45,
+        46
+      ]
+    },
+    "Attribute14": {
+      "columns": [
+        "Attribute14_A141",
+        "Attribute14_A142",
+        "Attribute14_A143"
+      ],
+      "indices": [
+        47,
+        48,
+        49
+      ]
+    },
+    "Attribute15": {
+      "columns": [
+        "Attribute15_A151",
+        "Attribute15_A152",
+        "Attribute15_A153"
+      ],
+      "indices": [
+        50,
+        51,
+        52
+      ]
+    },
+    "Attribute17": {
+      "columns": [
+        "Attribute17_A171",
+        "Attribute17_A172",
+        "Attribute17_A173",
+        "Attribute17_A174"
+      ],
+      "indices": [
+        53,
+        54,
+        55,
+        56
+      ]
+    },
+    "Attribute19": {
+      "columns": [
+        "Attribute19_A191",
+        "Attribute19_A192"
+      ],
+      "indices": [
+        57,
+        58
+      ]
+    },
+    "Attribute20": {
+      "columns": [
+        "Attribute20_A201",
+        "Attribute20_A202"
+      ],
+      "indices": [
+        59,
+        60
+      ]
+    }
+  },
+  "gmsc": {
+    "RevolvingUtilizationOfUnsecuredLines": {
+      "columns": [
+        "RevolvingUtilizationOfUnsecuredLines"
+      ],
+      "indices": [
+        0
+      ]
+    },
+    "age": {
+      "columns": [
+        "age"
+      ],
+      "indices": [
+        1
+      ]
+    },
+    "NumberOfTime30-59DaysPastDueNotWorse": {
+      "columns": [
+        "NumberOfTime30-59DaysPastDueNotWorse"
+      ],
+      "indices": [
+        2
+      ]
+    },
+    "DebtRatio": {
+      "columns": [
+        "DebtRatio"
+      ],
+      "indices": [
+        3
+      ]
+    },
+    "MonthlyIncome": {
+      "columns": [
+        "MonthlyIncome"
+      ],
+      "indices": [
+        4
+      ]
+    },
+    "NumberOfOpenCreditLinesAndLoans": {
+      "columns": [
+        "NumberOfOpenCreditLinesAndLoans"
+      ],
+      "indices": [
+        5
+      ]
+    },
+    "NumberOfTimes90DaysLate": {
+      "columns": [
+        "NumberOfTimes90DaysLate"
+      ],
+      "indices": [
+        6
+      ]
+    },
+    "NumberRealEstateLoansOrLines": {
+      "columns": [
+        "NumberRealEstateLoansOrLines"
+      ],
+      "indices": [
+        7
+      ]
+    },
+    "NumberOfTime60-89DaysPastDueNotWorse": {
+      "columns": [
+        "NumberOfTime60-89DaysPastDueNotWorse"
+      ],
+      "indices": [
+        8
+      ]
+    },
+    "NumberOfDependents": {
+      "columns": [
+        "NumberOfDependents"
+      ],
+      "indices": [
+        9
+      ]
+    }
   }
 }

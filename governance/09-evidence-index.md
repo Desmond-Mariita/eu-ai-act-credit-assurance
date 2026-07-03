@@ -4,9 +4,17 @@
 claim referenced by the audit opinion must resolve to a stable **`EV-###`** ID with a content hash,
 so a reviewer can re-perform it (traceability spine; see `08-traceability-matrix.md`).
 
-| EV-ID | Artifact (repo path) | SHA256 | Produced by | Referenced in |
-|-------|----------------------|--------|-------------|---------------|
-| *(to be filled as tasks run)* | | | | |
+| EV-ID | Artifact (repo path) | SHA256 (prefix) | Produced by | Referenced in |
+|-------|----------------------|-----------------|-------------|---------------|
+| EV-001 | `data_manifest.sha256` | `d2d14d26…` | Task 3 | data-dictionary §0; ToE §5 |
+| EV-002 | `data_quality.json` | `76b952bd…` | Task 3 | data-dictionary §2; risk R5 |
+| EV-003 | `feature_groups.json` | `3fe2ba1b…` | Task 3 | perturbation core (Task 6) |
+| EV-004 | `governance/data-dictionary.md` | *at v1 freeze* | Task 3 | conformity pack (Art. 10) |
+| EV-005 | `governance/00-scenario.md` (ToE) | *at v1 freeze* | Task 2 | audit opinion; traceability |
+| EV-006 | `governance/02-risk-management-file.md` | *at v1 freeze* | Task 2/16 | conformity pack (Art. 9) |
+
+*Data artifacts are hashed now (prefixes above; full values recomputable via `sha256sum`); living
+governance documents are content-addressed at the v1 release freeze (Task 26).*
 
 ## Pre-registration proof (filled at plan Task 4, verified at Task 26)
 | Item | Value |

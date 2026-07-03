@@ -1,6 +1,6 @@
 {
   "german_credit": {
-    "source": "UCI Statlog German Credit (id 144), CC BY 4.0 \u2014 cleaned/encoded parquet",
+    "source": "UCI Statlog German Credit (id 144) \u2014 https://archive.ics.uci.edu/dataset/144 \u2014 CC BY 4.0 \u2014 cleaned/encoded parquet",
     "n_rows": 1000,
     "n_cols": 61,
     "target": {
@@ -18,7 +18,8 @@
         "missing_frac": 0.0,
         "n_unique": 33,
         "min": 4.0,
-        "max": 72.0
+        "max": 72.0,
+        "p99": 60.0
       },
       "Attribute5": {
         "dtype": "int64",
@@ -26,7 +27,8 @@
         "missing_frac": 0.0,
         "n_unique": 921,
         "min": 250.0,
-        "max": 18424.0
+        "max": 18424.0,
+        "p99": 14180.39
       },
       "Attribute8": {
         "dtype": "int64",
@@ -34,7 +36,8 @@
         "missing_frac": 0.0,
         "n_unique": 4,
         "min": 1.0,
-        "max": 4.0
+        "max": 4.0,
+        "p99": 4.0
       },
       "Attribute11": {
         "dtype": "int64",
@@ -42,7 +45,8 @@
         "missing_frac": 0.0,
         "n_unique": 4,
         "min": 1.0,
-        "max": 4.0
+        "max": 4.0,
+        "p99": 4.0
       },
       "Attribute13": {
         "dtype": "int64",
@@ -50,7 +54,8 @@
         "missing_frac": 0.0,
         "n_unique": 53,
         "min": 19.0,
-        "max": 75.0
+        "max": 75.0,
+        "p99": 67.01
       },
       "Attribute16": {
         "dtype": "int64",
@@ -58,7 +63,8 @@
         "missing_frac": 0.0,
         "n_unique": 4,
         "min": 1.0,
-        "max": 4.0
+        "max": 4.0,
+        "p99": 3.0
       },
       "Attribute18": {
         "dtype": "int64",
@@ -66,7 +72,8 @@
         "missing_frac": 0.0,
         "n_unique": 2,
         "min": 1.0,
-        "max": 2.0
+        "max": 2.0,
+        "p99": 2.0
       },
       "Attribute1_A11": {
         "dtype": "bool",
@@ -392,10 +399,11 @@
         "missing_frac": 0.0,
         "n_unique": 2
       }
-    }
+    },
+    "anomalies": []
   },
   "gmsc": {
-    "source": "Kaggle 'GiveMeSomeCredit' cs-training.csv (per Kaggle terms) \u2014 raw",
+    "source": "Kaggle 'GiveMeSomeCredit' cs-training.csv \u2014 https://www.kaggle.com/c/GiveMeSomeCredit \u2014 per Kaggle competition terms \u2014 raw",
     "n_rows": 150000,
     "n_cols": 10,
     "target": {
@@ -413,7 +421,8 @@
         "missing_frac": 0.0,
         "n_unique": 125728,
         "min": 0.0,
-        "max": 50708.0
+        "max": 50708.0,
+        "p99": 1.093
       },
       "age": {
         "dtype": "int64",
@@ -421,7 +430,8 @@
         "missing_frac": 0.0,
         "n_unique": 86,
         "min": 0.0,
-        "max": 109.0
+        "max": 109.0,
+        "p99": 87.0
       },
       "NumberOfTime30-59DaysPastDueNotWorse": {
         "dtype": "int64",
@@ -429,7 +439,8 @@
         "missing_frac": 0.0,
         "n_unique": 16,
         "min": 0.0,
-        "max": 98.0
+        "max": 98.0,
+        "p99": 4.0
       },
       "DebtRatio": {
         "dtype": "float64",
@@ -437,7 +448,8 @@
         "missing_frac": 0.0,
         "n_unique": 114194,
         "min": 0.0,
-        "max": 329664.0
+        "max": 329664.0,
+        "p99": 4979.04
       },
       "MonthlyIncome": {
         "dtype": "float64",
@@ -445,7 +457,8 @@
         "missing_frac": 0.198207,
         "n_unique": 13594,
         "min": 0.0,
-        "max": 3008750.0
+        "max": 3008750.0,
+        "p99": 25000.0
       },
       "NumberOfOpenCreditLinesAndLoans": {
         "dtype": "int64",
@@ -453,7 +466,8 @@
         "missing_frac": 0.0,
         "n_unique": 58,
         "min": 0.0,
-        "max": 58.0
+        "max": 58.0,
+        "p99": 24.0
       },
       "NumberOfTimes90DaysLate": {
         "dtype": "int64",
@@ -461,7 +475,8 @@
         "missing_frac": 0.0,
         "n_unique": 19,
         "min": 0.0,
-        "max": 98.0
+        "max": 98.0,
+        "p99": 3.0
       },
       "NumberRealEstateLoansOrLines": {
         "dtype": "int64",
@@ -469,7 +484,8 @@
         "missing_frac": 0.0,
         "n_unique": 28,
         "min": 0.0,
-        "max": 54.0
+        "max": 54.0,
+        "p99": 4.0
       },
       "NumberOfTime60-89DaysPastDueNotWorse": {
         "dtype": "int64",
@@ -477,7 +493,8 @@
         "missing_frac": 0.0,
         "n_unique": 13,
         "min": 0.0,
-        "max": 98.0
+        "max": 98.0,
+        "p99": 2.0
       },
       "NumberOfDependents": {
         "dtype": "float64",
@@ -485,8 +502,17 @@
         "missing_frac": 0.02616,
         "n_unique": 13,
         "min": 0.0,
-        "max": 20.0
+        "max": 20.0,
+        "p99": 4.0
       }
-    }
+    },
+    "anomalies": [
+      "RevolvingUtilizationOfUnsecuredLines: max 50708 >> p99 1 \u2014 probable outlier/sentinel",
+      "age: 1 implausible age(s) <18 or >110 (min=0)",
+      "NumberOfTime30-59DaysPastDueNotWorse: 269 sentinel value(s) 96/98 (likely data-entry codes)",
+      "MonthlyIncome: max 3008750 >> p99 25000 \u2014 probable outlier/sentinel",
+      "NumberOfTimes90DaysLate: 269 sentinel value(s) 96/98 (likely data-entry codes)",
+      "NumberOfTime60-89DaysPastDueNotWorse: 269 sentinel value(s) 96/98 (likely data-entry codes)"
+    ]
   }
 }
