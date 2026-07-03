@@ -50,7 +50,10 @@ Both roles are simulated; obligations are assessed as *readiness*, not real conf
   (2023)** + Generative-AI Profile, **BCBS 239 (Jan 2013)** (risk-data aggregation & reporting).
 
 ## 5. Model version & dataset snapshot (pinned on freeze)
-- **Model:** LightGBM — artifact **SHA256 appended here at the training freeze (plan Task 8)**.
+- **Model:** LightGBM (audited) — artifact `models/lightgbm.txt`, **SHA256
+  `1456b07fb365dcbc91d6b139c51e1269976509249bdb8d7d4b4cd8e48ab5eab5`** (deterministic; frozen at
+  plan Task 8). Stratified holdout (seed 0, leakage check passed): **test AUROC 0.769, Brier 0.178**,
+  cost-sensitive threshold **1/6**; EBM challenger AUROC 0.794. Full metrics: `metrics/models.json`.
 - **Datasets:** German Credit (UCI Statlog, CC BY 4.0) mainline + Give Me Some Credit (generalization
   check) — **snapshot SHA256s recorded in `data_manifest.sha256` (plan Task 3)** and referenced here.
 

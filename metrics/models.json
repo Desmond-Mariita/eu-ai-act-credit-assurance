@@ -1,0 +1,101 @@
+{
+  "dataset": "german_credit",
+  "split": {
+    "test_size": 0.3,
+    "seed": 0,
+    "protocol": "stratified holdout",
+    "leakage_check": {
+      "max_abs_feature_target_corr": 0.3224,
+      "passed": true
+    }
+  },
+  "audited_model": {
+    "type": "LightGBM",
+    "artifact": "models/lightgbm.txt",
+    "sha256": "1456b07fb365dcbc91d6b139c51e1269976509249bdb8d7d4b4cd8e48ab5eab5",
+    "auroc": 0.769,
+    "auprc": 0.5663,
+    "brier": 0.178,
+    "cost_sensitive_threshold": 0.1667,
+    "confusion_at_threshold": [
+      [
+        129,
+        81
+      ],
+      [
+        20,
+        70
+      ]
+    ]
+  },
+  "challenger_model": {
+    "type": "EBM (glassbox, validation comparator only \u2014 not in the faithfulness leaderboard)",
+    "auroc": 0.7939,
+    "auprc": 0.6104
+  },
+  "calibration": {
+    "brier": 0.17795665138817385,
+    "reliability": [
+      {
+        "bin": 0,
+        "mean_pred": 0.039070057337440976,
+        "frac_pos": 0.12280701754385964,
+        "n": 114
+      },
+      {
+        "bin": 1,
+        "mean_pred": 0.14244484296490167,
+        "frac_pos": 0.15217391304347827,
+        "n": 46
+      },
+      {
+        "bin": 2,
+        "mean_pred": 0.24362829172688383,
+        "frac_pos": 0.4,
+        "n": 30
+      },
+      {
+        "bin": 3,
+        "mean_pred": 0.3603469499940721,
+        "frac_pos": 0.36,
+        "n": 25
+      },
+      {
+        "bin": 4,
+        "mean_pred": 0.4508222368918213,
+        "frac_pos": 0.4444444444444444,
+        "n": 18
+      },
+      {
+        "bin": 5,
+        "mean_pred": 0.5465434028923829,
+        "frac_pos": 0.4444444444444444,
+        "n": 18
+      },
+      {
+        "bin": 6,
+        "mean_pred": 0.639565193095336,
+        "frac_pos": 0.5333333333333333,
+        "n": 15
+      },
+      {
+        "bin": 7,
+        "mean_pred": 0.7473154448571689,
+        "frac_pos": 0.6153846153846154,
+        "n": 13
+      },
+      {
+        "bin": 8,
+        "mean_pred": 0.8500239184885503,
+        "frac_pos": 0.7857142857142857,
+        "n": 14
+      },
+      {
+        "bin": 9,
+        "mean_pred": 0.933300158339146,
+        "frac_pos": 0.7142857142857143,
+        "n": 7
+      }
+    ]
+  }
+}
