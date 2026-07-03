@@ -52,6 +52,17 @@ def random_ranking(logical_names, seed=0):
     return rank_groups(vals), vals
 
 
+def shuffled_shap_ranking(shap_explainer, x, feature_groups, logical_names, seed=0):
+    """CLEAN negative control: the real model's SHAP magnitudes randomly reassigned across logical
+    features — a genuinely random ranking that carries no importance information, so it should land
+    at the random floor. (Contrast the label-shuffled-MODEL control, which is confounded because a
+    tree fit on permuted labels still ranks high-information features.)"""
+    _, vals = treeshap_ranking(shap_explainer, x, feature_groups, logical_names)
+    rng = np.random.default_rng(seed)
+    shuffled = dict(zip(list(vals.keys()), rng.permutation(list(vals.values()))))
+    return rank_groups(shuffled), shuffled
+
+
 def make_shap_explainer(model):
     import shap
     return shap.TreeExplainer(model)

@@ -1,0 +1,286 @@
+{
+  "dataset": "german_credit",
+  "params": {
+    "n_eval": 300,
+    "n_perms": 25,
+    "m_donors": 25,
+    "k_neighbors": 50,
+    "top_k": 10,
+    "n_logical_features": 20,
+    "seed": 0,
+    "primary_regime": "conditional",
+    "donor_pool": "train split (held-out)",
+    "shuffled_model_test_auroc": 0.495
+  },
+  "by_regime": {
+    "conditional": {
+      "aopc_comprehensiveness": {
+        "treeshap": {
+          "aopc_mean": 0.0099,
+          "ci95": [
+            -0.0162,
+            0.0385
+          ],
+          "n": 300
+        },
+        "lime": {
+          "aopc_mean": 0.0133,
+          "ci95": [
+            -0.0071,
+            0.0346
+          ],
+          "n": 300
+        },
+        "shuffled_shap_clean": {
+          "aopc_mean": 0.0009,
+          "ci95": [
+            -0.0145,
+            0.0162
+          ],
+          "n": 300
+        },
+        "label_shuffled_model": {
+          "aopc_mean": 0.0166,
+          "ci95": [
+            -0.0032,
+            0.0369
+          ],
+          "n": 300
+        },
+        "random_floor": {
+          "aopc_mean": 0.0051,
+          "ci95": [
+            -0.0067,
+            0.0172
+          ],
+          "n": 300
+        }
+      },
+      "faithfulness_bar_vs_floor": {
+        "treeshap": {
+          "diff_mean": 0.0049,
+          "diff_ci95": [
+            -0.0115,
+            0.0225
+          ],
+          "se": 0.0086,
+          "faithful": false
+        },
+        "lime": {
+          "diff_mean": 0.0082,
+          "diff_ci95": [
+            -0.0025,
+            0.0195
+          ],
+          "se": 0.0057,
+          "faithful": false
+        },
+        "shuffled_shap_clean": {
+          "diff_mean": -0.0042,
+          "diff_ci95": [
+            -0.0148,
+            0.0064
+          ],
+          "se": 0.0053,
+          "faithful": false
+        },
+        "label_shuffled_model": {
+          "diff_mean": 0.0116,
+          "diff_ci95": [
+            -0.0003,
+            0.0237
+          ],
+          "se": 0.0063,
+          "faithful": false
+        }
+      }
+    },
+    "marginal": {
+      "aopc_comprehensiveness": {
+        "treeshap": {
+          "aopc_mean": -0.0161,
+          "ci95": [
+            -0.0433,
+            0.0138
+          ],
+          "n": 300
+        },
+        "lime": {
+          "aopc_mean": -0.0016,
+          "ci95": [
+            -0.023,
+            0.0202
+          ],
+          "n": 300
+        },
+        "shuffled_shap_clean": {
+          "aopc_mean": -0.0056,
+          "ci95": [
+            -0.0207,
+            0.01
+          ],
+          "n": 300
+        },
+        "label_shuffled_model": {
+          "aopc_mean": 0.0043,
+          "ci95": [
+            -0.0159,
+            0.0251
+          ],
+          "n": 300
+        },
+        "random_floor": {
+          "aopc_mean": -0.0032,
+          "ci95": [
+            -0.0154,
+            0.0094
+          ],
+          "n": 300
+        }
+      },
+      "faithfulness_bar_vs_floor": {
+        "treeshap": {
+          "diff_mean": -0.0129,
+          "diff_ci95": [
+            -0.0294,
+            0.0049
+          ],
+          "se": 0.0089,
+          "faithful": false
+        },
+        "lime": {
+          "diff_mean": 0.0016,
+          "diff_ci95": [
+            -0.009,
+            0.0127
+          ],
+          "se": 0.0056,
+          "faithful": false
+        },
+        "shuffled_shap_clean": {
+          "diff_mean": -0.0025,
+          "diff_ci95": [
+            -0.0129,
+            0.0079
+          ],
+          "se": 0.0053,
+          "faithful": false
+        },
+        "label_shuffled_model": {
+          "diff_mean": 0.0074,
+          "diff_ci95": [
+            -0.0055,
+            0.0199
+          ],
+          "se": 0.0065,
+          "faithful": false
+        }
+      }
+    },
+    "baseline": {
+      "aopc_comprehensiveness": {
+        "treeshap": {
+          "aopc_mean": 0.1051,
+          "ci95": [
+            0.0756,
+            0.137
+          ],
+          "n": 300
+        },
+        "lime": {
+          "aopc_mean": 0.1015,
+          "ci95": [
+            0.0796,
+            0.1253
+          ],
+          "n": 300
+        },
+        "shuffled_shap_clean": {
+          "aopc_mean": 0.0322,
+          "ci95": [
+            0.0131,
+            0.0519
+          ],
+          "n": 300
+        },
+        "label_shuffled_model": {
+          "aopc_mean": 0.0436,
+          "ci95": [
+            0.0184,
+            0.0674
+          ],
+          "n": 300
+        },
+        "random_floor": {
+          "aopc_mean": 0.0418,
+          "ci95": [
+            0.0292,
+            0.055
+          ],
+          "n": 300
+        }
+      },
+      "faithfulness_bar_vs_floor": {
+        "treeshap": {
+          "diff_mean": 0.0633,
+          "diff_ci95": [
+            0.0443,
+            0.0836
+          ],
+          "se": 0.01,
+          "faithful": true
+        },
+        "lime": {
+          "diff_mean": 0.0597,
+          "diff_ci95": [
+            0.0477,
+            0.0723
+          ],
+          "se": 0.0062,
+          "faithful": true
+        },
+        "shuffled_shap_clean": {
+          "diff_mean": -0.0097,
+          "diff_ci95": [
+            -0.0242,
+            0.0053
+          ],
+          "se": 0.0076,
+          "faithful": false
+        },
+        "label_shuffled_model": {
+          "diff_mean": 0.0017,
+          "diff_ci95": [
+            -0.0161,
+            0.0192
+          ],
+          "se": 0.0089,
+          "faithful": false
+        }
+      }
+    }
+  },
+  "sufficiency_treeshap_conditional": {
+    "aopc_mean": -0.007,
+    "ci95": [
+      -0.0175,
+      0.0039
+    ],
+    "n": 300
+  },
+  "ood_by_regime": {
+    "conditional": 5.45,
+    "marginal": 5.7022,
+    "baseline": 5.04
+  },
+  "lime_topk_stability": 1.0,
+  "hypotheses": {
+    "H1_treeshap_faithful_primary": false,
+    "H2_lime_below_treeshap_primary": false,
+    "H3_clean_control_at_floor_primary": true,
+    "H4_ood_conditional_lt_marginal_lt_baseline": false
+  },
+  "notes": {
+    "label_shuffled_model": "CONFOUNDED control (reported, not used for H3): a LightGBM on permuted labels has ~0.5 test AUROC yet its SHAP ranking overlaps the real ranking at ~2x random (top-5 Jaccard 0.30 vs 0.16), so it can beat the floor. The clean H3 control is shuffled_shap_clean."
+  }
+}
