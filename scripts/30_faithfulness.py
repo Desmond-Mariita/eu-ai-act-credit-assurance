@@ -150,6 +150,19 @@ def run(dataset: str, n_eval: int, n_perms: int, m: int, k_neighbors: int) -> di
             {"treeshap": base_bar["treeshap"]["faithful"], "lime": base_bar["lime"]["faithful"],
              "clean_control": base_bar["shuffled_shap_clean"]["faithful"]},
     }
+    dev_h3 = (
+        "H3: the pre-registered label-shuffled-MODEL control lands at the floor within test "
+        "resolution -> H3 HOLDS. Its conditional AOPC is slightly ABOVE the floor (a mild, "
+        "NON-significant confound: a tree on permuted labels still splits high-information features, "
+        "top-5 Jaccard vs the real ranking ~0.30 vs 0.16 random) but the diff CI includes 0. An "
+        "earlier run with the floor seed fixed across instances understated floor variance and made "
+        "this control appear to beat the floor; corrected via per-instance floor seeds. A post-hoc "
+        "CLEAN control (shuffled_shap_clean) sits even closer to the floor."
+        if hypotheses["H3_preregistered_label_shuffled_control_lands_at_floor"] else
+        "H3: the pre-registered label-shuffled-MODEL control BEAT the floor under the conditional "
+        "regime -> H3 REFUTED (a tree on permuted labels still ranks high-information features; "
+        "top-5 Jaccard vs the real ranking ~0.30 vs 0.16 random). A post-hoc CLEAN control "
+        "(shuffled_shap_clean) does sit at the floor.")
     out = {
         "dataset": dataset,
         "params": {"n_eval": n, "n_perms": n_perms, "m_donors": m, "k_neighbors": k_neighbors,
@@ -163,11 +176,7 @@ def run(dataset: str, n_eval: int, n_perms: int, m: int, k_neighbors: int) -> di
         "hypotheses_preregistered": hypotheses,
         "post_hoc_diagnostics": post_hoc,
         "deviations_from_preregistration": [
-            "H3: the pre-registered label-shuffled-MODEL control did NOT land at the floor (it beat "
-            "it under the conditional regime) -> H3 REFUTED. Cause: a LightGBM on permuted labels "
-            "still splits on high-information features (top-5 Jaccard vs the real ranking ~0.30 vs "
-            "0.16 random), so its attributions carry above-random ordering. A post-hoc CLEAN control "
-            "(shuffled_shap_clean) was added and DOES sit at the floor.",
+            dev_h3,
             "Metric is SIGNED (base - erased) with rankings by |attribution|; on-manifold, erasing "
             "risk-increasing vs protective features cancels. A direction-agnostic ABSOLUTE variant + "
             "abs floor is reported for the conditional regime (post_hoc_diagnostics).",

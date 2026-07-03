@@ -2,15 +2,15 @@
   "dataset": "german_credit",
   "params": {
     "n_eval": 300,
-    "n_perms": 25,
+    "n_perms": 40,
     "m_donors": 25,
     "k_neighbors": 50,
     "top_k": 10,
     "n_logical_features": 20,
     "seed": 0,
     "primary_regime": "conditional",
-    "donor_pool": "train split (held-out)",
-    "shuffled_model_test_auroc": 0.495
+    "metric": "signed AOPC comprehensiveness",
+    "donor_pool": "train split (held-out)"
   },
   "by_regime": {
     "conditional": {
@@ -24,10 +24,10 @@
           "n": 300
         },
         "lime": {
-          "aopc_mean": 0.0133,
+          "aopc_mean": -0.0107,
           "ci95": [
-            -0.0071,
-            0.0346
+            -0.0323,
+            0.0133
           ],
           "n": 300
         },
@@ -48,49 +48,49 @@
           "n": 300
         },
         "random_floor": {
-          "aopc_mean": 0.0051,
+          "aopc_mean": 0.0041,
           "ci95": [
-            -0.0067,
-            0.0172
+            -0.0063,
+            0.0152
           ],
           "n": 300
         }
       },
       "faithfulness_bar_vs_floor": {
         "treeshap": {
-          "diff_mean": 0.0049,
+          "diff_mean": 0.0058,
           "diff_ci95": [
             -0.0115,
-            0.0225
+            0.0248
           ],
-          "se": 0.0086,
+          "se_bootstrap": 0.0092,
           "faithful": false
         },
         "lime": {
-          "diff_mean": 0.0082,
+          "diff_mean": -0.0148,
           "diff_ci95": [
-            -0.0025,
-            0.0195
+            -0.0295,
+            0.0002
           ],
-          "se": 0.0057,
+          "se_bootstrap": 0.0077,
           "faithful": false
         },
         "shuffled_shap_clean": {
-          "diff_mean": -0.0042,
+          "diff_mean": -0.0032,
           "diff_ci95": [
-            -0.0148,
-            0.0064
+            -0.0136,
+            0.0069
           ],
-          "se": 0.0053,
+          "se_bootstrap": 0.0053,
           "faithful": false
         },
         "label_shuffled_model": {
-          "diff_mean": 0.0116,
+          "diff_mean": 0.0125,
           "diff_ci95": [
-            -0.0003,
-            0.0237
+            -0.0001,
+            0.0255
           ],
-          "se": 0.0063,
+          "se_bootstrap": 0.0065,
           "faithful": false
         }
       }
@@ -106,10 +106,10 @@
           "n": 300
         },
         "lime": {
-          "aopc_mean": -0.0016,
+          "aopc_mean": -0.0403,
           "ci95": [
-            -0.023,
-            0.0202
+            -0.0632,
+            -0.0155
           ],
           "n": 300
         },
@@ -130,49 +130,49 @@
           "n": 300
         },
         "random_floor": {
-          "aopc_mean": -0.0032,
+          "aopc_mean": -0.0022,
           "ci95": [
-            -0.0154,
-            0.0094
+            -0.0133,
+            0.0095
           ],
           "n": 300
         }
       },
       "faithfulness_bar_vs_floor": {
         "treeshap": {
-          "diff_mean": -0.0129,
+          "diff_mean": -0.0139,
           "diff_ci95": [
-            -0.0294,
+            -0.0311,
             0.0049
           ],
-          "se": 0.0089,
+          "se_bootstrap": 0.0094,
           "faithful": false
         },
         "lime": {
-          "diff_mean": 0.0016,
+          "diff_mean": -0.0381,
           "diff_ci95": [
-            -0.009,
-            0.0127
+            -0.0522,
+            -0.0228
           ],
-          "se": 0.0056,
+          "se_bootstrap": 0.0075,
           "faithful": false
         },
         "shuffled_shap_clean": {
-          "diff_mean": -0.0025,
+          "diff_mean": -0.0034,
           "diff_ci95": [
-            -0.0129,
-            0.0079
+            -0.0139,
+            0.0067
           ],
-          "se": 0.0053,
+          "se_bootstrap": 0.0053,
           "faithful": false
         },
         "label_shuffled_model": {
-          "diff_mean": 0.0074,
+          "diff_mean": 0.0065,
           "diff_ci95": [
-            -0.0055,
-            0.0199
+            -0.0069,
+            0.0195
           ],
-          "se": 0.0065,
+          "se_bootstrap": 0.0067,
           "faithful": false
         }
       }
@@ -188,10 +188,10 @@
           "n": 300
         },
         "lime": {
-          "aopc_mean": 0.1015,
+          "aopc_mean": 0.1058,
           "ci95": [
-            0.0796,
-            0.1253
+            0.0811,
+            0.1325
           ],
           "n": 300
         },
@@ -212,49 +212,49 @@
           "n": 300
         },
         "random_floor": {
-          "aopc_mean": 0.0418,
+          "aopc_mean": 0.0313,
           "ci95": [
-            0.0292,
-            0.055
+            0.0199,
+            0.0432
           ],
           "n": 300
         }
       },
       "faithfulness_bar_vs_floor": {
         "treeshap": {
-          "diff_mean": 0.0633,
+          "diff_mean": 0.0737,
           "diff_ci95": [
-            0.0443,
-            0.0836
+            0.0534,
+            0.095
           ],
-          "se": 0.01,
+          "se_bootstrap": 0.0105,
           "faithful": true
         },
         "lime": {
-          "diff_mean": 0.0597,
+          "diff_mean": 0.0744,
           "diff_ci95": [
-            0.0477,
-            0.0723
+            0.058,
+            0.0911
           ],
-          "se": 0.0062,
+          "se_bootstrap": 0.0086,
           "faithful": true
         },
         "shuffled_shap_clean": {
-          "diff_mean": -0.0097,
+          "diff_mean": 0.0008,
           "diff_ci95": [
-            -0.0242,
-            0.0053
+            -0.0138,
+            0.0154
           ],
-          "se": 0.0076,
+          "se_bootstrap": 0.0076,
           "faithful": false
         },
         "label_shuffled_model": {
-          "diff_mean": 0.0017,
+          "diff_mean": 0.0122,
           "diff_ci95": [
-            -0.0161,
-            0.0192
+            -0.0058,
+            0.0293
           ],
-          "se": 0.0089,
+          "se_bootstrap": 0.009,
           "faithful": false
         }
       }
@@ -268,19 +268,78 @@
     ],
     "n": 300
   },
-  "ood_by_regime": {
+  "ood_top3_first30_diagnostic": {
     "conditional": 5.45,
     "marginal": 5.7022,
     "baseline": 5.04
   },
-  "lime_topk_stability": 1.0,
-  "hypotheses": {
-    "H1_treeshap_faithful_primary": false,
-    "H2_lime_below_treeshap_primary": false,
-    "H3_clean_control_at_floor_primary": true,
+  "lime_topk_stability_discretized": 0.7897,
+  "hypotheses_preregistered": {
+    "H1_treeshap_faithful_conditional_signed": false,
+    "H2_lime_below_treeshap_conditional_signed": true,
+    "H3_preregistered_label_shuffled_control_lands_at_floor": true,
     "H4_ood_conditional_lt_marginal_lt_baseline": false
   },
-  "notes": {
-    "label_shuffled_model": "CONFOUNDED control (reported, not used for H3): a LightGBM on permuted labels has ~0.5 test AUROC yet its SHAP ranking overlaps the real ranking at ~2x random (top-5 Jaccard 0.30 vs 0.16), so it can beat the floor. The clean H3 control is shuffled_shap_clean."
-  }
+  "post_hoc_diagnostics": {
+    "clean_control_lands_at_floor_conditional": true,
+    "absolute_movement_conditional": {
+      "aopc": {
+        "treeshap": {
+          "aopc_mean": 0.2086,
+          "ci95": [
+            0.1934,
+            0.2243
+          ],
+          "n": 300
+        },
+        "lime": {
+          "aopc_mean": 0.1785,
+          "ci95": [
+            0.1662,
+            0.1904
+          ],
+          "n": 300
+        },
+        "random_floor": {
+          "aopc_mean": 0.1024,
+          "ci95": [
+            0.0967,
+            0.1083
+          ],
+          "n": 300
+        }
+      },
+      "treeshap_beats_floor": {
+        "diff_mean": 0.1061,
+        "diff_ci95": [
+          0.0944,
+          0.1181
+        ],
+        "se_bootstrap": 0.006,
+        "faithful": true
+      },
+      "lime_beats_floor": {
+        "diff_mean": 0.0761,
+        "diff_ci95": [
+          0.0656,
+          0.0856
+        ],
+        "se_bootstrap": 0.0051,
+        "faithful": true
+      }
+    },
+    "baseline_leverage_ordering_faithful": {
+      "treeshap": true,
+      "lime": true,
+      "clean_control": false
+    }
+  },
+  "deviations_from_preregistration": [
+    "H3: the pre-registered label-shuffled-MODEL control lands at the floor within test resolution -> H3 HOLDS. Its conditional AOPC is slightly ABOVE the floor (a mild, NON-significant confound: a tree on permuted labels still splits high-information features, top-5 Jaccard vs the real ranking ~0.30 vs 0.16 random) but the diff CI includes 0. An earlier run with the floor seed fixed across instances understated floor variance and made this control appear to beat the floor; corrected via per-instance floor seeds. A post-hoc CLEAN control (shuffled_shap_clean) sits even closer to the floor.",
+    "Metric is SIGNED (base - erased) with rankings by |attribution|; on-manifold, erasing risk-increasing vs protective features cancels. A direction-agnostic ABSOLUTE variant + abs floor is reported for the conditional regime (post_hoc_diagnostics).",
+    "LIME switched to discretize_continuous=True (default) after review: discretize=False ranks raw scaled sensitivities, not instance contributions (invalidated the earlier run).",
+    "OOD is a DIAGNOSTIC (TreeSHAP top-3 erasure, first 30 instances) \u2014 not a regime characterisation; do not infer on/off-manifoldness from it.",
+    "'baseline' (median/modal replacement) behaves as an off-manifold GLOBAL-LEVERAGE ordering test, not a local on-distribution faithfulness test."
+  ],
+  "interpretation": "The pre-registered signed AOPC-vs-floor test does NOT detect faithfulness under the conditional regime at n=300 (high per-instance variance + sign cancellation) \u2014 absence of evidence, not evidence of unfaithfulness. Under baseline (off-manifold leverage) both explainers beat the floor while the clean control stays at floor. See the absolute-movement diagnostic for a direction-agnostic view."
 }

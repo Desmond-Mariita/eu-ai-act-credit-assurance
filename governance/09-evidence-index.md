@@ -14,6 +14,8 @@ so a reviewer can re-perform it (traceability spine; see `08-traceability-matrix
 | EV-006 | `governance/02-risk-management-file.md` | *at v1 freeze* | Task 2/16 | conformity pack (Art. 9) |
 | EV-007 | `models/lightgbm.txt` (audited model) | `1456b07f…` | Task 8 | ToE §5; model card (Art. 11) |
 | EV-008 | `metrics/models.json` | *(committed)* | Task 8 | model card; conformity pack (Art. 15 accuracy) |
+| EV-009 | `metrics/faithfulness_german_credit.json` | *(committed)* | Task 10-11 | findings §Results; opinion (Art. 86) |
+| EV-010 | `governance/10-faithfulness-findings.md` | *at v1 freeze* | Task 10-11 | audit opinion; conformity pack (Art. 86) |
 
 *Data artifacts are hashed now (prefixes above; full values recomputable via `sha256sum`); living
 governance documents are content-addressed at the v1 release freeze (Task 26).*
