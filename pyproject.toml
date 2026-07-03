@@ -2,12 +2,19 @@
 name = "credit-assurance"
 version = "0.1.0"
 requires-python = ">=3.11,<3.13"
+# Core deps used by the frozen instrument, data loaders, and the manifest/DQ script.
 dependencies = [
-  "numpy", "pandas", "pyarrow", "scikit-learn", "lightgbm", "interpret-core",
-  "fairlearn", "shap", "lime", "dice-ml", "matplotlib", "ucimlrepo", "requests",
+  "numpy", "pandas", "pyarrow", "scikit-learn", "ucimlrepo",
 ]
 [project.optional-dependencies]
-dev = ["pytest", "pytest-cov", "jupytext", "nbconvert", "ipykernel", "ruff"]
+# Model / explainer / plotting stack — needed from Phase 2 (train + benchmark) onward.
+# numba is pinned so shap's transitive llvmlite resolves on Python 3.12 (old llvmlite < 0.42 fails).
+models = [
+  "lightgbm", "interpret-core", "fairlearn", "shap", "lime", "dice-ml", "matplotlib",
+  "numba>=0.60", "requests",
+]
+dev = ["pytest", "pytest-cov", "ruff"]
+notebooks = ["jupytext", "nbconvert", "ipykernel"]
 [tool.pytest.ini_options]
 addopts = "--cov=credit_assurance --cov-report=term-missing"
 [tool.ruff]
