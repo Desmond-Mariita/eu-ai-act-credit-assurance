@@ -80,8 +80,35 @@ merely asserted.
   measured (OOD diagnostic), not eliminated. The OOD figure is a diagnostic (TreeSHAP top-3 erasure,
   first 30 instances), **not** a regime characterisation.
 - **Power:** n≈300, high per-instance variance; H2 is a mean-ordering check (no paired-CI materiality
-  threshold). Subgroup and second-dataset (Give Me Some Credit) generalisation pending. Single model.
-  **Self-assessment, not independent.**
+  threshold). Subgroup generalisation pending; second-dataset (GMSC) generalisation **done** (above,
+  subsampled to 6k). Single model per dataset. **Self-assessment, not independent.**
+
+## Generalization check — Give Me Some Credit (GMSC)
+Second dataset, structurally different: **all-numeric** (10 features, no one-hot groups), **imbalanced**
+(~6.7% default), subsampled to 6,000 for a tractable conditional-kNN donor pool (807 past-due `96/98`
+sentinels + `age<18` cleaned per the DQ profile; `scripts/06_gmsc_prep.py`). LightGBM **AUROC 0.829**;
+benchmark n=200, K=5, n_perms=30. Full numbers: `metrics/faithfulness_gmsc.json`.
+
+**Replicates (the core finding holds on a different dataset):**
+- **Absolute metric validated** — clean control at floor (−0.004, CI [−0.008, −0.001], not faithful).
+- **Both explainers faithful under movement** — TreeSHAP +0.019 [0.014, 0.026], LIME +0.014 [0.010,
+  0.018]; **TreeSHAP > LIME** (H2).
+- **Baseline** — both faithful, clean control at floor. Clean control sits at floor under every
+  metric/regime → the instrument is robust across datasets.
+
+**Differs (dataset-specific — and it is the *fragile* pieces that differ):**
+- **Signed on-manifold test has power on GMSC** — TreeSHAP is faithful under the pre-registered signed
+  metric (H1 *supported* here), unlike German Credit's underpowered null. GMSC's all-numeric features
+  suffer less sign-cancellation than German Credit's one-hot groups.
+- **H3 refuted on GMSC** — the label-shuffled control beats the *signed* floor (holds-fragile on German
+  Credit). The confounded control's behaviour is dataset-specific; the clean control is the robust one.
+- **LIME stability higher** (0.91 vs 0.79; fewer features).
+
+**Takeaway:** the headline — faithfulness is metric-dependent, both explainers are faithful under a
+*validated* movement metric (TreeSHAP > LIME), and a single signed on-/off-manifold score is
+unreliable — **replicates**. The pieces that do NOT replicate (the signed null, the label-shuffled
+confound) are precisely the fragile ones, underscoring that faithfulness verdicts are metric- **and**
+dataset-sensitive.
 
 ## Governance implication (EU AI Act Art. 86 / GDPR Arts. 13–15)
 "Meaningful information about the logic involved" presupposes the explanation is *faithful*. This
