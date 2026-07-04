@@ -110,6 +110,24 @@ unreliable — **replicates**. The pieces that do NOT replicate (the signed null
 confound) are precisely the fragile ones, underscoring that faithfulness verdicts are metric- **and**
 dataset-sensitive.
 
+## ROAR anchor (retrain-based cross-check)
+An independent **RemOve-And-Retrain** check (Hooker et al. 2019): remove the top-k logical features by
+each explainer's global importance, **retrain**, and measure test AUROC — which avoids the off-manifold
+artefact of perturbation-only tests. Mean AUROC drop over k=1..10 (**larger = more faithful**; base
+AUROC 0.769; `metrics/roar_german_credit.json`, EV-015):
+
+| ranking | mean AUROC drop |
+|---|---|
+| TreeSHAP | **0.108** |
+| LIME | **0.104** |
+| model gain | 0.093 |
+| random | 0.042 |
+
+Both explainers degrade accuracy **~2.5× more than random** → they identify genuinely predictive
+features, and **TreeSHAP ≥ LIME** (consistent with H2). This **corroborates the movement-metric
+finding via an independent retrain-based methodology** — strengthening confidence that the "both
+faithful, TreeSHAP > LIME" result is not an artefact of any single test.
+
 ## Governance implication (EU AI Act Art. 86 / GDPR Arts. 13–15)
 "Meaningful information about the logic involved" presupposes the explanation is *faithful*. This
 audit shows faithfulness is **conditional on how it is measured**: the audited SHAP/LIME explanations

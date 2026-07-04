@@ -21,6 +21,7 @@ yet produced** — this index + dossier `13` §D are the interim spine).
 | EV-012 | `metrics/fairness_german_credit.json` + `governance/11-fairness-findings.md` | Task 12 | conformity pack (Art. 10(2)(f-g), Art. 15) |
 | EV-013 | `metrics/robustness_german_credit.json` + `metrics/reason_codes_german_credit.json` + `governance/12-robustness-and-recourse.md` | Task 13 | conformity pack (Art. 15; GDPR 13-15) |
 | EV-014 | `governance/13-conformity-dossier.md` | Task 16 | Annex IV technical documentation; audit opinion |
+| EV-015 | `metrics/roar_german_credit.json` (ROAR anchor) | Task 11 supplement | `10-faithfulness-findings.md §ROAR` |
 
 *Data artifacts are hashed now (prefixes above; full values recomputable via `sha256sum`); living
 governance documents are content-addressed at the v1 release freeze (Task 26).*
