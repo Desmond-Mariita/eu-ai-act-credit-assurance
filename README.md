@@ -5,22 +5,26 @@ the **EU AI Act + GDPR**. Explanation faithfulness, fairness, robustness, and re
 concrete, reproducible finding, wrapped in an Annex IV governance evidence pack.
 
 > **Status:** v1.0 findings complete. **Self-assessment — NOT an independent audit** (the author built
-> the audited model *and* assessed it). The one load-bearing open item is **independent human
-> review**; a model-reviewer gauntlet is a quality control, not a substitute. Perturbation-faithfulness
-> only, not "true" faithfulness.
+> the audited model *and* assessed it). The load-bearing gap for *independence* is **human external
+> review** (the model-reviewer gauntlets are a quality control, not a substitute); conformity readiness
+> is otherwise **partial**, with further conditions (QMS, logging, larger-n fairness, post-market
+> monitoring — see [opinion §5](governance/14-audit-opinion.md)). Perturbation-faithfulness only, not
+> "true" faithfulness.
 
-## Headline findings (each internally + externally reviewed to consensus)
+## Headline findings (each hardened through internal + external *model-reviewer* gauntlets)
 1. **Explanation faithfulness is metric-dependent — and under a *validated* metric, explanations are
-   faithful.** Under a direction-agnostic movement metric (validated: a random control sits at the
-   floor), **both TreeSHAP and LIME beat random**; a retrain-based **ROAR** anchor (8 splits)
-   independently corroborates this. The pre-registered *signed* on-manifold test is an **underpowered
-   null** (sign cancellation), *not* evidence of unfaithfulness. Replicated on a second dataset.
+   perturbation-faithful.** Under a direction-agnostic movement metric (validated: a random control
+   sits at the floor), **both TreeSHAP and LIME beat random**; a retrain-based **ROAR** anchor (8
+   splits) independently corroborates this. The pre-registered *signed* on-manifold test is an
+   **underpowered null** (sign cancellation), *not* evidence of unfaithfulness. The **core
+   movement-metric result replicated** on a second dataset (the signed null did *not* — it is
+   dataset-specific).
    → *Faithfulness claims must state the perturbation regime and sign convention.*
 2. **Fairness: disparities disadvantage the worse-off groups, but none is significant at n=300**
    (sex FPR permutation p=0.086); the model **trains on a sex proxy and age directly**. → *Monitoring
    flags, not established gaps.*
-3. **Robustness: moderate** — 3.6–16.3% of decisions flip under small input noise; a **13.3%
-   near-threshold** population is fragile.
+3. **Robustness: moderate** — ≈4–7% of decisions flip under *small* input noise (rising to 16.3% at
+   the largest synthetic noise tested); a **13.3% near-threshold** population is fragile.
 4. **Recourse: 94% [89.1, 96.8]** of declined applicants have actionable loan-term recourse; a **~6%
    infeasible core** rests on non-actionable factors. *(A popular off-the-shelf counterfactual tool
    under-reported recourse by ~20 points — a cautionary note for auditors.)*
@@ -49,7 +53,7 @@ uv run ruff check src/ tests/ && uv run pytest -q
 uv pip install -e ".[models]"              # model/explainer stack (Phase 2)
 python scripts/10_train.py                 # audited model (deterministic; SHA pinned)
 python scripts/30_faithfulness.py          # faithfulness benchmark
-python scripts/{40_fairness,50_robustness,60_reason_codes,70_roar}.py
+for s in 40_fairness 50_robustness 60_reason_codes 70_roar; do python scripts/$s.py; done
 ```
 Data: German Credit is fetched by code; **Give Me Some Credit** needs a one-time Kaggle download of
 `cs-training.csv` into `data/`.
