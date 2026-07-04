@@ -28,10 +28,11 @@ bootstrap CI:
   a documented Art. 15 concern, not a failure.
 
 ## Recourse / reason codes (GDPR Arts. 13–15)
-For each of the **151 declined test applicants**, an **exhaustive grid/line search** over the
-genuinely actionable, independently-negotiable loan terms — **loan duration** and **credit amount**,
-snapped to valid integers — scored by the **pinned model**, asks whether any change reaches the
-**deployed accept** (`P(bad) ≤ 1/6`). (Installment rate is excluded — it is coupled to amount/
+For each of the **151 declined test applicants**, an **exhaustive integer grid/line search** over the
+genuinely actionable, independently-negotiable loan terms — **loan duration** and **credit amount**
+(every valid integer in the train range) — scored by the **pinned model**, asks whether any change
+reaches the **deployed accept** (`P(bad) ≤ 1/6`). (The 94% is grid-resolution-stable: coarse, dense,
+and every-integer grids give identical results, since the tree model is a step function.) (Installment rate is excluded — it is coupled to amount/
 duration/income, not independently actionable; age/residence/dependents are immutable/protected;
 one-hots are never touched.)
 
@@ -41,18 +42,21 @@ one-hots are never touched.)
 | **No loan-term recourse** (truly infeasible) | **6.0%** | [3.2, 10.9] |
 | Recourse via a **single** feature change | 73.5% | — |
 | Mean actionable features changed | 1.22 | — |
-| Reason-code frequency | loan_duration 126, credit_amount 47 | — |
+| Reason-code frequency (range-normalised) | loan_duration 86, credit_amount 87 | — |
 
 - **Recourse is broadly available and simple:** 94% of declined applicants could reach acceptance by
-  changing loan terms, and 73.5% by changing **just one** — overwhelmingly **shortening the loan
-  duration** (e.g. 60 → 9 months), sometimes reducing the amount.
+  changing loan terms, and 73.5% by changing **just one** — **roughly evenly split between shortening
+  the loan term and reducing the amount** (e.g. 60 → 9 months, or 2 124 → 1 479 DM). (The minimal
+  change is chosen by a range-normalised distance, so months and DM are comparable — a raw-unit
+  comparison spuriously favours duration.)
 - **A genuine (small) infeasible core:** ~**6%** cannot reach acceptance by *any* loan-term change —
   their decline rests on **non-actionable creditworthiness factors** (history, purpose, account
   status). For them, "meaningful information about the logic" (Art. 13–15) must explain *why*, since
   no loan-term recourse exists.
 - **Methodological caution (a reusable audit lesson):** an initial **DiCE random-search** approach
-  found recourse for only **72.5%** — a **~20-point under-report** vs the exhaustive grid, and it
-  emitted **non-integer** loan terms (e.g. 13.1 months). **Off-the-shelf counterfactual tools can
+  found recourse for only **72.5%** (a superseded run — not recomputed in the current script) — a
+  **~20-point under-report** vs the exhaustive grid, and it emitted **non-integer** loan terms (e.g.
+  13.1 months). **Off-the-shelf counterfactual tools can
   conflate search-failure with infeasibility**; recourse infeasibility should be established by
   exhaustive/verified search on a valid feature grid, as done here.
 

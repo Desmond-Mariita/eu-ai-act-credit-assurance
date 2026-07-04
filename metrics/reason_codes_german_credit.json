@@ -3,7 +3,7 @@
   "model": "models/lightgbm.txt (SHA verified)",
   "threshold": 0.1667,
   "n_declined": 151,
-  "method": "exhaustive grid/line search over actionable loan terms (integer-valid), pinned model",
+  "method": "exhaustive integer grid/line search over actionable loan terms, pinned model",
   "actionable_features": {
     "Attribute2": "loan_duration_months",
     "Attribute5": "credit_amount"
@@ -20,9 +20,9 @@
   ],
   "mean_features_changed": 1.218,
   "single_feature_recourse_rate": 0.7351,
-  "reason_code_feature_frequency": {
-    "loan_duration_months": 126,
-    "credit_amount": 47
+  "reason_code_feature_frequency_range_normalised": {
+    "loan_duration_months": 86,
+    "credit_amount": 87
   },
   "example_recourse": [
     {
@@ -46,9 +46,9 @@
     {
       "orig_P_bad": 0.175,
       "change": {
-        "loan_duration_months": [
-          15.0,
-          11.0
+        "credit_amount": [
+          1444.0,
+          1349.0
         ]
       }
     },
@@ -64,9 +64,9 @@
     {
       "orig_P_bad": 0.295,
       "change": {
-        "loan_duration_months": [
-          18.0,
-          15.0
+        "credit_amount": [
+          2124.0,
+          1479.0
         ]
       }
     },
@@ -75,10 +75,10 @@
       "change": {
         "credit_amount": [
           11590.0,
-          7427.0
+          7454.0
         ]
       }
     }
   ],
-  "note": "Recourse = a valid integer change to loan duration and/or credit amount reaching P(bad)<=1/6 (deployed accept). Grid is exhaustive over the train range, so 'infeasible' means no loan-term change works (decline rests on non-actionable factors). An initial DiCE random search found recourse for only 72.5% (this grid: see rate) \u2014 off-the-shelf counterfactual tools can conflate search-failure with infeasibility. Real-world feasibility (can an applicant borrow less?) is not assessed."
+  "note": "Recourse = a valid integer change to loan duration and/or credit amount reaching P(bad)<=1/6 (deployed accept). Grid is EVERY integer in the train range, so 'infeasible' means no loan-term change works (decline rests on non-actionable factors). Reason-code attribution uses a range-normalised minimal change (months vs DM comparable). NB: an initial DiCE random search found only 72.5% recourse (a superseded run, not recomputed here) \u2014 off-the-shelf CF tools can conflate search-failure with infeasibility. Real-world feasibility (can an applicant borrow less?) is not assessed."
 }
