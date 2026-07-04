@@ -24,17 +24,32 @@ def sex_from_personal_status(s: pd.Series) -> pd.Series:
     return s.map(_PS)
 
 
+# Shared age banding — used by both the raw loader and the encoded-parquet recovery so a given age
+# always maps to the same band. right=False -> [0,25),[25,40),[40,60),[60,200).
+_AGE_BINS = [0, 25, 40, 60, 200]
+_AGE_LABELS = ["<25", "25-39", "40-59", "60+"]
+
+
+def _age_band(age: pd.Series) -> pd.Series:
+    return pd.cut(age, bins=_AGE_BINS, labels=_AGE_LABELS, right=False)
+
+
 def protected_attributes_from_encoded(df: pd.DataFrame) -> dict:
     """Recover German-Credit protected/proxy attributes from the ENCODED parquet columns, aligned to
     its row order: sex (Attribute9 personal-status one-hot), foreign_worker (Attribute20), age_band
-    (Attribute13). Proxy / special-category-adjacent; for the fairness analysis only."""
+    (Attribute13). Protected under non-discrimination law (NOT GDPR Art. 9). Fairness analysis only.
+    NB: sex is derived from personal-status, which conflates marital status (A92 = female
+    divorced/separated/**married**); and the audited model trains on Attribute9 + Attribute13
+    directly, so these attributes are model inputs, not merely external labels."""
     a9 = [c for c in df.columns if c.startswith("Attribute9_")]
-    ps = df[a9].astype(int).idxmax(axis=1).str.replace("Attribute9_", "", regex=False)
+    onehot = df[a9].astype(int)
+    if not (onehot.sum(axis=1) == 1).all():
+        raise ValueError("Attribute9 one-hot rows must have exactly one active dummy")
+    ps = onehot.idxmax(axis=1).str.replace("Attribute9_", "", regex=False)
     return {
         "sex": ps.map(_PS).to_numpy(),
         "foreign_worker": df["Attribute20_A201"].astype(int).map({1: "yes", 0: "no"}).to_numpy(),
-        "age_band": pd.cut(df["Attribute13"], bins=[0, 25, 40, 60, 200],
-                           labels=["<25", "25-39", "40-59", "60+"], right=False).astype(str).to_numpy(),
+        "age_band": _age_band(df["Attribute13"]).astype(str).to_numpy(),
     }
 
 
@@ -71,8 +86,7 @@ def load_german_credit() -> dict:
     age = pd.to_numeric(raw["Attribute13"])                   # age in years (already int64, confirmed)
     foreign = (raw["Attribute20"] == "A201").map({True: "yes", False: "no"})  # A201=yes, A202=no
     protected = pd.DataFrame({"sex": sex.values,
-                              "age_band": pd.cut(age, [0, 25, 40, 60, 200],
-                                                 labels=["<=25", "26-40", "41-60", ">60"]),
+                              "age_band": _age_band(age),
                               "foreign_worker": foreign.values})
     X = pd.get_dummies(raw, drop_first=False)                 # one-hot categoricals; numeric kept
     return {"X": X, "y": y, "protected": protected, "feature_names": list(X.columns),
