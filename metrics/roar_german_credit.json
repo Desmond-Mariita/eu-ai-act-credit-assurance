@@ -95,5 +95,5 @@
       "Attribute4"
     ]
   },
-  "note": "Larger mean_auroc_drop = more faithful (removing genuinely important features hurts more). A faithful explainer should exceed 'random'. Retraining avoids the off-manifold artefact of perturbation-only tests. Global importances = mean |attribution| over train (LIME sampled n=100); random averaged over 5 orderings."
+  "note": "Larger mean_auroc_drop = more faithful (removing genuinely important features hurts more). A faithful explainer should exceed 'random'. Retraining avoids the off-manifold artefact of perturbation-only tests. Global importances = summed |attribution| (ranking-equivalent to the mean) over train (LIME sampled n=100); random averaged over 5 orderings."
 }

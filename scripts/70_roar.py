@@ -109,7 +109,7 @@ def main() -> None:
         "ranking_top5": {"treeshap": treeshap_rank[:5], "lime": lime_rank[:5], "gain": gain_rank[:5]},
         "note": "Larger mean_auroc_drop = more faithful (removing genuinely important features hurts "
                 "more). A faithful explainer should exceed 'random'. Retraining avoids the off-manifold "
-                "artefact of perturbation-only tests. Global importances = mean |attribution| over "
+                "artefact of perturbation-only tests. Global importances = summed |attribution| (ranking-equivalent to the mean) over "
                 f"train (LIME sampled n={N_LIME}); random averaged over {N_RANDOM} orderings.",
     }
     (METRICS / "roar_german_credit.json").write_text(json.dumps(out, indent=2))
