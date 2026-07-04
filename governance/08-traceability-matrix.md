@@ -23,9 +23,9 @@ SHA pinned in `00-scenario.md §5`. **Self-assessment** (see `13 §E`).
 - **Tag verification:** `git verify-tag prereg-v1` requires the verifier to configure an SSH
   `gpg.ssh.allowedSignersFile` with the author's public key; the OTS proof is **Bitcoin-confirmed (block 956533)**
   (`09`).
-- **Hashing:** data artifacts carry SHA256 prefixes in `09`; living governance docs are content-
-  addressed at the v1 release freeze; the pre-registration is OpenTimestamps-stamped (Bitcoin
-  verification pending, `09` note).
+- **Hashing:** data + metrics artifacts carry SHA256 prefixes in `09`; living governance docs are
+  content-addressed at the v1 release freeze; the pre-registration is OpenTimestamps **Bitcoin-confirmed
+  (block 956533)**.
 - **Determinism:** every script above re-runs to byte-identical output under the fixed seed; the
   recourse/robustness/ROAR/fairness scripts load and **SHA-verify** the pinned model
   (`models/lightgbm.txt`) or verify predictions identical to it.

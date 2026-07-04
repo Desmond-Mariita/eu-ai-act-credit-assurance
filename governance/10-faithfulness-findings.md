@@ -133,7 +133,7 @@ via an independent retrain-based methodology**; the explainer *ordering* is itse
 "Meaningful information about the logic involved" presupposes the explanation is *faithful*. This
 audit shows faithfulness is **conditional on how it is measured**: the audited SHAP/LIME explanations
 *do* carry genuine ordering information (they beat a validated random control under movement and
-leverage tests, and TreeSHAP > LIME), **but** a naive signed on-/off-manifold comprehensiveness score
+leverage tests, and TreeSHAP > LIME *under the movement metric*), **but** a naive signed on-/off-manifold comprehensiveness score
 would have mislabelled them. A deployer presenting these explanations to a loan officer or applicant
 should (a) state the perturbation regime and direction convention under which faithfulness was
 established, and (b) not treat a single comprehensiveness score as sufficient evidence — which is
