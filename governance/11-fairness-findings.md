@@ -8,9 +8,10 @@ decline), test n=300, seed 0, **2000-sample bootstrap CIs**. Numbers: `metrics/f
 (`scripts/40_fairness.py`). Neutral report.
 
 ## Headline
-The model's decisions show disparities that **consistently disadvantage the historically worse-off
-group** — women, foreign workers, and younger applicants are declined more — **but at n=300 none is
-statistically distinguishable from zero** on the valid (signed) test. These are **directional flags
+The model's decisions show disparities that **disadvantage the historically worse-off group** — women
+and younger applicants are declined more (the **foreign-worker comparison is not inferable** — its
+reference group is n=15) — **but at n=300 none is statistically distinguishable from zero** on the
+valid (signed) test. These are **directional flags
 for monitoring and a mitigation trade-off study, not established gaps.** Two things to be careful
 about: (1) the model **trains on personal-status (a sex proxy) and age directly**, so these protected
 attributes are *model inputs* — a bias source Art. 10 requires flagging; (2) the folded DP/EO
@@ -22,18 +23,20 @@ obliges the provider/deployer to examine; it expresses **no opinion** that the m
 |---|---|---|---|---|---|---|
 | **sex** | female (100) | 0.34 | 0.57 | 0.47 | 0.74 | yes |
 |  | male (200) | 0.28 | 0.47 | 0.35 | 0.78 | yes |
-| **foreign_worker** | yes (285) | — | 0.52 | 0.40 | — | yes |
-|  | no (15) | — | 0.27 | 0.15 | — | **no (n<30)** |
-| **age_band** | <25 (55) | — | 0.64 | 0.50 | — | yes |
-|  | 25-39 (160) | — | 0.51 | 0.39 | — | yes |
-|  | 40-59 (78) | — | 0.40 | 0.32 | — | yes |
-|  | 60+ (7) | — | 0.57 | 0.67 | — | **no (n<30)** |
+| **foreign_worker** | yes (285) | 0.31 | 0.52 | 0.40 | 0.76 | yes |
+|  | no (15) | 0.13 | 0.27 | 0.15 | 1.00* | **no (n<30)** |
+| **age_band** | <25 (55) | 0.45 | 0.64 | 0.50 | 0.65 | yes |
+|  | 25-39 (160) | 0.27 | 0.51 | 0.39 | 0.83 | yes |
+|  | 40-59 (78) | 0.23 | 0.40 | 0.32 | 0.76 | yes |
+|  | 60+ (7) | 0.57 | 0.57 | 0.67 | 0.33* | **no (n<30)** |
+
+<sub>*AUROC on n=15 / n=7 is meaningless (shown only for completeness; excluded from any conclusion).</sub>
 
 ## Statistical significance (this is the correction the review demanded)
 | Attribute | DP diff [folded CI] | EO diff [folded CI] | **valid signed test** |
 |---|---|---|---|
-| sex | 0.10 [0.01, 0.22] | 0.12 [0.03, 0.27] | **FPR diff (♀−♂) 95% CI includes 0** (≈[−0.03, 0.26]); decline-diff CI includes 0; permutation p≈0.10 |
-| foreign_worker | 0.25 [0.03, 0.47] | 0.25 [0.18, 0.82] | **decline diff (yes−no) 95% CI includes 0** ([−0.02, 0.47]) |
+| sex | 0.10 [0.01, 0.22] | 0.12 [0.03, 0.27] | **FPR diff (♀−♂) 95% CI includes 0** (≈[−0.03, 0.26]); decline-diff CI includes 0; **permutation p = 0.086** |
+| foreign_worker | 0.25 [0.03, 0.47] | 0.25 [0.17, 0.81] | **decline diff (yes−no) 95% CI includes 0** ([−0.02, 0.47]) — *comparator n=15, not inferable* |
 | age_band | 0.24 [0.12, 0.64] | 0.35 [0.23, 0.90] | multi-group; folded only — treat as exploratory |
 
 **Read this carefully:** DP and EO are **non-negative max-difference** statistics, so their bootstrap
@@ -45,7 +48,8 @@ direction, but **not statistically significant** at this sample size.
 ## Interpretation (honest)
 - **Sex** is the largest well-powered *point* estimate — women face a ~10-pt higher decline rate and a
   higher FPR (0.47 vs 0.35, i.e. good female applicants wrongly declined more) — **but it is not
-  significant** (signed FPR-diff CI spans 0, p≈0.10; the FPR rests on only 66 true-good women).
+  significant** (signed FPR-diff CI spans 0, permutation p = 0.086; the FPR rests on only 66
+  true-good women).
   Threshold-independent AUROC mildly corroborates slightly worse ranking for women (0.74 vs 0.78).
   Base rates differ (female 0.34 vs male 0.28 bad), so *some* decline-rate gap is expected under a
   single threshold on calibrated scores; the FPR/EO view conditions on the true label and would, if

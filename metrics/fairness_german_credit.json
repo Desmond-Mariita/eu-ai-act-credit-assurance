@@ -37,19 +37,21 @@
       ],
       "equalized_odds_difference": 0.1225,
       "eo_ci95_folded": [
-        0.0306,
-        0.2747
+        0.0322,
+        0.2694
       ],
+      "comparator_inferable": true,
       "signed_decline_rate_diff_male_minus_female": -0.1,
       "signed_decline_rate_diff_ci95": [
-        -0.2194,
-        0.0271
+        -0.2185,
+        0.0181
       ],
       "signed_fpr_diff_male_minus_female": -0.1225,
       "signed_fpr_diff_ci95": [
-        -0.2638,
-        0.0278
-      ]
+        -0.26,
+        0.021
+      ],
+      "signed_fpr_diff_perm_p": 0.0855
     },
     "foreign_worker": {
       "by_group": {
@@ -81,19 +83,21 @@
       ],
       "equalized_odds_difference": 0.2472,
       "eo_ci95_folded": [
-        0.1776,
-        0.8171
+        0.1728,
+        0.8143
       ],
+      "comparator_inferable": false,
       "signed_decline_rate_diff_yes_minus_no": 0.2491,
       "signed_decline_rate_diff_ci95": [
-        -0.0182,
-        0.4662
+        -0.01,
+        0.4667
       ],
       "signed_fpr_diff_yes_minus_no": 0.2472,
       "signed_fpr_diff_ci95": [
-        -0.0045,
-        0.4355
-      ]
+        0.0082,
+        0.4286
+      ],
+      "signed_fpr_diff_perm_p": 0.126
     },
     "age_band": {
       "by_group": {
@@ -145,8 +149,8 @@
       ],
       "equalized_odds_difference": 0.35,
       "eo_ci95_folded": [
-        0.2341,
-        0.9024
+        0.2381,
+        0.898
       ]
     }
   }

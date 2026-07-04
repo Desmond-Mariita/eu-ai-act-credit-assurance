@@ -38,7 +38,7 @@ METRIC_FNS = {"count": count, "selection_rate_declined": selection_rate,
 
 
 def _clean(v):
-    return None if (v is None or (isinstance(v, float) and np.isnan(v))) else round(float(v), 4)
+    return None if (v is None or pd.isna(v)) else round(float(v), 4)
 
 
 def _boot_ci(stat, n, seed=SEED):
@@ -56,6 +56,24 @@ def _boot_ci(stat, n, seed=SEED):
 def _fpr(y_true, y_pred):
     neg = y_true == 0
     return float(y_pred[neg].mean()) if neg.any() else np.nan
+
+
+def _perm_p(y_hat, g, a, b, y_te, n_perm=2000, seed=99):
+    """Two-sided permutation p for the signed FPR diff (b - a): shuffle group labels, recompute."""
+    obs = _fpr(y_te[g == b], y_hat[g == b]) - _fpr(y_te[g == a], y_hat[g == a])
+    if np.isnan(obs):
+        return None
+    mask = np.isin(g, [a, b])
+    ga, yt, yp = g[mask], y_te[mask], y_hat[mask]
+    rng = np.random.default_rng(seed)
+    ge, valid = 0, 0
+    for _ in range(n_perm):
+        pg = rng.permutation(ga)
+        dd = _fpr(yt[pg == b], yp[pg == b]) - _fpr(yt[pg == a], yp[pg == a])
+        if not np.isnan(dd):
+            valid += 1
+            ge += abs(dd) >= abs(obs) - 1e-12
+    return round(ge / valid, 4) if valid else None
 
 
 def main() -> None:
@@ -113,23 +131,27 @@ def main() -> None:
             "demographic_parity_difference": round(dp, 4),
             "dp_ci95_folded": _boot_ci(
                 lambda idx, g=g: demographic_parity_difference(
-                    y_te[idx], y_hat[idx], sensitive_features=g[idx]), n),
+                    y_te[idx], y_hat[idx], sensitive_features=g[idx]), n, seed=SEED),
             "equalized_odds_difference": round(eo, 4),
             "eo_ci95_folded": _boot_ci(
                 lambda idx, g=g: equalized_odds_difference(
-                    y_te[idx], y_hat[idx], sensitive_features=g[idx]), n),
+                    y_te[idx], y_hat[idx], sensitive_features=g[idx]), n, seed=SEED + 1),
         }
         groups = sorted(set(g))
         if len(groups) == 2:      # signed diff (b - a): the valid significance test
             a, b = groups
-            for name, fn in (("decline_rate", lambda yt, yp: float(yp.mean())), ("fpr", _fpr)):
+            counts = {grp: int((g == grp).sum()) for grp in groups}
+            entry["comparator_inferable"] = bool(min(counts.values()) >= MIN_N)
+            for si, (name, fn) in enumerate((("decline_rate", lambda yt, yp: float(yp.mean())),
+                                             ("fpr", _fpr))):
                 point = fn(y_te[g == b], y_hat[g == b]) - fn(y_te[g == a], y_hat[g == a])
 
-                def stat(idx, fn=fn):
+                def stat(idx, fn=fn, a=a, b=b, g=g):
                     gg, yt, yp = g[idx], y_te[idx], y_hat[idx]
                     return fn(yt[gg == b], yp[gg == b]) - fn(yt[gg == a], yp[gg == a])
                 entry[f"signed_{name}_diff_{b}_minus_{a}"] = _clean(point)
-                entry[f"signed_{name}_diff_ci95"] = _boot_ci(stat, n)
+                entry[f"signed_{name}_diff_ci95"] = _boot_ci(stat, n, seed=SEED + 2 + si)
+            entry["signed_fpr_diff_perm_p"] = _perm_p(y_hat, g, a, b, y_te)
         out["by_attribute"][attr] = entry
         print(f"[{attr}] DP {dp:.3f} ci{entry['dp_ci95_folded']} | EO {eo:.3f} ci{entry['eo_ci95_folded']}")
 
