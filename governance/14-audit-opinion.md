@@ -37,9 +37,9 @@ Me Some Credit generalization check).
    is statistically significant at n=300**
    (sex FPR permutation p=0.086). The model **trains on a sex proxy (personal-status) and age
    directly.** *Monitoring + mitigation-study flags, not established gaps.*
-3. **Robustness — moderate.** 3.6–16.3% of decisions flip under small input noise; a **13%
+3. **Robustness — moderate.** 3.6–16.3% of decisions flip under small input noise; a **13.3%
    near-threshold** population is noise-sensitive. *An Art. 15 monitoring concern.*
-4. **Recourse — broadly available.** **94% [89, 97]** of declined applicants have actionable loan-term
+4. **Recourse — broadly available.** **94% [89.1, 96.8]** of declined applicants have actionable loan-term
    recourse; a **~6% infeasible core** rests on non-actionable factors and requires a genuine
    explanation. *(A popular off-the-shelf CF tool under-reported this by ~20 points — a cautionary
    note for auditors.)*
@@ -65,7 +65,9 @@ test (low subgroup power); robustness noise synthetic; recourse model-side; publ
 real data subjects). Full register: `13 §E`.
 
 ## 7. Integrity attestation
-The faithfulness method and hypotheses were **pre-registered before results** (`HYPOTHESES.md`, signed
+The faithfulness **hypotheses (H1–H4) and the pre-registered signed comprehensiveness method** were
+fixed **before results**; the **absolute-movement metric and the ROAR anchor were post-hoc additions**
+(disclosed in `10 §Deviations`). Pre-registration (`HYPOTHESES.md`, signed
 tag `prereg-v1`, OpenTimestamps — **Bitcoin-confirmed, block 956533**). Every quantitative claim traces
 to a hashed metrics artifact and a one-command reproduction (`08`, `09`); governance documents are
 content-addressed at the v1 freeze. This document is committed to

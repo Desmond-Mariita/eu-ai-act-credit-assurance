@@ -1,6 +1,7 @@
 # 09 — Evidence Index (working papers)
 
-**Status:** Phase 0.5 placeholder — appended to as artifacts are produced. Every figure, metric, and
+**Status:** living evidence index — appended as artifacts are produced; content-addressed at the v1
+freeze. Every figure, metric, and
 claim referenced by the audit opinion must resolve to a stable **`EV-###`** ID with a content hash,
 so a reviewer can re-perform it (traceability spine: `08-traceability-matrix.md`).
 
@@ -21,6 +22,8 @@ so a reviewer can re-perform it (traceability spine: `08-traceability-matrix.md`
 | EV-013 | `metrics/robustness_…json` `2941addc…` + `metrics/reason_codes_…json` `14c869fe…` (+ `governance/12`) | *(as noted)* | Task 13 | conformity pack (Art. 15; GDPR 13-15) |
 | EV-014 | `governance/13-conformity-dossier.md` | *at v1 freeze* | Task 16 | Annex IV technical documentation; audit opinion |
 | EV-015 | `metrics/roar_german_credit.json` (ROAR anchor) | `4c3a8b49…` | Task 11 supplement | `10-faithfulness-findings.md §ROAR` |
+| EV-016 | `governance/06-gdpr-dpia.md` (template DPIA) | *at v1 freeze* | Task 13 supplement | dossier §B (GDPR 35); audit opinion |
+| EV-017 | `governance/08-traceability-matrix.md` | *at v1 freeze* | Task 16 | traceability spine; audit opinion |
 
 *Data artifacts are hashed now (prefixes above; full values recomputable via `sha256sum`); living
 governance documents are content-addressed at the v1 release freeze (Task 26).*

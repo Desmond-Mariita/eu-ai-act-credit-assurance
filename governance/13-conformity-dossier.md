@@ -1,6 +1,6 @@
 # 13 — Conformity-Readiness Dossier (Annex IV technical documentation)
 
-**Status:** synthesis of the audit (consolidates `00`, `02`, `09`, `data-dictionary`, findings `10`–
+**Status:** synthesis of the audit (consolidates `00`, `02`, `06`, `08`, `09`, `data-dictionary`, findings `10`–
 `12`, `metrics/`). **Nature:** a **conformity-READINESS demonstration and self-assessment — NOT an EU
 declaration of conformity** and **not** a legal conformity assessment. No opinion is expressed that
 the system is or is not compliant; this maps the evidence produced to the obligations and **states the
