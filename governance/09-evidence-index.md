@@ -19,6 +19,7 @@ so a reviewer can re-perform it (traceability spine; see `08-traceability-matrix
 | EV-011 | `metrics/faithfulness_gmsc.json` (+ `data/gmsc.parquet` sha256 `4392f696…`, via `scripts/06_gmsc_prep.py`) | Task 11 | findings §Generalization |
 | EV-012 | `metrics/fairness_german_credit.json` + `governance/11-fairness-findings.md` | Task 12 | conformity pack (Art. 10(2)(f-g), Art. 15) |
 | EV-013 | `metrics/robustness_german_credit.json` + `metrics/reason_codes_german_credit.json` + `governance/12-robustness-and-recourse.md` | Task 13 | conformity pack (Art. 15; GDPR 13-15) |
+| EV-014 | `governance/13-conformity-dossier.md` | Task 16 | Annex IV technical documentation; audit opinion |
 
 *Data artifacts are hashed now (prefixes above; full values recomputable via `sha256sum`); living
 governance documents are content-addressed at the v1 release freeze (Task 26).*
