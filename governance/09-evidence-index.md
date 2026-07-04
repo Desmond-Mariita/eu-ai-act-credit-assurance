@@ -32,4 +32,4 @@ governance documents are content-addressed at the v1 release freeze (Task 26).*
 | `prereg-v1` tag SHA (SSH-signed) | `234a6ddecf986b191dda186b58d6e652798fcf85` |
 | Commit SHA (pre-registration) | `73fa5f9461c7ed784dab3b9ed41e79de26fc70ab` |
 | Public remote URL | https://github.com/Desmond-Mariita/eu-ai-act-credit-assurance (tag: `/releases/tag/prereg-v1`) |
-| OpenTimestamps `.ots` verify output | `HYPOTHESES.md.ots` committed; stamped 2026-07-03, submitted to 4 calendars — **`ots upgrade`/`verify` after Bitcoin confirmation (Task 26)** |
+| OpenTimestamps `.ots` verify output | `HYPOTHESES.md.ots` — **Bitcoin-confirmed** via `ots upgrade` (2026-07-05): `BitcoinBlockHeaderAttestation(956533)` (+ 956560) |

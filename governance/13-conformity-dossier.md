@@ -58,7 +58,9 @@ design-level · **Gap** = not produced · **Scope** = deliberately out of scope 
 ## C. Consolidated findings (the four analyses — reviewed)
 1. **Faithfulness (`10`, EV-009/011):** explanation faithfulness is **metric-dependent**; under a
    *validated* direction-agnostic movement metric both **TreeSHAP and LIME are faithful** (TreeSHAP >
-   LIME); the pre-registered signed on-manifold test is an **underpowered null** (sign cancellation),
+   LIME *under that metric*; a retrain-based ROAR cross-check finds them indistinguishable — the
+   ordering is metric-dependent); the pre-registered signed on-manifold test is an **underpowered
+   null** (sign cancellation),
    not evidence of unfaithfulness. **The core movement-metric result replicated on GMSC** (the signed
    null did *not* — it is dataset-specific). *Governance: faithfulness claims must name the regime +
    sign convention (Art. 86 / GDPR 13–15).*
@@ -76,8 +78,8 @@ design-level · **Gap** = not produced · **Scope** = deliberately out of scope 
 Each quantitative claim above maps to an `EV-###` row in `09-evidence-index.md` and the producing
 script. **Provenance maturity is partial:** data artifacts carry SHA256 prefixes; living governance
 docs are content-addressed **at the v1 release freeze** (not yet hashed); the pre-registration
-(`HYPOTHESES.md`, tag `prereg-v1`) is committed and **OpenTimestamps-stamped, with Bitcoin
-verification pending** (`09` note; Task 26). Every claim is mapped to its evidence + one-command
+(`HYPOTHESES.md`, tag `prereg-v1`) is committed and **OpenTimestamps Bitcoin-confirmed** (block
+956533, `09`). Every claim is mapped to its evidence + one-command
 reproduction in `08-traceability-matrix.md`; metrics JSON hashes are recorded in `09`.
 
 ## E. Residual gaps & open risks (honest register)
@@ -98,9 +100,9 @@ reproduction in `08-traceability-matrix.md`; metrics JSON hashes are recorded in
 ## F. Overall readiness verdict
 Against the pinned criteria: **Ready** only on the classification (Art. 6) and lifecycle elements;
 **Partial** on risk management, data governance, technical documentation, transparency, human
-oversight, accuracy/robustness, provider obligations, the Annex VI route, and Art. 86; **Gap** on QMS,
-logging, cybersecurity, post-market monitoring, DPIA, CE marking, and registration; **Scope** on the
-deployer duties (Arts. 26, 27). This is a **credible readiness demonstration on the modelling and
+oversight, accuracy/robustness, provider obligations, the Annex VI route, Art. 86, and the GDPR-35
+DPIA (template produced; a real DPIA is pending); **Gap** on QMS, logging, cybersecurity, post-market
+monitoring, CE marking, and registration; **Scope** on the deployer duties (Arts. 26, 27). This is a **credible readiness demonstration on the modelling and
 assurance dimensions**, explicitly **not** a conformity declaration, **not** independent, and **not**
 complete against the full high-risk regime. The signed audit opinion (`14`, next) draws its scope,
 findings, and limitations from this dossier.

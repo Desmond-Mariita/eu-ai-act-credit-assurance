@@ -10,8 +10,8 @@ GDPR criteria pinned in `00-scenario.md §4`.
 
 ## 1. Nature and level of assurance
 This is a **self-assessment providing NO formal assurance and NO conformity declaration.** The assessor
-built the audited model *and* performed the assessment, so **independence is not satisfied** (Art. 27-
-style independence / audit independence). Method and code were hardened through internal and **external
+built the audited model *and* performed the assessment, so **independence is not satisfied** (audit
+independence in the assurance sense — cf. Annex VII / ISAE-3000). Method and code were hardened through internal and **external
 model-reviewer** gauntlets — a quality control, **not** human independent review. Accordingly this is a
 **limited, qualified statement of findings and readiness**, not "reasonable" or "limited assurance" in
 the ISAE-3000 sense. A stronger opinion is conditional on the items in §5.
@@ -33,7 +33,8 @@ Me Some Credit generalization check).
    **replicated on a second dataset.** *Faithfulness is metric-dependent — claims must state the regime
    and sign convention.*
 2. **Fairness — no significant disparity, but flags.** Group disparities **consistently disadvantage**
-   women / younger / foreign-worker applicants but **none is statistically significant at n=300**
+   women and younger applicants (the foreign-worker comparison is **not inferable**, n=15) but **none
+   is statistically significant at n=300**
    (sex FPR permutation p=0.086). The model **trains on a sex proxy (personal-status) and age
    directly.** *Monitoring + mitigation-study flags, not established gaps.*
 3. **Robustness — moderate.** 3.6–16.3% of decisions flip under small input noise; a **13%
@@ -44,9 +45,9 @@ Me Some Credit generalization check).
    note for auditors.)*
 
 ## 4. Opinion
-On the dimensions assessed and against the pinned criteria, **nothing came to the assessor's attention
-indicating the model is unfit on faithfulness, fairness, robustness, or recourse** — indeed the
-explanations are demonstrably faithful and recourse is broadly available — **subject to** the fairness
+On the dimensions assessed and against the pinned criteria, **on the evidence gathered the assessor
+identified no indication that the model is unfit** on faithfulness, fairness, robustness, or recourse —
+indeed the explanations are demonstrably faithful and recourse is broadly available — **subject to** the fairness
 monitoring flags, the near-threshold robustness population, and the ~6% recourse-infeasible core being
 addressed by the deployer. **This is NOT an opinion that the system is EU-AI-Act-compliant or
 conformant.** Conformity readiness is **partial** (`13 §F`): several high-risk obligations are **Gap**
@@ -65,7 +66,8 @@ real data subjects). Full register: `13 §E`.
 
 ## 7. Integrity attestation
 The faithfulness method and hypotheses were **pre-registered before results** (`HYPOTHESES.md`, signed
-tag `prereg-v1`, OpenTimestamps — Bitcoin verification pending). Every quantitative claim traces to a
-content-addressed artifact and a one-command reproduction (`08`, `09`). This document is committed to
+tag `prereg-v1`, OpenTimestamps — **Bitcoin-confirmed, block 956533**). Every quantitative claim traces
+to a hashed metrics artifact and a one-command reproduction (`08`, `09`); governance documents are
+content-addressed at the v1 freeze. This document is committed to
 the public repository under version control; its integrity rests on the git history and the signed
 pre-registration tag, **not** on any claim of independence.

@@ -13,7 +13,7 @@ SHA pinned in `00-scenario.md §5`. **Self-assessment** (see `13 §E`).
 | **FAITH-1** | Movement metric **validated** (clean control at floor); **TreeSHAP +0.106 [.094,.118]**, **LIME +0.076 [.066,.086]** both faithful; TreeSHAP > LIME *under this metric* (ROAR: indistinguishable) | `10 §Results` | EV-009 | `python scripts/30_faithfulness.py` | Art. 86 / GDPR 13-15 |
 | **FAITH-2** | Signed on-manifold test = **underpowered null** (H1 refuted; sign cancellation) | `10` | EV-009 | ↑ | Art. 86 |
 | **FAITH-3** | Core movement result **replicates on GMSC**; signed null is dataset-specific | `10 §Generalization` | EV-011 | `python scripts/06_gmsc_prep.py && python scripts/30_faithfulness.py --dataset gmsc` | — |
-| **FAITH-4** | **ROAR** (retrain-based): TreeSHAP 0.108 > LIME 0.104 > random 0.042 | `10 §ROAR` | EV-015 | `python scripts/70_roar.py` | Art. 86 |
+| **FAITH-4** | **ROAR** (8 splits): TreeSHAP 0.108±0.017 ≈ LIME 0.111±0.016 (**indistinguishable**), both ≫ random 0.036 | `10 §ROAR` | EV-015 | `python scripts/70_roar.py` | Art. 86 |
 | **FAIR-1** | **No disparity significant at n=300** (sex FPR-diff CI includes 0, permutation **p=0.086**); folded DP/EO CIs are not a significance test | `11` | EV-012 | `python scripts/40_fairness.py` | Art. 10 |
 | **FAIR-2** | Model **trains on personal-status (sex proxy) + age directly** | `11` | EV-012 | ↑ | Art. 10 |
 | **ROB-1** | Decision-flip **3.6–16.3%** (eps 0.05–0.5, bootstrap CIs); **13.3% near-threshold** | `12 §Robustness` | EV-013 | `python scripts/50_robustness.py` | Art. 15 |
@@ -21,7 +21,7 @@ SHA pinned in `00-scenario.md §5`. **Self-assessment** (see `13 §E`).
 
 ## Notes
 - **Tag verification:** `git verify-tag prereg-v1` requires the verifier to configure an SSH
-  `gpg.ssh.allowedSignersFile` with the author's public key; the OTS Bitcoin confirmation is pending
+  `gpg.ssh.allowedSignersFile` with the author's public key; the OTS proof is **Bitcoin-confirmed (block 956533)**
   (`09`).
 - **Hashing:** data artifacts carry SHA256 prefixes in `09`; living governance docs are content-
   addressed at the v1 release freeze; the pre-registration is OpenTimestamps-stamped (Bitcoin
