@@ -24,6 +24,20 @@ def sex_from_personal_status(s: pd.Series) -> pd.Series:
     return s.map(_PS)
 
 
+def protected_attributes_from_encoded(df: pd.DataFrame) -> dict:
+    """Recover German-Credit protected/proxy attributes from the ENCODED parquet columns, aligned to
+    its row order: sex (Attribute9 personal-status one-hot), foreign_worker (Attribute20), age_band
+    (Attribute13). Proxy / special-category-adjacent; for the fairness analysis only."""
+    a9 = [c for c in df.columns if c.startswith("Attribute9_")]
+    ps = df[a9].astype(int).idxmax(axis=1).str.replace("Attribute9_", "", regex=False)
+    return {
+        "sex": ps.map(_PS).to_numpy(),
+        "foreign_worker": df["Attribute20_A201"].astype(int).map({1: "yes", 0: "no"}).to_numpy(),
+        "age_band": pd.cut(df["Attribute13"], bins=[0, 25, 40, 60, 200],
+                           labels=["<25", "25-39", "40-59", "60+"], right=False).astype(str).to_numpy(),
+    }
+
+
 def cost_sensitive_threshold(cost_fn: float, cost_fp: float) -> float:
     # threshold on P(bad): predict 'bad' when P(bad) > cost_fp/(cost_fn+cost_fp)
     return cost_fp / (cost_fn + cost_fp)
