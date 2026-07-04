@@ -2,7 +2,8 @@
 
 **Status:** Phase 0.5 placeholder — appended to as artifacts are produced. Every figure, metric, and
 claim referenced by the audit opinion must resolve to a stable **`EV-###`** ID with a content hash,
-so a reviewer can re-perform it (traceability spine; see `08-traceability-matrix.md`).
+so a reviewer can re-perform it (traceability spine; a standalone `08-traceability-matrix.md` is **not
+yet produced** — this index + dossier `13` §D are the interim spine).
 
 | EV-ID | Artifact (repo path) | SHA256 (prefix) | Produced by | Referenced in |
 |-------|----------------------|-----------------|-------------|---------------|
