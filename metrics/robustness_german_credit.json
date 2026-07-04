@@ -4,25 +4,41 @@
   "threshold": 0.1667,
   "n_test": 300,
   "n_draws": 10,
-  "perturbed": "numeric features only, Gaussian eps*std, clipped to train range, rounded to int",
+  "perturbed": "continuous features (duration, credit amount, age); Gaussian eps*train-std, clipped to train range, rounded to int; ordinals + one-hots left intact",
   "share_near_threshold_|p-thr|<0.05": 0.1333,
   "by_eps": {
     "0.05": {
-      "decision_flip_rate": 0.0373,
-      "mean_abs_delta_p": 0.0234
+      "decision_flip_rate": 0.0357,
+      "flip_ci95": [
+        0.0233,
+        0.0497
+      ],
+      "mean_abs_delta_p": 0.0246
     },
     "0.1": {
-      "decision_flip_rate": 0.067,
-      "mean_abs_delta_p": 0.0392
+      "decision_flip_rate": 0.0687,
+      "flip_ci95": [
+        0.0517,
+        0.086
+      ],
+      "mean_abs_delta_p": 0.0411
     },
     "0.2": {
-      "decision_flip_rate": 0.1087,
-      "mean_abs_delta_p": 0.0689
+      "decision_flip_rate": 0.1057,
+      "flip_ci95": [
+        0.0837,
+        0.1297
+      ],
+      "mean_abs_delta_p": 0.0671
     },
     "0.5": {
-      "decision_flip_rate": 0.1683,
-      "mean_abs_delta_p": 0.1114
+      "decision_flip_rate": 0.163,
+      "flip_ci95": [
+        0.1397,
+        0.1883
+      ],
+      "mean_abs_delta_p": 0.1095
     }
   },
-  "note": "eps is the noise sd as a fraction of each numeric feature's train std. decision_flip = fraction of (instance,draw) pairs whose 1/6 accept/decline flips vs unperturbed."
+  "note": "eps = noise sd as a fraction of each feature's train std (a synthetic probe, not calibrated to real error logs). flip = fraction of decisions changed vs unperturbed; flip_ci95 = 95% instance-bootstrap CI. Age is perturbed as generic input noise."
 }

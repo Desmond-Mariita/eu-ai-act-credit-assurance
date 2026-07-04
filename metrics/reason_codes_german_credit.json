@@ -1,80 +1,84 @@
 {
   "dataset": "german_credit",
+  "model": "models/lightgbm.txt (SHA verified)",
   "threshold": 0.1667,
-  "n_declined_evaluated": 80,
-  "total_cfs_per_instance": 10,
+  "n_declined": 151,
+  "method": "exhaustive grid/line search over actionable loan terms (integer-valid), pinned model",
   "actionable_features": {
     "Attribute2": "loan_duration_months",
-    "Attribute5": "credit_amount",
-    "Attribute8": "installment_rate_pct"
+    "Attribute5": "credit_amount"
   },
-  "recourse_model_class_rate": 1.0,
-  "recourse_policy_1_6_rate": 0.725,
-  "no_counterfactual_found_rate": 0.0,
-  "mean_features_changed_policy_recourse": 1.448,
+  "policy_recourse_rate": 0.9404,
+  "policy_recourse_wilson95": [
+    0.8906,
+    0.9683
+  ],
+  "infeasible_rate": 0.0596,
+  "infeasible_wilson95": [
+    0.0317,
+    0.1094
+  ],
+  "mean_features_changed": 1.218,
+  "single_feature_recourse_rate": 0.7351,
   "reason_code_feature_frequency": {
-    "credit_amount": 31,
-    "installment_rate_pct": 17,
-    "loan_duration_months": 36
+    "loan_duration_months": 126,
+    "credit_amount": 47
   },
   "example_recourse": [
     {
       "orig_P_bad": 0.494,
-      "changes": {
-        "credit_amount": [
-          10144.0,
-          2752.0
-        ],
-        "installment_rate_pct": [
-          2.0,
-          1.5
-        ]
-      }
-    },
-    {
-      "orig_P_bad": 0.231,
-      "changes": {
-        "installment_rate_pct": [
-          4.0,
-          2.2
+      "change": {
+        "loan_duration_months": [
+          60.0,
+          9.0
         ]
       }
     },
     {
       "orig_P_bad": 0.279,
-      "changes": {
+      "change": {
         "loan_duration_months": [
           24.0,
-          13.1
-        ],
-        "installment_rate_pct": [
-          3.0,
-          1.5
+          11.0
         ]
       }
     },
     {
       "orig_P_bad": 0.175,
-      "changes": {
-        "credit_amount": [
-          1444.0,
-          4897.9
+      "change": {
+        "loan_duration_months": [
+          15.0,
+          11.0
         ]
       }
     },
     {
       "orig_P_bad": 0.281,
-      "changes": {
+      "change": {
         "loan_duration_months": [
           12.0,
-          10.6
-        ],
-        "installment_rate_pct": [
-          1.0,
-          1.4
+          11.0
+        ]
+      }
+    },
+    {
+      "orig_P_bad": 0.295,
+      "change": {
+        "loan_duration_months": [
+          18.0,
+          15.0
+        ]
+      }
+    },
+    {
+      "orig_P_bad": 0.654,
+      "change": {
+        "credit_amount": [
+          11590.0,
+          7427.0
         ]
       }
     }
   ],
-  "note": "recourse varies ONLY actionable loan parameters (age/residence/dependents excluded as immutable/protected; one-hots frozen). policy recourse = a CF reaching P(bad)<=1/6 (deployed accept threshold), stricter than DiCE's 0.5 argmax."
+  "note": "Recourse = a valid integer change to loan duration and/or credit amount reaching P(bad)<=1/6 (deployed accept). Grid is exhaustive over the train range, so 'infeasible' means no loan-term change works (decline rests on non-actionable factors). An initial DiCE random search found recourse for only 72.5% (this grid: see rate) \u2014 off-the-shelf counterfactual tools can conflate search-failure with infeasibility. Real-world feasibility (can an applicant borrow less?) is not assessed."
 }

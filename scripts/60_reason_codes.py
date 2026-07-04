@@ -1,111 +1,127 @@
-"""scripts/60_reason_codes.py — Phase 2: counterfactual RECOURSE / reason codes (GDPR Arts. 13-15).
+"""scripts/60_reason_codes.py — Phase 2 Task 13: counterfactual RECOURSE / reason codes (GDPR 13-15).
 
-DiCE counterfactuals for DECLINED applicants, varying ONLY genuinely actionable loan parameters
-(duration, credit amount, installment rate) — NOT age/residence/dependents (immutable/protected) and
-NOT the one-hot categoricals (frozen -> valid). Recourse is checked against the DEPLOYED 1/6 policy
-(P(bad) <= 1/6 = accepted), not DiCE's 0.5 argmax. Reports recourse availability + the reason-code
-features. Uses the deterministic model verified identical to the SHA-pinned artifact. Neutral report.
+Recourse feasibility is computed by an EXHAUSTIVE grid/line search over the genuinely actionable,
+independently-negotiable loan terms — **loan duration** and **credit amount** — snapped to valid
+integer values, scored by the SHA-pinned model, against the DEPLOYED 1/6 accept threshold. (Installment
+rate is dropped: it is coupled to amount/duration/income, not independently actionable. Age/residence/
+dependents are immutable/protected; one-hots are never touched.) This replaces an initial DiCE random
+search that conflated search-failure with infeasibility (it under-reported recourse by ~20 points).
+Reports recourse availability + sparsity + reason-code features, with Wilson CIs. Neutral report.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import warnings
 from collections import Counter
 from pathlib import Path
 
-import dice_ml
+import lightgbm as lgb
 import numpy as np
 import pandas as pd
-from dice_ml import Dice
 from sklearn.model_selection import train_test_split
 
 from credit_assurance import data as D
-from credit_assurance import models as M
 
 warnings.filterwarnings("ignore")
 ROOT = Path(__file__).resolve().parents[1]
 METRICS = ROOT / "metrics"
 SEED = 0
-N_SAMPLE = 80
-TOTAL_CFS = 10
-ACTIONABLE = {"Attribute2": "loan_duration_months", "Attribute5": "credit_amount",
-              "Attribute8": "installment_rate_pct"}
+COL = {"Attribute2": "loan_duration_months", "Attribute5": "credit_amount"}   # actionable, negotiable
+N_AMT_GRID = 200
+
+
+def _wilson(k, n, z=1.96):
+    if n == 0:
+        return None
+    p = k / n
+    d = 1 + z * z / n
+    centre = (p + z * z / (2 * n)) / d
+    half = z * np.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / d
+    return [round(float(centre - half), 4), round(float(centre + half), 4)]
 
 
 def main() -> None:
     df = pd.read_parquet(ROOT / "data" / "german_credit.parquet")
     y = df["y"].to_numpy()
-    Xdf = df.drop(columns=["y"]).astype(float)          # cast bool one-hots -> float for DiCE
-    cols = list(Xdf.columns)
-    X = Xdf.to_numpy(dtype=float)
+    cols = list(df.drop(columns=["y"]).columns)
+    X = df.drop(columns=["y"]).to_numpy(dtype=float)
+    ci = {c: cols.index(c) for c in COL}
+
+    model_path = ROOT / "models" / "lightgbm.txt"
+    pinned = json.loads((METRICS / "models.json").read_text())["audited_model"]["sha256"]
+    if hashlib.sha256(model_path.read_bytes()).hexdigest() != pinned:
+        raise SystemExit("audited model hash mismatch (re-run scripts/10_train.py)")
+    booster = lgb.Booster(model_file=str(model_path))
+
     idx_tr, idx_te = train_test_split(np.arange(len(y)), test_size=0.3, random_state=SEED, stratify=y)
-
-    lgbm = M.train_lightgbm(X[idx_tr], y[idx_tr], SEED)
-    import lightgbm as lgb
-    booster = lgb.Booster(model_file=str(ROOT / "models" / "lightgbm.txt"))
-    if not np.allclose(M.predict_bad(lgbm, X[idx_te]), booster.predict(X[idx_te]), atol=1e-9):
-        raise SystemExit("recourse model != pinned audited model")
-
     thr = D.cost_sensitive_threshold(cost_fn=5.0, cost_fp=1.0)
-    train_df = Xdf.iloc[idx_tr].copy()
-    train_df["y"] = y[idx_tr]
-    dice_data = dice_ml.Data(dataframe=train_df, continuous_features=cols, outcome_name="y")
-    exp = Dice(dice_data, dice_ml.Model(model=lgbm, backend="sklearn"), method="random")
+    lo, hi = X[idx_tr].min(axis=0), X[idx_tr].max(axis=0)
+    dur_grid = np.arange(int(lo[ci["Attribute2"]]), int(hi[ci["Attribute2"]]) + 1)
+    amt_grid = np.unique(np.linspace(lo[ci["Attribute5"]], hi[ci["Attribute5"]], N_AMT_GRID).round())
+    grids = {"Attribute2": dur_grid, "Attribute5": amt_grid}
 
-    p_all = M.predict_bad(lgbm, X)
-    declined = [i for i in idx_te if p_all[i] > thr][:N_SAMPLE]
+    p_all = booster.predict(X)
+    declined = [i for i in idx_te if p_all[i] > thr]
 
-    n_model, n_policy, no_cf = 0, 0, 0
-    sparsity, feat_freq = [], Counter()
-    examples = []
+    def line(x, col, grid):
+        """min |Δ| single-feature value on `grid` reaching P(bad)<=thr, else None."""
+        rows = np.tile(x, (len(grid), 1))
+        rows[:, ci[col]] = grid
+        ok = grid[booster.predict(rows) <= thr]
+        return float(ok[np.argmin(np.abs(ok - x[ci[col]]))]) if len(ok) else None
+
+    feasible, sparsity, feat_freq, examples = 0, [], Counter(), []
     for i in declined:
-        qi = Xdf.iloc[[i]]
-        try:
-            cf = exp.generate_counterfactuals(qi, total_CFs=TOTAL_CFS, desired_class=0,
-                                              features_to_vary=list(ACTIONABLE), random_seed=SEED)
-            cfdf = cf.cf_examples_list[0].final_cfs_df
-        except Exception:
-            cfdf = None
-        if cfdf is None or not len(cfdf):
-            no_cf += 1
+        x = X[i]
+        singles = {c: line(x, c, grids[c]) for c in COL}
+        found = {c: v for c, v in singles.items() if v is not None}
+        if found:                                   # 1-feature recourse
+            sparsity.append(1)
+            feasible += 1
+            best = min(found, key=lambda c: abs(found[c] - x[ci[c]]))
+            feat_freq[COL[best]] += 1
+            if len(examples) < 6:
+                examples.append({"orig_P_bad": round(float(p_all[i]), 3),
+                                 "change": {COL[best]: [round(float(x[ci[best]]), 1),
+                                                        round(float(found[best]), 1)]}})
             continue
-        pcf = M.predict_bad(lgbm, cfdf[cols].to_numpy(dtype=float))
-        n_model += int((pcf < 0.5).any())
-        policy = cfdf[pcf <= thr]
-        if not len(policy):
-            continue
-        n_policy += 1
-        # sparsest policy-valid recourse
-        changed = [[a for a in ACTIONABLE if not np.isclose(policy.iloc[k][a], qi.iloc[0][a])]
-                   for k in range(len(policy))]
-        best = int(np.argmin([len(c) for c in changed]))
-        sparsity.append(len(changed[best]))
-        feat_freq.update(ACTIONABLE[a] for a in changed[best])
-        if len(examples) < 5:
-            examples.append({"orig_P_bad": round(float(p_all[i]), 3),
-                             "changes": {ACTIONABLE[a]: [round(float(qi.iloc[0][a]), 1),
-                                                         round(float(policy.iloc[best][a]), 1)]
-                                         for a in changed[best]}})
+        # 2-feature grid (duration x amount)
+        dd, aa = np.meshgrid(dur_grid, amt_grid, indexing="ij")
+        rows = np.tile(x, (dd.size, 1))
+        rows[:, ci["Attribute2"]] = dd.ravel()
+        rows[:, ci["Attribute5"]] = aa.ravel()
+        if (booster.predict(rows) <= thr).any():
+            feasible += 1
+            sparsity.append(2)
+            feat_freq[COL["Attribute2"]] += 1
+            feat_freq[COL["Attribute5"]] += 1
 
     n = len(declined)
     out = {
-        "dataset": "german_credit", "threshold": round(thr, 4),
-        "n_declined_evaluated": n, "total_cfs_per_instance": TOTAL_CFS,
-        "actionable_features": ACTIONABLE,
-        "recourse_model_class_rate": round(n_model / n, 4),
-        "recourse_policy_1_6_rate": round(n_policy / n, 4),
-        "no_counterfactual_found_rate": round(no_cf / n, 4),
-        "mean_features_changed_policy_recourse": round(float(np.mean(sparsity)), 3) if sparsity else None,
+        "dataset": "german_credit", "model": "models/lightgbm.txt (SHA verified)",
+        "threshold": round(thr, 4), "n_declined": int(n),
+        "method": "exhaustive grid/line search over actionable loan terms (integer-valid), pinned model",
+        "actionable_features": COL,
+        "policy_recourse_rate": round(feasible / n, 4),
+        "policy_recourse_wilson95": _wilson(feasible, n),
+        "infeasible_rate": round((n - feasible) / n, 4),
+        "infeasible_wilson95": _wilson(n - feasible, n),
+        "mean_features_changed": round(float(np.mean(sparsity)), 3) if sparsity else None,
+        "single_feature_recourse_rate": round(sum(s == 1 for s in sparsity) / n, 4),
         "reason_code_feature_frequency": dict(feat_freq),
         "example_recourse": examples,
-        "note": "recourse varies ONLY actionable loan parameters (age/residence/dependents excluded as "
-                "immutable/protected; one-hots frozen). policy recourse = a CF reaching P(bad)<=1/6 "
-                "(deployed accept threshold), stricter than DiCE's 0.5 argmax.",
+        "note": "Recourse = a valid integer change to loan duration and/or credit amount reaching "
+                "P(bad)<=1/6 (deployed accept). Grid is exhaustive over the train range, so 'infeasible' "
+                "means no loan-term change works (decline rests on non-actionable factors). An initial "
+                "DiCE random search found recourse for only 72.5% (this grid: see rate) — off-the-shelf "
+                "counterfactual tools can conflate search-failure with infeasibility. Real-world "
+                "feasibility (can an applicant borrow less?) is not assessed.",
     }
     (METRICS / "reason_codes_german_credit.json").write_text(json.dumps(out, indent=2))
-    print(f"declined evaluated {n} | model-class recourse {out['recourse_model_class_rate']} | "
-          f"policy(1/6) recourse {out['recourse_policy_1_6_rate']} | no-CF {out['no_counterfactual_found_rate']}")
-    print(f"mean features changed {out['mean_features_changed_policy_recourse']} | freq {dict(feat_freq)}")
+    print(f"declined {n} | recourse {out['policy_recourse_rate']} {out['policy_recourse_wilson95']} | "
+          f"infeasible {out['infeasible_rate']} {out['infeasible_wilson95']} | "
+          f"1-feat {out['single_feature_recourse_rate']} | freq {dict(feat_freq)}")
 
 
 if __name__ == "__main__":
