@@ -1,0 +1,80 @@
+{
+  "dataset": "german_credit",
+  "threshold": 0.1667,
+  "n_declined_evaluated": 80,
+  "total_cfs_per_instance": 10,
+  "actionable_features": {
+    "Attribute2": "loan_duration_months",
+    "Attribute5": "credit_amount",
+    "Attribute8": "installment_rate_pct"
+  },
+  "recourse_model_class_rate": 1.0,
+  "recourse_policy_1_6_rate": 0.725,
+  "no_counterfactual_found_rate": 0.0,
+  "mean_features_changed_policy_recourse": 1.448,
+  "reason_code_feature_frequency": {
+    "credit_amount": 31,
+    "installment_rate_pct": 17,
+    "loan_duration_months": 36
+  },
+  "example_recourse": [
+    {
+      "orig_P_bad": 0.494,
+      "changes": {
+        "credit_amount": [
+          10144.0,
+          2752.0
+        ],
+        "installment_rate_pct": [
+          2.0,
+          1.5
+        ]
+      }
+    },
+    {
+      "orig_P_bad": 0.231,
+      "changes": {
+        "installment_rate_pct": [
+          4.0,
+          2.2
+        ]
+      }
+    },
+    {
+      "orig_P_bad": 0.279,
+      "changes": {
+        "loan_duration_months": [
+          24.0,
+          13.1
+        ],
+        "installment_rate_pct": [
+          3.0,
+          1.5
+        ]
+      }
+    },
+    {
+      "orig_P_bad": 0.175,
+      "changes": {
+        "credit_amount": [
+          1444.0,
+          4897.9
+        ]
+      }
+    },
+    {
+      "orig_P_bad": 0.281,
+      "changes": {
+        "loan_duration_months": [
+          12.0,
+          10.6
+        ],
+        "installment_rate_pct": [
+          1.0,
+          1.4
+        ]
+      }
+    }
+  ],
+  "note": "recourse varies ONLY actionable loan parameters (age/residence/dependents excluded as immutable/protected; one-hots frozen). policy recourse = a CF reaching P(bad)<=1/6 (deployed accept threshold), stricter than DiCE's 0.5 argmax."
+}

@@ -1,0 +1,28 @@
+{
+  "dataset": "german_credit",
+  "model": "models/lightgbm.txt (SHA verified)",
+  "threshold": 0.1667,
+  "n_test": 300,
+  "n_draws": 10,
+  "perturbed": "numeric features only, Gaussian eps*std, clipped to train range, rounded to int",
+  "share_near_threshold_|p-thr|<0.05": 0.1333,
+  "by_eps": {
+    "0.05": {
+      "decision_flip_rate": 0.0373,
+      "mean_abs_delta_p": 0.0234
+    },
+    "0.1": {
+      "decision_flip_rate": 0.067,
+      "mean_abs_delta_p": 0.0392
+    },
+    "0.2": {
+      "decision_flip_rate": 0.1087,
+      "mean_abs_delta_p": 0.0689
+    },
+    "0.5": {
+      "decision_flip_rate": 0.1683,
+      "mean_abs_delta_p": 0.1114
+    }
+  },
+  "note": "eps is the noise sd as a fraction of each numeric feature's train std. decision_flip = fraction of (instance,draw) pairs whose 1/6 accept/decline flips vs unperturbed."
+}
