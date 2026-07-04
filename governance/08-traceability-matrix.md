@@ -10,7 +10,7 @@ SHA pinned in `00-scenario.md §5`. **Self-assessment** (see `13 §E`).
 | **MODEL-1** | Audited LightGBM: test **AUROC 0.769**, Brier 0.178, cost-threshold 1/6, **deterministic** (SHA `1456b07f…`); EBM challenger 0.794 | `00 §5` | EV-007/008, `models.json` | `python scripts/10_train.py` | Art. 10/11/15 |
 | **DATA-1** | Data manifest + DQ profile (GMSC sentinels 96/98, age 0; foreign-worker skew 963/37) | `data-dictionary` | EV-001/002/003 | `python scripts/05_manifest_and_dq.py` | Art. 10 |
 | **PREREG-1** | Method + hypotheses fixed **before results**; signed tag `prereg-v1` + OpenTimestamps | `HYPOTHESES.md`, `09` proof | tag `prereg-v1`, `HYPOTHESES.md.ots` | `git verify-tag prereg-v1` | integrity |
-| **FAITH-1** | Movement metric **validated** (clean control at floor); **TreeSHAP +0.106 [.094,.118]**, **LIME +0.076 [.066,.086]** both faithful; TreeSHAP > LIME | `10 §Results` | EV-009 | `python scripts/30_faithfulness.py` | Art. 86 / GDPR 13-15 |
+| **FAITH-1** | Movement metric **validated** (clean control at floor); **TreeSHAP +0.106 [.094,.118]**, **LIME +0.076 [.066,.086]** both faithful; TreeSHAP > LIME *under this metric* (ROAR: indistinguishable) | `10 §Results` | EV-009 | `python scripts/30_faithfulness.py` | Art. 86 / GDPR 13-15 |
 | **FAITH-2** | Signed on-manifold test = **underpowered null** (H1 refuted; sign cancellation) | `10` | EV-009 | ↑ | Art. 86 |
 | **FAITH-3** | Core movement result **replicates on GMSC**; signed null is dataset-specific | `10 §Generalization` | EV-011 | `python scripts/06_gmsc_prep.py && python scripts/30_faithfulness.py --dataset gmsc` | — |
 | **FAITH-4** | **ROAR** (retrain-based): TreeSHAP 0.108 > LIME 0.104 > random 0.042 | `10 §ROAR` | EV-015 | `python scripts/70_roar.py` | Art. 86 |
@@ -20,6 +20,9 @@ SHA pinned in `00-scenario.md §5`. **Self-assessment** (see `13 §E`).
 | **REC-1** | **94.0% [89.1, 96.8]** loan-term recourse; **~6% infeasible** core; reason codes ≈ even (duration/amount) | `12 §Recourse` | EV-013 | `python scripts/60_reason_codes.py` | GDPR 13-15 / Art. 86 |
 
 ## Notes
+- **Tag verification:** `git verify-tag prereg-v1` requires the verifier to configure an SSH
+  `gpg.ssh.allowedSignersFile` with the author's public key; the OTS Bitcoin confirmation is pending
+  (`09`).
 - **Hashing:** data artifacts carry SHA256 prefixes in `09`; living governance docs are content-
   addressed at the v1 release freeze; the pre-registration is OpenTimestamps-stamped (Bitcoin
   verification pending, `09` note).

@@ -1,99 +1,63 @@
 {
   "dataset": "german_credit",
-  "model": "models/lightgbm.txt (SHA verified; retrained per removal)",
-  "method": "ROAR: remove top-k logical features by each ranking, RETRAIN, measure test AUROC",
-  "base_auroc": 0.769,
+  "model": "models/lightgbm.txt (seed-0 verified == pinned)",
+  "method": "ROAR over N splits: remove top-k logical features by each ranking, RETRAIN, test AUROC",
+  "n_splits": 8,
   "top_k": 10,
-  "ks": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8,
-    9,
-    10
-  ],
-  "auroc_vs_k": {
-    "treeshap": [
-      0.7049,
-      0.6902,
-      0.6922,
-      0.6736,
-      0.688,
-      0.6567,
-      0.6471,
-      0.6398,
-      0.6125,
-      0.6044
-    ],
-    "lime": [
-      0.7049,
-      0.7163,
-      0.6988,
-      0.6774,
-      0.6593,
-      0.6425,
-      0.6471,
-      0.6332,
-      0.624,
-      0.6481
-    ],
-    "model_gain": [
-      0.7941,
-      0.7095,
-      0.6922,
-      0.6767,
-      0.7004,
-      0.7029,
-      0.6539,
-      0.6398,
-      0.6122,
-      0.5763
-    ],
-    "random": [
-      0.7516,
-      0.7586,
-      0.7491,
-      0.7355,
-      0.7241,
-      0.7231,
-      0.7157,
-      0.7089,
-      0.7041,
-      0.7002
-    ]
+  "mean_auroc_drop_over_splits": {
+    "treeshap": {
+      "mean_auroc_drop": 0.1082,
+      "sd": 0.0165,
+      "beats_random_every_split": true
+    },
+    "lime": {
+      "mean_auroc_drop": 0.111,
+      "sd": 0.0164,
+      "beats_random_every_split": true
+    },
+    "model_gain": {
+      "mean_auroc_drop": 0.0978,
+      "sd": 0.0148,
+      "beats_random_every_split": true
+    },
+    "random": {
+      "mean_auroc_drop": 0.036,
+      "sd": 0.011,
+      "beats_random_every_split": false
+    }
   },
-  "mean_auroc_drop_vs_k": {
-    "treeshap": 0.1081,
-    "lime": 0.1038,
-    "model_gain": 0.0932,
-    "random": 0.0419
+  "treeshap_vs_lime": {
+    "mean_diff_ts_minus_lime": -0.0028,
+    "sd": 0.0142,
+    "treeshap_wins": 5,
+    "of_splits": 8,
+    "distinguishable": false
   },
-  "ranking_top5": {
-    "treeshap": [
-      "Attribute1",
-      "Attribute2",
-      "Attribute5",
-      "Attribute3",
-      "Attribute4"
-    ],
-    "lime": [
-      "Attribute1",
-      "Attribute4",
-      "Attribute3",
-      "Attribute2",
-      "Attribute6"
-    ],
-    "gain": [
-      "Attribute5",
-      "Attribute1",
-      "Attribute2",
-      "Attribute13",
-      "Attribute4"
-    ]
+  "seed0": {
+    "base_auroc": 0.769,
+    "top5": {
+      "treeshap": [
+        "Attribute1",
+        "Attribute2",
+        "Attribute5",
+        "Attribute3",
+        "Attribute4"
+      ],
+      "lime": [
+        "Attribute1",
+        "Attribute4",
+        "Attribute3",
+        "Attribute6",
+        "Attribute2"
+      ],
+      "model_gain": [
+        "Attribute5",
+        "Attribute1",
+        "Attribute2",
+        "Attribute13",
+        "Attribute4"
+      ]
+    }
   },
-  "note": "Larger mean_auroc_drop = more faithful (removing genuinely important features hurts more). A faithful explainer should exceed 'random'. Retraining avoids the off-manifold artefact of perturbation-only tests. Global importances = summed |attribution| (ranking-equivalent to the mean) over train (LIME sampled n=100); random averaged over 5 orderings."
+  "note": "Larger mean_auroc_drop = more faithful. Both explainers beat the random floor on every split (robust). ROAR does NOT distinguish TreeSHAP from LIME (see treeshap_vs_lime) \u2014 the TreeSHAP>LIME ordering seen under the movement metric is metric-specific. Global importances = summed |attribution| over train (LIME sampled n=80)."
 }

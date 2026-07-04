@@ -25,7 +25,7 @@ genuinely informative explainer.
 | # | Pre-registered claim | Result | |
 |---|---|---|---|
 | **H1** | TreeSHAP faithful (signed, conditional) | **Refuted** — diff-vs-floor 0.006, CI [−0.012, 0.025] | ✗ |
-| **H2** | LIME less faithful than TreeSHAP | **Supported** (mean ordering under both metrics; not a paired-CI materiality test) | ~ |
+| **H2** | LIME less faithful than TreeSHAP | **Metric-dependent** — TreeSHAP > LIME under the *movement* metric (both datasets); ROAR (8 splits) & baseline show them **indistinguishable** | ~ |
 | **H3** | Negative control lands at the floor | **Holds within resolution — FRAGILE** (see below) | ~ |
 | **H4** | OOD conditional < marginal < baseline | **Refuted** — baseline lowest (5.04) < conditional (5.45) < marginal (5.70) | ✗ |
 
@@ -110,23 +110,24 @@ unreliable — **replicates**. The pieces that do NOT replicate (the signed null
 confound) are precisely the fragile ones, underscoring that faithfulness verdicts are metric- **and**
 dataset-sensitive.
 
-## ROAR anchor (retrain-based cross-check)
+## ROAR anchor (retrain-based cross-check, 8 splits)
 An independent **RemOve-And-Retrain** check (Hooker et al. 2019): remove the top-k logical features by
-each explainer's global importance, **retrain**, and measure test AUROC — which avoids the off-manifold
-artefact of perturbation-only tests. Mean AUROC drop over k=1..10 (**larger = more faithful**; base
-AUROC 0.769; `metrics/roar_german_credit.json`, EV-015):
+each explainer's global importance, **retrain**, and measure test AUROC — over **8 stratified splits**
+(mean ± sd), which avoids the off-manifold artefact of perturbation-only tests. Mean AUROC drop
+(**larger = more faithful**; `metrics/roar_german_credit.json`, EV-015):
 
-| ranking | mean AUROC drop |
+| ranking | mean AUROC drop (8 splits) |
 |---|---|
-| TreeSHAP | **0.108** |
-| LIME | **0.104** |
-| model gain | 0.093 |
-| random | 0.042 |
+| TreeSHAP | 0.108 ± 0.017 |
+| LIME | 0.111 ± 0.016 |
+| model gain | 0.098 ± 0.015 |
+| random | 0.036 ± 0.011 |
 
-Both explainers degrade accuracy **~2.5× more than random** → they identify genuinely predictive
-features, and **TreeSHAP ≥ LIME** (consistent with H2). This **corroborates the movement-metric
-finding via an independent retrain-based methodology** — strengthening confidence that the "both
-faithful, TreeSHAP > LIME" result is not an artefact of any single test.
+Both explainers degrade accuracy **~3× more than random on every one of the 8 splits** → they
+identify genuinely predictive features (**faithful, robustly**). **ROAR does NOT distinguish TreeSHAP
+from LIME** (difference −0.003, TreeSHAP wins 5/8, not significant) — so the **TreeSHAP > LIME ordering
+is specific to the movement metric**, not universal. This **corroborates the "both faithful" result
+via an independent retrain-based methodology**; the explainer *ordering* is itself metric-dependent.
 
 ## Governance implication (EU AI Act Art. 86 / GDPR Arts. 13–15)
 "Meaningful information about the logic involved" presupposes the explanation is *faithful*. This

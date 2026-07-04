@@ -53,7 +53,7 @@ design-level · **Gap** = not produced · **Scope** = deliberately out of scope 
 | GDPR 6/9 | Lawful basis / special-category data | `data-dictionary.md`, `11` | Scope/Partial — public research data; **sex/age are NOT GDPR Art. 9 special categories**, and no Art. 9 data is processed (sex is inferred as a proxy from personal-status for the fairness test only) |
 | GDPR 13–15 | Meaningful information / recourse | `12`, `10` | Partial |
 | GDPR 22(3) | Automated-decision safeguards | `00-scenario.md §2` (human review) | Partial (Art. 22 trigger analysis deferred) |
-| GDPR 35 | DPIA | — | **Gap** (`06-gdpr-dpia.md` not written) |
+| GDPR 35 | DPIA | `06-gdpr-dpia.md` (template) | Partial — template produced; a **real** DPIA needs the deployer (Art. 35(2) DPO, 35(9) data-subject views) |
 
 ## C. Consolidated findings (the four analyses — reviewed)
 1. **Faithfulness (`10`, EV-009/011):** explanation faithfulness is **metric-dependent**; under a
@@ -77,15 +77,15 @@ Each quantitative claim above maps to an `EV-###` row in `09-evidence-index.md` 
 script. **Provenance maturity is partial:** data artifacts carry SHA256 prefixes; living governance
 docs are content-addressed **at the v1 release freeze** (not yet hashed); the pre-registration
 (`HYPOTHESES.md`, tag `prereg-v1`) is committed and **OpenTimestamps-stamped, with Bitcoin
-verification pending** (`09` note; Task 26). A standalone `08-traceability-matrix.md` is **not yet
-produced**; this section + the evidence index are the interim spine.
+verification pending** (`09` note; Task 26). Every claim is mapped to its evidence + one-command
+reproduction in `08-traceability-matrix.md`; metrics JSON hashes are recorded in `09`.
 
 ## E. Residual gaps & open risks (honest register)
 - **Not produced (obligations):** QMS (Art. 17), logging/record-keeping (Art. 12), cybersecurity
   assessment (Art. 15), post-market monitoring (Art. 72) & incident reporting (Art. 73), instructions-
   for-use (Art. 13), CE marking (Art. 48), EU-database registration (Art. 49), human-oversight
-  *effectiveness* testing (Art. 14), GDPR DPIA (Art. 35 / `06`), FRIA (Art. 27 — deployer), standalone
-  traceability matrix (`08`).
+  *effectiveness* testing (Art. 14), a **real** DPIA (Art. 35 — a template `06` exists; the Art. 35(2)
+  DPO and 35(9) data-subject steps are pending), FRIA (Art. 27 — deployer).
 - **Method limits:** single stratified split, small n (≈300 test; subgroup claims low-powered);
   robustness noise is synthetic (not calibrated to real error logs); recourse is model-side; one model,
   mainline dataset + one generalization check.

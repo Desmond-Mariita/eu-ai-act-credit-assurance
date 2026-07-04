@@ -8,14 +8,17 @@ this demonstrates the Art. 35 assessment methodology, it is not a DPIA for real 
 ## 1. Is a DPIA required? (Art. 35(1), 35(3)(a))
 Yes. The processing is a **systematic and extensive evaluation of personal aspects based on automated
 processing, including profiling**, on which **decisions producing legal or similarly significant
-effects** (credit refusal) are based — the Art. 35(3)(a) trigger. It also aligns with EDPB WP248
-criteria (evaluation/scoring; automated decision with significant effect; vulnerable data subjects).
+effects** (credit refusal) are based — the Art. 35(3)(a) trigger. It also meets EDPB WP248 criteria
+(evaluation/scoring; automated decision with significant effect) — two suffice; no vulnerability of the
+data subjects is asserted.
 
 ## 2. Systematic description of the processing (illustrative)
 - **Data subjects / categories:** loan applicants; financial/behavioural attributes (account status,
   credit history, duration, amount, employment, housing), plus **personal-status/sex** and **age**.
-- **Purpose & legal basis (Art. 6):** assess creditworthiness at origination — typically Art. 6(1)(b)
-  (steps prior to contract) and/or (f) legitimate interest; **to be fixed by the deployer**.
+- **Purpose & legal basis (Art. 6):** assess creditworthiness at origination — candidates: Art.
+  6(1)(c) (legal obligation — responsible-lending/creditworthiness checks, often the strongest),
+  6(1)(b) (steps prior to contract — EDPB Guidelines 2/2019 read this narrowly for scoring), and/or
+  (f) legitimate interest; **to be fixed by the deployer**.
 - **Flow (`00 §2`):** applicant → model `P(bad)` → cost-sensitive threshold → **human loan-officer
   review** → decision → logged → appeal path.
 - **Special-category data (Art. 9):** **none processed as such.** **Sex is not an Art. 9 category**,
@@ -32,16 +35,19 @@ contest — supported by the recourse/reason-codes (`12`) and the logged appeal 
 ## 4. Necessity & proportionality (Art. 5, 6)
 - **Minimisation (5(1)(c)):** the model uses **sex (via personal-status) and age** — the deployer
   should test whether excluding them materially harms accuracy; if not, their use is disproportionate.
-  The recourse analysis (`12`) shows creditworthiness features carry the decisive signal for ~94%.
-- **Accuracy (5(1)(d)):** AUROC 0.769, calibrated (Brier 0.178); robustness shows a **13%
-  near-threshold** population whose decisions are noise-sensitive (`12`).
+  **A feature-ablation study (not yet performed) is required to establish this** — the recourse
+  analysis (`12`) is about loan-term actionability and does **not** by itself prove minimisation.
+- **Data accuracy (5(1)(d))** concerns the accuracy of the *personal data itself* (not model
+  performance): the deployer must keep inputs accurate/up-to-date. Separately, model **predictive**
+  accuracy (AUROC 0.769, Brier 0.178) and the **13% near-threshold** instability (`12`) bear on AI Act
+  **Art. 15**, not GDPR 5(1)(d).
 - **Purpose limitation / storage:** illustrative; to be set by the deployer.
 
 ## 5. Risks to the rights and freedoms of data subjects
 | Risk | Source finding | Severity × likelihood | Note |
 |---|---|---|---|
 | **Discrimination / bias** (sex, age, foreign-worker) | `11` | Medium × Medium | Disparities directionally disadvantage worse-off groups but **none significant at n=300**; model **trains on a sex proxy + age**. |
-| **Proxy special-category inference** | `11`, §2 | Medium × Medium | Sex inferred from marital status (personal-status); indirect discrimination risk. |
+| **Proxy protected-attribute inference (indirect discrimination)** | `11`, §2 | Medium × Medium | Sex inferred from marital status (personal-status) — a **non-Art.9** protected-attribute proxy → indirect-discrimination risk. |
 | **Opacity / no meaningful explanation** | `10`, `12` | Medium × Low–Med | Explanations are **metric-dependently faithful**; **~6% of declines have no actionable recourse** and need a genuine reason. |
 | **Inaccuracy / instability at the margin** | `12` | Medium × Medium | 13% near-threshold; ~4–7% decision flips under small input noise. |
 | **Loss of autonomy / automation over-reliance** | `00 §2` | High × Low | Mitigated only if human oversight is *effective* (untested). |
@@ -60,7 +66,9 @@ with the supervisory authority** may be required. **No opinion** is expressed th
 acceptable — that is the controller's decision.
 
 ## 8. Limitations
-Template on public research data (no real data subjects, no real controller); legal bases, retention,
-and recipients are illustrative; human-oversight effectiveness and the Art. 22 "meaningfulness"
-question are **not empirically tested**; single dataset/model; self-assessment, not a lawyer-reviewed
-DPIA.
+Template on public research data (no real data subjects, no real controller). **Mandatory Art. 35
+procedural elements NOT performed:** Art. **35(2)** DPO advice, Art. **35(9)** data-subject views, and
+the controller identity / retention / recipients / **Chapter V international-transfer** assessment (all
+deployer-specific). Legal bases and retention are illustrative; human-oversight effectiveness and the
+Art. 22 "meaningfulness" question are **not empirically tested**; single dataset/model; self-assessment,
+not a lawyer-reviewed DPIA.

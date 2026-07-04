@@ -19,8 +19,7 @@ The AI system under audit is a **binary credit-scoring model** used at loan orig
   alongside is a **challenger/validation comparator only** — not the deployed system.
 
 **Intended purpose:** assist a human loan officer's origination decision (decision support), not
-fully-automated lending (a full GDPR Art. 22 trigger analysis / DPIA — `06-gdpr-dpia.md` — is
-**deferred / not produced**; see dossier `13` §B & §E).
+fully-automated lending (see the Art. 22 trigger analysis in `06-gdpr-dpia.md §3`).
 
 ## 2. Operating scenario (fictional EU bank)
 `applicant → model P(bad) → cost-sensitive threshold → human reviewer → decision → appeal path`
