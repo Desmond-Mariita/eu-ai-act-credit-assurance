@@ -40,7 +40,7 @@ design-level · **Gap** = not produced · **Scope** = deliberately out of scope 
 | 13 | Transparency & instructions for use | `12` (reason codes), model card | Partial (no IFU document) |
 | 14 | Human oversight | `00-scenario.md §2` (loan-officer review) | Partial (design; effectiveness untested) |
 | 15 | Accuracy, robustness, **cybersecurity** | `metrics/models.json`, `12-robustness-and-recourse.md` | Partial (robustness synthetic; **no security assessment**) |
-| 16 | Provider obligations (umbrella) | partially via `9`–`15`, `17` below | Partial |
+| 16 | Provider obligations (umbrella; incl. Art. 18 doc-retention, 20 corrective action, 21 cooperation — not itemised) | via `9`–`15`, `17` | Partial |
 | 17 | Quality management system | — | **Gap** |
 | 43(2) / Annex VI | Conformity-assessment route = internal control (no notified body) | this dossier (readiness) | Partial |
 | 48 | CE marking | — | **Gap** (post-conformity step) |
@@ -48,9 +48,9 @@ design-level · **Gap** = not produced · **Scope** = deliberately out of scope 
 | 26 | Deployer obligations | `00-scenario.md §3` (roles) | Scope (deployer) |
 | 27 | Fundamental-rights impact assessment (FRIA) — **a deployer duty** | `11-fairness-findings.md` informs it | Scope (deployer; not produced) |
 | 72 / 73 | Post-market monitoring / serious-incident reporting | — | **Gap** |
-| 86 | Right to explanation of individual decision-making | `12` (recourse), `10` (faithfulness) | Partial |
+| 86 | Right to explanation of individual decision-making (**deployer-facing duty**; the *capability* is provider-side) | `12` (recourse), `10` (faithfulness) | Partial |
 | GDPR 5 | Data-processing principles | `00-scenario.md §4` | Partial (referenced) |
-| GDPR 6/9 | Lawful basis / special-category data | `data-dictionary.md`, `11` | Scope/Partial — public research data; **no Art. 9 data processed directly** (sex is a proxy from personal-status) |
+| GDPR 6/9 | Lawful basis / special-category data | `data-dictionary.md`, `11` | Scope/Partial — public research data; **sex/age are NOT GDPR Art. 9 special categories**, and no Art. 9 data is processed (sex is inferred as a proxy from personal-status for the fairness test only) |
 | GDPR 13–15 | Meaningful information / recourse | `12`, `10` | Partial |
 | GDPR 22(3) | Automated-decision safeguards | `00-scenario.md §2` (human review) | Partial (Art. 22 trigger analysis deferred) |
 | GDPR 35 | DPIA | — | **Gap** (`06-gdpr-dpia.md` not written) |
