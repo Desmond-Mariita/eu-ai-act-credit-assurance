@@ -3,7 +3,6 @@
 For GMSC: handle missing CSV gracefully (Kaggle login required; user must place the file).
 """
 from pathlib import Path
-import pandas as pd
 from credit_assurance.data import load_german_credit, load_gmsc
 
 DATA = Path(__file__).resolve().parents[1] / "data"
