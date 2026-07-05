@@ -24,6 +24,7 @@ so a reviewer can re-perform it (traceability spine: `08-traceability-matrix.md`
 | EV-015 | `metrics/roar_german_credit.json` (ROAR anchor) | `4c3a8b49…` | Task 11 supplement | `10-faithfulness-findings.md §ROAR` |
 | EV-016 | `governance/06-gdpr-dpia.md` (template DPIA) | *at v1 freeze* | Task 13 supplement | dossier §B (GDPR 35); audit opinion |
 | EV-017 | `governance/08-traceability-matrix.md` | *at v1 freeze* | Task 16 | traceability spine; audit opinion |
+| EV-018 | `governance/15-external-review.md` (review template; awaiting reviewer) | *on completion* | Task 24 | independence sign-off (open) |
 
 *Data artifacts are hashed now (prefixes above; full values recomputable via `sha256sum`); living
 governance documents are content-addressed at the v1 release freeze (Task 26).*
