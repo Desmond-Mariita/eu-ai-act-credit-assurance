@@ -71,26 +71,24 @@ def make_shap_explainer(model):
     return shap.TreeExplainer(model)
 
 
-def make_lime_explainer(X_train, seed=0):
+def make_lime_explainer(X_train, seed=0, categorical_features=None):
     from lime.lime_tabular import LimeTabularExplainer
     # discretize_continuous=True (LIME's default): weights act as instance-specific CONTRIBUTIONS
     # (active bin == 1), not raw scaled-feature sensitivities — the correct attribution to rank.
-    # KNOWN LIMITATION (documented in finding 10 §Deviations): `categorical_features` is NOT passed, so
-    # LIME treats the one-hot dummies as continuous in its neighbourhood sampling (it evaluates the model
-    # on off-manifold fractional-dummy states). This is the *naive off-the-shelf LIME baseline* as
-    # practitioners commonly use it — part of what the audit surfaces; our faithfulness EVALUATION still
-    # aggregates LIME's ranking to logical groups via a one-hot-respecting perturber. Passing
-    # `categorical_features` (from feature_groups) is the correct-usage alternative (future work).
+    # categorical_features = the one-hot dummy column indices, so LIME samples them as CATEGORICAL
+    # (0/1) rather than continuous — avoiding the off-manifold fractional-dummy states an off-the-shelf
+    # LimeTabularExplainer would otherwise generate in its neighbourhood.
     return LimeTabularExplainer(np.asarray(X_train, dtype=float), mode="classification",
+                                categorical_features=categorical_features,
                                 discretize_continuous=True, random_state=seed)
 
 
 def lime_topk_stability(X_train, predict_proba, x, feature_groups, logical_names,
-                        num_features, seeds, topk=5):
+                        num_features, seeds, topk=5, categorical_features=None):
     """Mean pairwise top-k Jaccard of LIME rankings across seeds (1.0 = perfectly stable)."""
     tops = []
     for s in seeds:
-        le = make_lime_explainer(X_train, seed=s)
+        le = make_lime_explainer(X_train, seed=s, categorical_features=categorical_features)
         r, _ = lime_ranking(le, predict_proba, x, feature_groups, logical_names, num_features)
         tops.append(set(r[:topk]))
     js = [len(a & b) / len(a | b) for a, b in itertools.combinations(tops, 2)]

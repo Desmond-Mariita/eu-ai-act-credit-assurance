@@ -11,8 +11,8 @@
       "beats_random_every_split": true
     },
     "lime": {
-      "mean_auroc_drop": 0.111,
-      "sd": 0.0164,
+      "mean_auroc_drop": 0.1128,
+      "sd": 0.0167,
       "beats_random_every_split": true
     },
     "model_gain": {
@@ -27,9 +27,9 @@
     }
   },
   "treeshap_vs_lime": {
-    "mean_diff_ts_minus_lime": -0.0028,
-    "sd": 0.0142,
-    "treeshap_wins": 5,
+    "mean_diff_ts_minus_lime": -0.0045,
+    "sd": 0.0179,
+    "treeshap_wins": 4,
     "of_splits": 8,
     "distinguishable": false
   },
@@ -46,8 +46,8 @@
       "lime": [
         "Attribute1",
         "Attribute4",
-        "Attribute3",
         "Attribute6",
+        "Attribute3",
         "Attribute2"
       ],
       "model_gain": [

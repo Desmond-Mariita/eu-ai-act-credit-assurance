@@ -48,6 +48,7 @@ def main() -> None:
     df = pd.read_parquet(ROOT / "data" / "german_credit.parquet")
     y = df["y"].to_numpy()
     cols = list(df.drop(columns=["y"]).columns)
+    cat_idx = [i for i, c in enumerate(cols) if "_" in c]   # one-hot dummy cols -> LIME categorical
     X = df.drop(columns=["y"]).to_numpy(dtype=float)
     fg = D.feature_groups_from_columns(cols)
     logical = list(fg.keys())
@@ -66,7 +67,7 @@ def main() -> None:
             raise SystemExit("ROAR seed-0 model != pinned audited model")
 
         shap_ex = E.make_shap_explainer(full)
-        lime_ex = E.make_lime_explainer(X[tr], seed=seed)
+        lime_ex = E.make_lime_explainer(X[tr], seed=seed, categorical_features=cat_idx)
         ts_imp = {g: 0.0 for g in logical}
         for i in tr:
             _, v = E.treeshap_ranking(shap_ex, X[i], fg, logical)

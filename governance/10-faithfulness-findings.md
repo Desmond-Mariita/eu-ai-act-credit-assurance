@@ -41,15 +41,15 @@ robust negative control and sits at the floor under every metric.
 ## Results — signed AOPC comprehensiveness (mean; "faithful" = diff-vs-floor CI excludes 0 AND ≥ 2·bootstrap SE)
 | Regime | TreeSHAP | LIME | clean control | label-shuffled | floor | faithful |
 |---|---|---|---|---|---|---|
-| conditional (approx. kNN-donor) | +0.010 | −0.011 | +0.001 | +0.017 | +0.004 | none |
-| marginal | −0.016 | −0.040 | −0.006 | +0.004 | −0.002 | none |
-| baseline (off-manifold leverage) | +0.105 | +0.106 | +0.032 | +0.044 | +0.031 | TreeSHAP, LIME |
+| conditional (approx. kNN-donor) | +0.010 | −0.017 | +0.001 | +0.017 | +0.004 | none |
+| marginal | −0.016 | −0.044 | −0.006 | +0.004 | −0.002 | none |
+| baseline (off-manifold leverage) | +0.105 | +0.100 | +0.032 | +0.044 | +0.031 | TreeSHAP, LIME |
 
 ## Results — absolute (movement) metric, conditional regime (diff vs the absolute floor)
 | Ranking | diff-vs-abs-floor | 95% CI | faithful? | role |
 |---|---|---|---|---|
 | TreeSHAP | **+0.106** | [0.094, 0.118] | **True** | explainer |
-| LIME | **+0.076** | [0.066, 0.086] | **True** | explainer |
+| LIME | **+0.082** | [0.072, 0.092] | **True** | explainer |
 | **clean shuffled-SHAP** | +0.003 | [−0.005, 0.012] | **False** | **validates the metric (random → at floor)** |
 | label-shuffled model | +0.044 | [0.034, 0.053] | True | confounded control (mild real signal, now detectable) |
 
@@ -58,17 +58,17 @@ robust negative control and sits at the floor under every metric.
 faithfulness signal, not an artifact of the metric. The absolute metric is therefore *validated*, not
 merely asserted.
 
-- **LIME multi-seed (0,1,2) top-5 stability = 0.79** (LIME default `discretize=True`): moderately, not
-  perfectly, stable.
+- **LIME multi-seed (0,1,2) top-5 stability = 0.82** (LIME `discretize=True`, categorical-aware):
+  moderately, not perfectly, stable.
 
 ## Deviations from pre-registration (full list in the metrics JSON)
-1. **LIME fix + residual limitation.** The first run used `discretize_continuous=False`, under which
-   LIME weights are raw scaled sensitivities, not instance contributions. Corrected to `discretize=True`
-   and re-run (also removed a spurious stability = 1.0). **Known residual limitation:**
-   `categorical_features` is *not* passed to `LimeTabularExplainer`, so one-hot dummies are sampled as
-   continuous (off-manifold fractional-dummy states) in LIME's neighbourhood — the **naive off-the-shelf
-   LIME baseline** as practitioners commonly use it; passing `categorical_features` is the correct-usage
-   alternative (future work). Our evaluation still aggregates LIME's ranking to logical groups.
+1. **LIME fixes.** The first run used `discretize_continuous=False`, under which LIME weights are raw
+   scaled sensitivities, not instance contributions — corrected to `discretize=True` (also removed a
+   spurious stability = 1.0). A second fix passes **`categorical_features`** (the one-hot dummy columns)
+   so LIME samples them as categorical (0/1) rather than continuous, avoiding the off-manifold
+   fractional-dummy states an off-the-shelf `LimeTabularExplainer` would otherwise generate. The
+   categorical-aware re-run **left the finding intact and slightly strengthened LIME** (abs +0.082 vs
+   the earlier +0.076; GMSC, being all-numeric, is unaffected). Evaluation aggregates to logical groups.
 2. **Signed → absolute.** The pre-registered metric is signed; a direction-agnostic absolute variant
    (+ its own floor, + both controls) was added post-hoc after review showed sign cancellation drives
    the signed conditional null.
@@ -97,8 +97,8 @@ benchmark n=200, K=5, n_perms=30. Full numbers: `metrics/faithfulness_gmsc.json`
 
 **Replicates (the core finding holds on a different dataset):**
 - **Absolute metric validated** — clean control at floor (−0.004, CI [−0.008, −0.001], not faithful).
-- **Both explainers faithful under movement** — TreeSHAP +0.019 [0.014, 0.026], LIME +0.014 [0.010,
-  0.018]; **TreeSHAP > LIME** (H2).
+- **Both explainers faithful under movement** — TreeSHAP +0.019 [0.014, 0.025], LIME +0.013 [0.010,
+  0.017]; **TreeSHAP > LIME** (H2).
 - **Baseline** — both faithful, clean control at floor. Clean control sits at floor under every
   metric/regime → the instrument is robust across datasets.
 
@@ -108,7 +108,7 @@ benchmark n=200, K=5, n_perms=30. Full numbers: `metrics/faithfulness_gmsc.json`
   suffer less sign-cancellation than German Credit's one-hot groups.
 - **H3 refuted on GMSC** — the label-shuffled control beats the *signed* floor (holds-fragile on German
   Credit). The confounded control's behaviour is dataset-specific; the clean control is the robust one.
-- **LIME stability higher** (0.91 vs 0.79; fewer features).
+- **LIME stability higher** (0.91 vs 0.82; fewer features).
 
 **Takeaway:** the headline — faithfulness is metric-dependent, both explainers are faithful under a
 *validated* movement metric (TreeSHAP > LIME), and a single signed on-/off-manifold score is
@@ -125,13 +125,13 @@ each explainer's global importance, **retrain**, and measure test AUROC — over
 | ranking | mean AUROC drop (8 splits) |
 |---|---|
 | TreeSHAP | 0.108 ± 0.017 |
-| LIME | 0.111 ± 0.016 |
+| LIME | 0.113 ± 0.017 |
 | model gain | 0.098 ± 0.015 |
 | random | 0.036 ± 0.011 |
 
 Both explainers degrade accuracy **~3× more than random on every one of the 8 splits** → they
 identify genuinely predictive features (**faithful, robustly**). **ROAR does NOT distinguish TreeSHAP
-from LIME** (difference −0.003, TreeSHAP wins 5/8, not significant) — so the **TreeSHAP > LIME ordering
+from LIME** (difference −0.004, TreeSHAP wins 4/8, not significant) — so the **TreeSHAP > LIME ordering
 is specific to the movement metric**, not universal. This **corroborates the "both faithful" result
 via an independent retrain-based methodology**; the explainer *ordering* is itself metric-dependent.
 

@@ -63,6 +63,7 @@ def run(dataset: str, n_eval: int, n_perms: int, m: int, k_neighbors: int) -> di
     df = pd.read_parquet(ROOT / "data" / f"{dataset}.parquet")
     y = df["y"].to_numpy()
     cols = list(df.drop(columns=["y"]).columns)
+    cat_idx = [i for i, c in enumerate(cols) if "_" in c]   # one-hot dummy cols -> LIME categorical
     X = df.drop(columns=["y"]).to_numpy(dtype=float)
     fg = D.feature_groups_from_columns(cols)
     logical = list(fg.keys())
@@ -85,7 +86,7 @@ def run(dataset: str, n_eval: int, n_perms: int, m: int, k_neighbors: int) -> di
                   for r in REGIMES}
     pc = perturbers["conditional"]
     shap_ex = E.make_shap_explainer(model)
-    lime_ex = E.make_lime_explainer(X_tr, seed=SEED)
+    lime_ex = E.make_lime_explainer(X_tr, seed=SEED, categorical_features=cat_idx)
     rng = np.random.default_rng(SEED)
     shuf_model_ex = E.make_shap_explainer(M.train_lightgbm(X_tr, rng.permutation(y_tr), SEED))
 
@@ -127,7 +128,8 @@ def run(dataset: str, n_eval: int, n_perms: int, m: int, k_neighbors: int) -> di
         ood[r] = round(float(np.mean(vals)), 4)
 
     stab = [E.lime_topk_stability(X_tr, model.predict_proba, X_te[i], fg, logical, d,
-                                  seeds=[0, 1, 2], topk=5) for i in range(min(20, n))]
+                                  seeds=[0, 1, 2], topk=5, categorical_features=cat_idx)
+            for i in range(min(20, n))]
     lime_stability = round(float(np.mean(stab)), 4)
 
     prim = by_regime["conditional"]["faithfulness_bar_vs_floor"]

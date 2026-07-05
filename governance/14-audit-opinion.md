@@ -26,7 +26,7 @@ Me Some Credit generalization check).
 ## 3. Summary of findings (each hardened through internal + external *model-reviewer* gauntlets — a quality control, not independent human review)
 1. **Faithfulness — favourable, nuanced.** Under a **validated** direction-agnostic movement metric,
    **both TreeSHAP and LIME are faithful** (TreeSHAP > LIME *under this metric*); a **retrain-based
-   ROAR anchor (8 splits) independently corroborates that both are faithful** (0.108 / 0.111 vs 0.036
+   ROAR anchor (8 splits) independently corroborates that both are faithful** (0.108 / 0.113 vs 0.036
    random, both beat the floor on every split) — though ROAR finds the two **indistinguishable**, so
    the ordering is metric-dependent. The pre-registered *signed*
    on-manifold test is an **underpowered null**, not evidence of unfaithfulness. The core result
@@ -47,8 +47,9 @@ Me Some Credit generalization check).
 ## 4. Opinion
 On the dimensions assessed and against the pinned criteria, **on the evidence gathered the assessor
 identified no indication that the model is unfit** on faithfulness, fairness, robustness, or recourse —
-indeed the explanations are **demonstrably faithful under the validated (post-hoc) movement metric + ROAR** (the
-pre-registered *signed* metric was an underpowered null) and recourse is broadly available — **subject to** the fairness
+the explanations are **shown faithful under the validated (post-hoc) movement metric and corroborated
+by ROAR** (while the pre-registered *signed* metric was an underpowered null) and recourse is broadly
+available — **subject to** the fairness
 monitoring flags, the near-threshold robustness population, and the ~6% recourse-infeasible core being
 addressed by the deployer. **This is NOT an opinion that the system is EU-AI-Act-compliant or
 conformant.** Conformity readiness is **partial** (`13 §F`): several high-risk obligations are **Gap**
@@ -71,6 +72,6 @@ fixed **before results**; the **absolute-movement metric and the ROAR anchor wer
 (disclosed in `10 §Deviations`). Pre-registration (`HYPOTHESES.md`, signed
 tag `prereg-v1`, OpenTimestamps — **Bitcoin-confirmed, block 956533**). Every quantitative claim traces
 to a hashed metrics artifact and a one-command reproduction (`08`, `09`); governance documents are
-content-addressed at the v1 freeze. This document is committed to
+content-addressed by git (blob SHA at tag `v1.0`). This document is committed to
 the public repository under version control; its integrity rests on the git history and the signed
 pre-registration tag, **not** on any claim of independence.
