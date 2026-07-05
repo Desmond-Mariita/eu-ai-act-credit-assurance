@@ -65,8 +65,9 @@ direction, but **not statistically significant** at this sample size.
 ## Limitations
 Single stratified split (CIs from bootstrap, not repeated splits); small subgroups suppressed as
 non-inferable — note that for such groups (e.g. foreign-worker, n=15) a **bootstrap CI and a
-permutation p-value can diverge** (the signed FPR-diff CI excludes 0 while its permutation p=0.126
-does not); both are unstable at n<30 and the group is excluded from inference; sex is a **proxy from personal-status, which conflates marital status** (A92 = female
+permutation p-value can diverge** (the signed FPR-diff CI [0.013, 0.431] excludes 0 while its
+within-negatives permutation p=0.082 / Fisher 0.086 do not reject at 0.05); both are unstable at n<30
+and the group is excluded from inference; sex is a **proxy from personal-status, which conflates marital status** (A92 = female
 div/sep/**married**); age cutpoints arbitrary; the 5:1 threshold taken as given; **no mitigation
 applied** — assessment, not remediation; no full base-rate/model decomposition or threshold sweep.
 Self-assessment, not independent.
