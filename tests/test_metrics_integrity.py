@@ -5,6 +5,7 @@ Motivated by audit finding A1: a `--n-eval 2` smoke run once overwrote the flags
 `faithfulness_german_credit.json` and was committed, contradicting the headline. These asserts run in
 CI (the metrics JSONs are committed) and fail loudly if any published artifact is a debug-scale run.
 """
+import hashlib
 import json
 from pathlib import Path
 
@@ -13,6 +14,10 @@ METRICS = Path(__file__).resolve().parents[1] / "metrics"
 
 def _load(name):
     return json.loads((METRICS / name).read_text())
+
+
+def _sha8(name):
+    return hashlib.sha256((METRICS / name).read_bytes()).hexdigest()[:8]
 
 
 def test_metrics_are_full_runs_not_smoke():
@@ -28,3 +33,19 @@ def test_audited_model_metrics_present():
     m = _load("models.json")["audited_model"]
     assert m["sha256"] == "1456b07fb365dcbc91d6b139c51e1269976509249bdb8d7d4b4cd8e48ab5eab5"
     assert m["auroc"] >= 0.7
+
+
+def test_metrics_hashes_match_evidence_index():
+    # sha256 prefixes recorded in governance/09-evidence-index.md (EV-008/009/011/012/013/015):
+    # any content drift fails here, forcing the EV index + docs to be updated in lockstep.
+    expected = {
+        "models.json": "8ef65b5d",
+        "faithfulness_german_credit.json": "bb9bdfae",
+        "faithfulness_gmsc.json": "f3cc4f48",
+        "fairness_german_credit.json": "33c50b28",
+        "robustness_german_credit.json": "2941addc",
+        "reason_codes_german_credit.json": "14c869fe",
+        "roar_german_credit.json": "04664b46",
+    }
+    for name, want in expected.items():
+        assert _sha8(name) == want, f"{name} sha {_sha8(name)} != EV {want}; update EV index + this guard"

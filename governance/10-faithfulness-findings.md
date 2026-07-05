@@ -93,10 +93,10 @@ Second dataset, structurally different: **all-numeric** (10 features, no one-hot
 sentinels + `age<18` cleaned per the DQ profile; `scripts/06_gmsc_prep.py`). LightGBM **AUROC ≈0.83**
 (a script-printed sanity value for the generalization check — the GMSC model is a throwaway, **not** an
 audited/hashed artifact like the German-Credit ToE);
-benchmark n=200, K=5, n_perms=30. Full numbers: `metrics/faithfulness_gmsc.json`.
+benchmark n=300, K=5, n_perms=40. Full numbers: `metrics/faithfulness_gmsc.json`.
 
 **Replicates (the core finding holds on a different dataset):**
-- **Absolute metric validated** — clean control at floor (−0.004, CI [−0.008, −0.001], not faithful).
+- **Absolute metric validated** — clean control at floor (−0.002, CI [−0.005, 0.001], not faithful).
 - **Both explainers faithful under movement** — TreeSHAP +0.019 [0.014, 0.025], LIME +0.013 [0.010,
   0.017]; **TreeSHAP > LIME** (H2).
 - **Baseline** — both faithful, clean control at floor. Clean control sits at floor under every

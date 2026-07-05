@@ -51,12 +51,16 @@ Full write-ups: [`governance/10`](governance/10-faithfulness-findings.md) ·
 uv venv && uv pip install -e ".[dev]"      # core + tests
 uv run ruff check src/ tests/ && uv run pytest -q
 uv pip install -e ".[models]"              # model/explainer stack (Phase 2)
+python scripts/00_data.py                  # fetch + write data/ (German Credit; data/ is gitignored)
 python scripts/10_train.py                 # audited model (deterministic; SHA pinned)
-python scripts/30_faithfulness.py          # faithfulness benchmark
+python scripts/30_faithfulness.py          # faithfulness benchmark (German Credit)
+python scripts/06_gmsc_prep.py             # GMSC prep (needs data/cs-training.csv — see below)
+python scripts/30_faithfulness.py --dataset gmsc   # generalization check
 for s in 40_fairness 50_robustness 60_reason_codes 70_roar; do python scripts/$s.py; done
 ```
-Data: German Credit is fetched by code; **Give Me Some Credit** needs a one-time Kaggle download of
-`cs-training.csv` into `data/`.
+Data: `00_data.py` **fetches German Credit and writes `data/`** (gitignored, so this step is required
+on a fresh clone); **Give Me Some Credit** needs a one-time Kaggle download of `cs-training.csv` into
+`data/` before `06_gmsc_prep.py`.
 
 ## Honest limitations
 Self-assessment (not independent); single model; mainline dataset + one generalization check; n≈300

@@ -28,18 +28,20 @@
 
 ## 1. Reproducibility — *competency: software/reproducibility (any technical reviewer)*
 Fresh clone; `uv venv && uv pip install -e ".[dev,models]"`; run the scripts; confirm the printed
-numbers match. (German Credit is fetched by code; GMSC needs a one-time Kaggle `cs-training.csv` in
-`data/`.) Tick "matches?" against the expected values:
+numbers match. (`data/` is gitignored — run `python scripts/00_data.py` **first** to fetch German
+Credit; GMSC needs a one-time Kaggle `cs-training.csv` in `data/` before `06_gmsc_prep.py`.) Tick
+"matches?" against the expected values:
 
 | Command | Expected (headline) | Matches? |
 |---|---|---|
+| `python scripts/00_data.py` | writes `data/german_credit.parquet` (+ manifest) | ☐ |
 | `python scripts/10_train.py` | AUROC **0.769**, Brier 0.178, model SHA `1456b07f…` | ☐ |
 | `python scripts/30_faithfulness.py` | abs TreeSHAP **+0.106 [.094,.118]**, LIME **+0.082 [.072,.092]**, clean control at floor | ☐ |
 | `python scripts/40_fairness.py` | sex FPR-diff CI includes 0, **perm p≈0.086** | ☐ |
 | `python scripts/50_robustness.py` | flip **3.6%** (eps .05) → **16.3%** (eps .5); near-thr **13.3%** | ☐ |
 | `python scripts/60_reason_codes.py` | recourse **94.0% [89.1,96.8]**, infeasible ~6% | ☐ |
 | `python scripts/70_roar.py` | TreeSHAP 0.108±0.017 ≈ LIME 0.113±0.017, both ≫ random 0.036 | ☐ |
-| `uv run pytest -q` / `ruff check` | 30 passed / clean | ☐ |
+| `uv run pytest -q` / `ruff check` | 32 passed / clean | ☐ |
 | `git verify-tag prereg-v1`; `ots verify HYPOTHESES.md.ots` | signed; Bitcoin-attested (block 956533) | ☐ |
 
 **Reviewer note:** _______________________________________________
