@@ -48,7 +48,7 @@ contest — supported by the recourse/reason-codes (`12`) and the logged appeal 
 |---|---|---|---|
 | **Discrimination / bias** (sex, age, foreign-worker) | `11` | Medium × Medium | Disparities directionally disadvantage worse-off groups but **none significant at n=300**; model **trains on a sex proxy + age**. |
 | **Proxy protected-attribute inference (indirect discrimination)** | `11`, §2 | Medium × Medium | Sex inferred from marital status (personal-status) — a **non-Art.9** protected-attribute proxy → indirect-discrimination risk. |
-| **Opacity / no meaningful explanation** | `10`, `12` | Medium × Low–Med | Explanations are **metric-dependently faithful**; **~6% of declines have no actionable recourse** and need a genuine reason. |
+| **Opacity / no meaningful explanation** | `10`, `12` | Medium × Low–Med | Explanations are **metric-dependently faithful** (TreeSHAP the more consistent); **~13% of declines have no actionable reduction-recourse** and need a genuine reason. |
 | **Inaccuracy / instability at the margin** | `12` | Medium × Medium | 13% near-threshold; ~4–7% decision flips under small input noise. |
 | **Loss of autonomy / automation over-reliance** | `00 §2` | High × Low | Mitigated only if human oversight is *effective* (untested). |
 

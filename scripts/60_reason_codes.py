@@ -1,13 +1,16 @@
 """scripts/60_reason_codes.py — Phase 2 Task 13: counterfactual RECOURSE / reason codes (GDPR 13-15).
 
 Recourse feasibility is computed by an EXHAUSTIVE integer grid/line search over the genuinely
-actionable, independently-negotiable loan terms — **loan duration** and **credit amount** (every valid
-integer in the train range) — scored by the SHA-pinned model, against the DEPLOYED 1/6 accept
-threshold. (Installment rate is dropped: coupled to amount/duration/income, not independently
-actionable. Age/residence/dependents are immutable/protected; one-hots are never touched.) This
-replaces an initial DiCE random search that conflated search-failure with infeasibility. Reason-code
+actionable, independently-negotiable loan terms — **loan duration** and **credit amount** — scored by
+the SHA-pinned model against the DEPLOYED 1/6 accept threshold. The search is **direction-constrained**:
+only *reductions* (shorter term, lower amount) count as recourse — an "accept if you borrow MORE/LONGER"
+flip is not actionable recourse. (Installment rate is dropped: coupled to amount/duration/income, not
+independently actionable. Age/residence/dependents are immutable/protected; one-hots are never touched.)
+This replaces an initial DiCE random search that conflated search-failure with infeasibility. Reason-code
 attribution uses a **range-normalised** minimal change (so months and DM are comparable). Reports
 recourse availability + sparsity + reason-code features, with Wilson CIs. Neutral report.
+NB: coupling/affordability constraints (e.g. installment rate vs income) are NOT modelled, so this is a
+model-grid feasibility number under a monotone-reduction action set, not a fully domain-validated one.
 """
 from __future__ import annotations
 
@@ -66,19 +69,28 @@ def main() -> None:
     declined = [i for i in idx_te if p_all[i] > thr]
 
     def line(x, col, grid):
-        """min-|Δ| single-feature value on `grid` reaching P(bad)<=thr, else None."""
-        rows = np.tile(x, (len(grid), 1))
-        rows[:, ci[col]] = grid
-        ok = grid[booster.predict(rows) <= thr]
-        return float(ok[np.argmin(np.abs(ok - x[ci[col]]))]) if len(ok) else None
+        """min-|Δ| single-feature REDUCTION reaching P(bad)<=thr, else None. Actionable recourse is a
+        *shorter term / lower amount* only — increases (borrow more/longer) are not counted."""
+        cur = x[ci[col]]
+        g = grid[grid < cur]                                  # direction constraint: reduce only
+        if len(g) == 0:
+            return None
+        rows = np.tile(x, (len(g), 1))
+        rows[:, ci[col]] = g
+        ok = g[booster.predict(rows) <= thr]
+        return float(ok[np.argmin(np.abs(ok - cur))]) if len(ok) else None   # smallest actionable change
 
     def two_feature(x):
-        """any (duration, amount) integer pair reaching acceptance? (low-memory duration loop)."""
-        for d in dur_grid:
+        """any (shorter duration, lower amount) integer pair reaching acceptance? (reduce-only)."""
+        dg = dur_grid[dur_grid < x[ci["Attribute2"]]]
+        ag = amt_grid[amt_grid < x[ci["Attribute5"]]]
+        if len(dg) == 0 or len(ag) == 0:
+            return False
+        for d in dg:
             xd = x.copy()
             xd[ci["Attribute2"]] = d
-            rows = np.tile(xd, (len(amt_grid), 1))
-            rows[:, ci["Attribute5"]] = amt_grid
+            rows = np.tile(xd, (len(ag), 1))
+            rows[:, ci["Attribute5"]] = ag
             if (booster.predict(rows) <= thr).any():
                 return True
         return False
@@ -107,8 +119,9 @@ def main() -> None:
     out = {
         "dataset": "german_credit", "model": "models/lightgbm.txt (SHA verified)",
         "threshold": round(thr, 4), "n_declined": int(n),
-        "method": "exhaustive integer grid/line search over actionable loan terms, pinned model",
-        "actionable_features": COL,
+        "method": "exhaustive integer grid/line search over actionable loan terms (REDUCTIONS ONLY: "
+                  "shorter duration / lower amount), pinned model",
+        "actionable_features": COL, "action_direction": "reduce_only",
         "policy_recourse_rate": round(feasible / n, 4),
         "policy_recourse_wilson95": _wilson(feasible, n),
         "infeasible_rate": round((n - feasible) / n, 4),
@@ -117,14 +130,15 @@ def main() -> None:
         "single_feature_recourse_rate": round(sum(s == 1 for s in sparsity) / n, 4),
         "reason_code_feature_frequency_range_normalised": dict(feat_freq),
         "example_recourse": examples,
-        "note": "Recourse = a valid integer change to loan duration and/or credit amount reaching "
-                "P(bad)<=1/6 (deployed accept). Grid is EVERY integer in the train range, so "
-                "'infeasible' means no loan-term change works (decline rests on non-actionable "
-                "factors). Reason-code attribution uses a range-normalised minimal change (months vs "
-                "DM comparable). NB: an initial DiCE random search found only 72.5% recourse (a "
-                "superseded run, not recomputed here) — off-the-shelf CF tools can conflate search-"
-                "failure with infeasibility. Real-world feasibility (can an applicant borrow less?) "
-                "is not assessed.",
+        "note": "Recourse = a valid integer REDUCTION in loan duration and/or credit amount (shorter "
+                "term / lower amount) reaching P(bad)<=1/6 (deployed accept). Grid is every integer in "
+                "the train range BELOW the applicant's current value, so 'infeasible' means no "
+                "actionable reduction works (decline rests on non-actionable factors, or only borrowing "
+                "more/longer would flip it). Reason-code attribution uses a range-normalised minimal "
+                "change (months vs DM comparable). Coupling/affordability constraints (installment vs "
+                "income) are NOT modelled; a superseded DiCE random search under-reported recourse (no "
+                "longer computed). Real-world feasibility (can an applicant actually borrow less?) is "
+                "not assessed.",
     }
     (METRICS / "reason_codes_german_credit.json").write_text(json.dumps(out, indent=2))
     print(f"declined {n} | recourse {out['policy_recourse_rate']} {out['policy_recourse_wilson95']} | "

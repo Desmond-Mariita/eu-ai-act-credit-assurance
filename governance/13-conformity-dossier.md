@@ -51,28 +51,31 @@ design-level · **Gap** = not produced · **Scope** = deliberately out of scope 
 | 86 | Right to explanation of individual decision-making (**deployer-facing duty**; the *capability* is provider-side) | `12` (recourse), `10` (faithfulness) | Partial |
 | GDPR 5 | Data-processing principles | `00-scenario.md §4` | Partial (referenced) |
 | GDPR 6/9 | Lawful basis / special-category data | `data-dictionary.md`, `11` | Scope/Partial — public research data; **sex/age are NOT GDPR Art. 9 special categories**, and no Art. 9 data is processed (sex is inferred as a proxy from personal-status for the fairness test only) |
-| GDPR 13–15 | Meaningful information / recourse | `12`, `10` | Partial |
-| GDPR 22(3) | Automated-decision safeguards | `00-scenario.md §2` (human review) | Partial (Art. 22 trigger analysis deferred) |
+| GDPR 13–15 / AI Act 86 | Meaningful information about the logic (explanation duty; recourse is good-practice support, **not** a statutory 13–15 test) | `10`, `12` | Partial |
+| GDPR 22(3) | Automated-decision safeguards | `00-scenario.md §2` (human review); Art. 22 trigger analysis in DPIA `06 §3` | Partial (safeguards scenario-level; not deployment-tested) |
 | GDPR 35 | DPIA | `06-gdpr-dpia.md` (template) | Partial — template produced; a **real** DPIA needs the deployer (Art. 35(2) DPO, 35(9) data-subject views) |
 
 ## C. Consolidated findings (the four analyses — reviewed)
-1. **Faithfulness (`10`, EV-009/011):** explanation faithfulness is **metric-dependent**; under a
-   *validated* direction-agnostic movement metric both **TreeSHAP and LIME are faithful** (TreeSHAP >
-   LIME *under that metric*; a retrain-based ROAR cross-check finds them indistinguishable — the
-   ordering is metric-dependent); the pre-registered signed on-manifold test is an **underpowered
-   null** (sign cancellation),
-   not evidence of unfaithfulness. **The core movement-metric result replicated on GMSC** (the signed
-   null did *not* — it is dataset-specific). *Governance: faithfulness claims must name the regime +
-   sign convention (Art. 86 / GDPR 13–15).*
+1. **Faithfulness (`10`, EV-009/011):** explanation faithfulness is **metric-, sign-, and
+   regime-dependent**. Under an *exploratory* direction-agnostic movement metric (clean control at
+   floor = calibration) both **TreeSHAP +0.106 and LIME +0.090 beat the floor**, and a retrain-based
+   ROAR cross-check confirms both **global rankings** are strongly predictive (indistinguishable). But
+   **TreeSHAP is the more consistent explainer**: under the pre-registered signed metric TreeSHAP is
+   inconclusive while **LIME separates below the floor**, and at baseline only TreeSHAP is faithful —
+   so this is **not a uniform "underpowered null."** **The movement-metric result replicated on GMSC.**
+   *Governance: faithfulness claims must name regime + sign convention (Art. 86).*
 2. **Fairness (`11`, EV-012):** disparities are **directionally consistent** (women/young/foreign
    declined more) **but none is statistically significant at n=300** (signed CIs include 0; sex FPR
-   permutation p=0.086); the model **trains on personal-status (sex proxy) + age directly**. *Monitoring
-   flags, not established gaps (Art. 10).*
+   within-negatives permutation p=0.091, Fisher 0.096; age omnibus p=0.39; foreign n=15 not inferable);
+   the model **trains on personal-status (sex proxy) + age directly**. *Monitoring flags, not
+   established gaps (Art. 10).*
 3. **Robustness (`12`, EV-013):** moderately stable — **3.6–16.3%** decision flips as noise grows;
    **13.3% near-threshold** fragile band. *Art. 15 concern to monitor.*
-4. **Recourse (`12`, EV-013):** **94.0% [89.1, 96.8]** of declined applicants have loan-term recourse
-   (roughly evenly a shorter term or lower amount); a **~6% infeasible core** rests on non-actionable
-   factors and needs a genuine explanation. *GDPR 13–15.*
+4. **Recourse (`12`, EV-013):** **87.4% [81.2, 91.8]** of declined applicants have an actionable
+   loan-term **reduction** to acceptance (more often a shorter term than a lower amount); a **~13%
+   infeasible core** rests on non-actionable factors and needs a genuine explanation. Recourse is
+   offered as good practice, not as a GDPR 13–15 compliance test (an explanation duty, not a right to a
+   counterfactual).
 
 ## D. Traceability (claim → evidence)
 Each quantitative claim above maps to an `EV-###` row in `09-evidence-index.md` and the producing

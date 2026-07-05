@@ -34,13 +34,13 @@ Credit; GMSC needs a one-time Kaggle `cs-training.csv` in `data/` before `06_gms
 
 | Command | Expected (headline) | Matches? |
 |---|---|---|
-| `python scripts/00_data.py` | writes `data/german_credit.parquet` (+ manifest) | ☐ |
+| `python scripts/00_data.py` then `05_manifest_and_dq.py` | writes `data/german_credit.parquet`; `05` writes the manifest + DQ profile | ☐ |
 | `python scripts/10_train.py` | AUROC **0.769**, Brier 0.178, model SHA `1456b07f…` | ☐ |
-| `python scripts/30_faithfulness.py` | abs TreeSHAP **+0.106 [.094,.118]**, LIME **+0.082 [.072,.092]**, clean control at floor | ☐ |
-| `python scripts/40_fairness.py` | sex FPR-diff CI includes 0, **perm p≈0.086** | ☐ |
+| `python scripts/30_faithfulness.py` | abs TreeSHAP **+0.106 [.094,.118]**, LIME **+0.090 [.080,.100]** (group-valid); signed: TS inconclusive, LIME below floor | ☐ |
+| `python scripts/40_fairness.py` | sex FPR-diff CI includes 0, **perm p≈0.091 / Fisher 0.096**; age omnibus p≈0.39 | ☐ |
 | `python scripts/50_robustness.py` | flip **3.6%** (eps .05) → **16.3%** (eps .5); near-thr **13.3%** | ☐ |
-| `python scripts/60_reason_codes.py` | recourse **94.0% [89.1,96.8]**, infeasible ~6% | ☐ |
-| `python scripts/70_roar.py` | TreeSHAP 0.108±0.017 ≈ LIME 0.113±0.017, both ≫ random 0.036 | ☐ |
+| `python scripts/60_reason_codes.py` | recourse **87.4% [81.2,91.8]** (reductions only), infeasible ~13% | ☐ |
+| `python scripts/70_roar.py` | TreeSHAP 0.108±0.017 ≈ LIME 0.109±0.021, both ≫ random 0.036 | ☐ |
 | `uv run pytest -q` / `ruff check` | 32 passed / clean | ☐ |
 | `git verify-tag prereg-v1`; `ots verify HYPOTHESES.md.ots` | signed; Bitcoin-attested (block 956533) | ☐ |
 
@@ -59,7 +59,7 @@ Pick ≥5 headline numbers from `README`/`14` and confirm each resolves via `08-
   (ordering metric-specific) the right read?
 - **Fairness:** are disparities correctly reported as **not significant at n=300** using the **signed**
   CIs / permutation test — and is the note that folded DP/EO CIs are *not* a significance test correct?
-- **Recourse:** is the grid search genuinely **exhaustive** (integer, pinned model), so ~6% is true
+- **Recourse:** is the grid search genuinely **exhaustive** (integer, pinned model, reductions only), so ~13% is true
   infeasibility not a solver artifact?
 - **Robustness:** is the perturbation model + bootstrap CI reasonable; noise framed as *synthetic*?
 

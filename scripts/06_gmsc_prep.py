@@ -32,7 +32,7 @@ def main() -> None:
     df.loc[df["age"] < 18, "age"] = np.nan
     n_sentinels = int(sum((pd.read_csv(DATA / "cs-training.csv", index_col=0)[c].isin([96, 98])).sum()
                           for c in PASTDUE))
-    X = df.fillna(df.median(numeric_only=True))
+    X = df   # keep NaN — median imputation is fit on the TRAIN split only (in 30_faithfulness), no leak
 
     # stratified subsample (preserve the ~6.7% default rate) for a tractable donor pool
     rng = np.random.default_rng(SEED)

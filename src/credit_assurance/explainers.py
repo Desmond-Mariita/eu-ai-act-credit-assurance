@@ -39,16 +39,6 @@ def treeshap_ranking(shap_explainer, x, feature_groups, logical_names):
     return rank_groups(vals), vals
 
 
-def lime_ranking(lime_explainer, predict_proba, x, feature_groups, logical_names, num_features):
-    exp = lime_explainer.explain_instance(
-        np.asarray(x, dtype=float), predict_proba, num_features=num_features, labels=(1,))
-    col = np.zeros(num_features)
-    for j, w in exp.as_map()[1]:
-        col[int(j)] = w
-    vals = aggregate_to_logical(col, feature_groups, logical_names)
-    return rank_groups(vals), vals
-
-
 def random_ranking(logical_names, seed=0):
     rng = np.random.default_rng(seed)
     vals = {n: float(rng.normal()) for n in logical_names}
@@ -71,25 +61,76 @@ def make_shap_explainer(model):
     return shap.TreeExplainer(model)
 
 
-def make_lime_explainer(X_train, seed=0, categorical_features=None):
+# --- Group-valid LIME -------------------------------------------------------------------------
+# Operate in the ORIGINAL (label-encoded) feature space so one-hot exclusivity is preserved. Passing
+# the one-hot dummies to LIME as independent categorical columns lets it sample invalid multi-hot /
+# zero-hot states (empirically ~99.9% of neighbours off-manifold). Instead we label-encode each logical
+# categorical to a SINGLE column, let LIME sample one valid category, and re-expand to a valid one-hot
+# inside predict_fn. LIME then attributes directly at the logical-feature level (no re-aggregation).
+
+def to_logical_space(X_encoded, cols, feature_groups, logical_names):
+    """One-hot encoded matrix -> label-encoded logical matrix (one column per logical feature).
+    Returns (X_log, cat_positions, cat_names, cat_groups, num_groups)."""
+    X_encoded = np.asarray(X_encoded, dtype=float)
+    X_log = np.zeros((X_encoded.shape[0], len(logical_names)))
+    cat_positions, cat_names, cat_groups, num_groups = [], {}, [], []
+    for j, name in enumerate(logical_names):
+        idxs = list(feature_groups[name])
+        if len(idxs) > 1 or "_" in cols[idxs[0]]:            # one-hot categorical logical feature
+            X_log[:, j] = np.argmax(X_encoded[:, idxs], axis=1)
+            cat_positions.append(j)
+            cat_names[j] = [cols[c].split("_", 1)[1] if "_" in cols[c] else cols[c] for c in idxs]
+            cat_groups.append((j, idxs))
+        else:                                                 # numeric singleton
+            X_log[:, j] = X_encoded[:, idxs[0]]
+            num_groups.append((j, idxs[0]))
+    return X_log, cat_positions, cat_names, cat_groups, num_groups
+
+
+def logical_predict_fn(predict_proba, n_encoded, cat_groups, num_groups):
+    """Wrap predict_proba to accept label-encoded logical rows, re-expanding each logical categorical
+    to a VALID one-hot (exactly one active dummy) before scoring — so LIME only ever sees on-manifold
+    rows."""
+    def f(X_log):
+        X_log = np.asarray(X_log, dtype=float)
+        n = X_log.shape[0]
+        Xe = np.zeros((n, n_encoded))
+        rows = np.arange(n)
+        for j, idxs in cat_groups:
+            pos = np.clip(np.rint(X_log[:, j]).astype(int), 0, len(idxs) - 1)
+            Xe[rows, np.asarray(idxs)[pos]] = 1.0
+        for j, ei in num_groups:
+            Xe[:, ei] = X_log[:, j]
+        return predict_proba(Xe)
+    return f
+
+
+def make_lime_explainer(X_log_train, cat_positions, cat_names, seed=0):
     from lime.lime_tabular import LimeTabularExplainer
-    # discretize_continuous=True (LIME's default): weights act as instance-specific CONTRIBUTIONS
-    # (active bin == 1), not raw scaled-feature sensitivities — the correct attribution to rank.
-    # categorical_features = the one-hot dummy column indices, so LIME samples them as CATEGORICAL
-    # (0/1) rather than continuous — avoiding the off-manifold fractional-dummy states an off-the-shelf
-    # LimeTabularExplainer would otherwise generate in its neighbourhood.
-    return LimeTabularExplainer(np.asarray(X_train, dtype=float), mode="classification",
-                                categorical_features=categorical_features,
+    # categorical_features + categorical_names => LIME samples one valid category per logical group;
+    # discretize_continuous=True => numeric weights are instance contributions (active bin == 1).
+    return LimeTabularExplainer(np.asarray(X_log_train, dtype=float), mode="classification",
+                                categorical_features=cat_positions, categorical_names=cat_names,
                                 discretize_continuous=True, random_state=seed)
 
 
-def lime_topk_stability(X_train, predict_proba, x, feature_groups, logical_names,
-                        num_features, seeds, topk=5, categorical_features=None):
-    """Mean pairwise top-k Jaccard of LIME rankings across seeds (1.0 = perfectly stable)."""
+def lime_ranking(lime_explainer, predict_fn, x_log, logical_names, num_features):
+    """LIME ranking in logical space: LIME columns map 1:1 to logical features (no re-aggregation)."""
+    exp = lime_explainer.explain_instance(
+        np.asarray(x_log, dtype=float), predict_fn, num_features=num_features, labels=(1,))
+    vals = {name: 0.0 for name in logical_names}
+    for j, w in exp.as_map()[1]:
+        vals[logical_names[int(j)]] = float(w)
+    return rank_groups(vals), vals
+
+
+def lime_topk_stability(explainer_factory, predict_fn, x_log, logical_names, num_features, seeds,
+                        topk=5):
+    """Mean pairwise top-k Jaccard of LIME rankings across seeds (1.0 = perfectly stable).
+    `explainer_factory(seed)` returns a fresh group-valid LIME explainer."""
     tops = []
     for s in seeds:
-        le = make_lime_explainer(X_train, seed=s, categorical_features=categorical_features)
-        r, _ = lime_ranking(le, predict_proba, x, feature_groups, logical_names, num_features)
+        r, _ = lime_ranking(explainer_factory(s), predict_fn, x_log, logical_names, num_features)
         tops.append(set(r[:topk]))
     js = [len(a & b) / len(a | b) for a, b in itertools.combinations(tops, 2)]
     return float(np.mean(js)) if js else 1.0

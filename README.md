@@ -12,22 +12,23 @@ concrete, reproducible finding, wrapped in an Annex IV governance evidence pack.
 > "true" faithfulness.
 
 ## Headline findings (each hardened through internal + external *model-reviewer* gauntlets)
-1. **Explanation faithfulness is metric-dependent — and under a *validated* metric, explanations are
-   perturbation-faithful.** Under a direction-agnostic movement metric (validated: a random control
-   sits at the floor), **both TreeSHAP and LIME beat random**; a retrain-based **ROAR** anchor (8
-   splits) independently corroborates this. The pre-registered *signed* on-manifold test is an
-   **underpowered null** (sign cancellation), *not* evidence of unfaithfulness. The **core
-   movement-metric result replicated** on a second dataset (the signed null did *not* — it is
-   dataset-specific).
-   → *Faithfulness claims must state the perturbation regime and sign convention.*
+1. **Explanation faithfulness is metric-, sign-, and regime-dependent — and TreeSHAP is the stronger
+   explainer.** Under an *exploratory* direction-agnostic movement metric (clean random control at the
+   floor — a calibration check), **both TreeSHAP (+0.106) and LIME (+0.090, group-valid) beat the
+   floor**, and a retrain-based **ROAR** anchor confirms both explainers' *global* rankings are strongly
+   predictive. But it's nuanced: under the pre-registered *signed* metric **TreeSHAP is inconclusive and
+   LIME separates below the floor** (not a uniform "underpowered null"), and at baseline only TreeSHAP is
+   faithful. The core movement result **replicated** on a second dataset.
+   → *Faithfulness claims must state the metric, sign convention, and regime.*
 2. **Fairness: disparities disadvantage the worse-off groups, but none is significant at n=300**
-   (sex FPR permutation p=0.086); the model **trains on a sex proxy and age directly**. → *Monitoring
-   flags, not established gaps.*
+   (sex FPR within-negatives permutation p=0.091, Fisher 0.096; age omnibus p=0.39); the model **trains
+   on a sex proxy and age directly**. → *Monitoring flags, not established gaps.*
 3. **Robustness: moderate** — ≈4–7% of decisions flip under *small* input noise (rising to 16.3% at
    the largest synthetic noise tested); a **13.3% near-threshold** population is fragile.
-4. **Recourse: 94% [89.1, 96.8]** of declined applicants have actionable loan-term recourse; a **~6%
-   infeasible core** rests on non-actionable factors. *(A popular off-the-shelf counterfactual tool
-   under-reported recourse by ~20 points — a cautionary note for auditors.)*
+4. **Recourse: 87.4% [81.2, 91.8]** of declined applicants have an actionable loan-term **reduction** to
+   acceptance; a **~13% infeasible core** rests on non-actionable factors. *(A popular off-the-shelf
+   counterfactual tool materially under-reported recourse (conflating search-failure with infeasibility)
+   — a cautionary note for auditors.)*
 
 Full write-ups: [`governance/10`](governance/10-faithfulness-findings.md) ·
 [`11`](governance/11-fairness-findings.md) · [`12`](governance/12-robustness-and-recourse.md).

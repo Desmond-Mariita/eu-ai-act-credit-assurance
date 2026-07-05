@@ -6,6 +6,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v3
+        with:
+          python-version: "3.12"
+      - run: uv lock --check          # fail if uv.lock is stale vs pyproject (reproducibility gate)
       - run: uv venv && uv pip install -e ".[dev]"
       - run: uv run ruff check src/ tests/ scripts/
       - run: uv run pytest -q

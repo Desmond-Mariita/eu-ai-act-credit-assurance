@@ -40,12 +40,12 @@ def test_metrics_hashes_match_evidence_index():
     # any content drift fails here, forcing the EV index + docs to be updated in lockstep.
     expected = {
         "models.json": "8ef65b5d",
-        "faithfulness_german_credit.json": "bb9bdfae",
-        "faithfulness_gmsc.json": "f3cc4f48",
-        "fairness_german_credit.json": "33c50b28",
+        "faithfulness_german_credit.json": "ce746733",
+        "faithfulness_gmsc.json": "2097fe27",
+        "fairness_german_credit.json": "954d5bb6",
         "robustness_german_credit.json": "2941addc",
-        "reason_codes_german_credit.json": "14c869fe",
-        "roar_german_credit.json": "04664b46",
+        "reason_codes_german_credit.json": "a0b17b9d",
+        "roar_german_credit.json": "ea08b093",
     }
     for name, want in expected.items():
         assert _sha8(name) == want, f"{name} sha {_sha8(name)} != EV {want}; update EV index + this guard"

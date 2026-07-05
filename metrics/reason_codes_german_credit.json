@@ -3,26 +3,27 @@
   "model": "models/lightgbm.txt (SHA verified)",
   "threshold": 0.1667,
   "n_declined": 151,
-  "method": "exhaustive integer grid/line search over actionable loan terms, pinned model",
+  "method": "exhaustive integer grid/line search over actionable loan terms (REDUCTIONS ONLY: shorter duration / lower amount), pinned model",
   "actionable_features": {
     "Attribute2": "loan_duration_months",
     "Attribute5": "credit_amount"
   },
-  "policy_recourse_rate": 0.9404,
+  "action_direction": "reduce_only",
+  "policy_recourse_rate": 0.8742,
   "policy_recourse_wilson95": [
-    0.8906,
-    0.9683
+    0.8118,
+    0.9179
   ],
-  "infeasible_rate": 0.0596,
+  "infeasible_rate": 0.1258,
   "infeasible_wilson95": [
-    0.0317,
-    0.1094
+    0.0821,
+    0.1882
   ],
-  "mean_features_changed": 1.218,
-  "single_feature_recourse_rate": 0.7351,
+  "mean_features_changed": 1.205,
+  "single_feature_recourse_rate": 0.6954,
   "reason_code_feature_frequency_range_normalised": {
-    "loan_duration_months": 86,
-    "credit_amount": 87
+    "loan_duration_months": 100,
+    "credit_amount": 59
   },
   "example_recourse": [
     {
@@ -80,5 +81,5 @@
       }
     }
   ],
-  "note": "Recourse = a valid integer change to loan duration and/or credit amount reaching P(bad)<=1/6 (deployed accept). Grid is EVERY integer in the train range, so 'infeasible' means no loan-term change works (decline rests on non-actionable factors). Reason-code attribution uses a range-normalised minimal change (months vs DM comparable). NB: an initial DiCE random search found only 72.5% recourse (a superseded run, not recomputed here) \u2014 off-the-shelf CF tools can conflate search-failure with infeasibility. Real-world feasibility (can an applicant borrow less?) is not assessed."
+  "note": "Recourse = a valid integer REDUCTION in loan duration and/or credit amount (shorter term / lower amount) reaching P(bad)<=1/6 (deployed accept). Grid is every integer in the train range BELOW the applicant's current value, so 'infeasible' means no actionable reduction works (decline rests on non-actionable factors, or only borrowing more/longer would flip it). Reason-code attribution uses a range-normalised minimal change (months vs DM comparable). Coupling/affordability constraints (installment vs income) are NOT modelled; a superseded DiCE random search under-reported recourse (no longer computed). Real-world feasibility (can an applicant actually borrow less?) is not assessed."
 }

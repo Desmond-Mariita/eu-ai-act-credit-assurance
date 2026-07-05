@@ -1,31 +1,42 @@
 # Changelog
 
-## v1.0 — amended 2026-07-05 (post-audit corrections)
+## v1.0 — amended 2026-07-06 (post-audit remediation)
 
-The `v1.0` release tag was **re-cut on the corrected commit** after an independent audit by four models
-(internal Claude + external DeepSeek, Gemini, Codex). The amendments do **not** change the audit's
-conclusions — the central faithfulness result held and, where re-run, strengthened — they correct a
-packaging defect, fix the LIME baseline properly, and finish a number cascade.
+After **internal + external model-assisted QA** (four models: internal Claude auditor + external
+DeepSeek, Gemini, Codex), a full-execution audit returned a FAIL with substantive findings. **These are
+model reviews, NOT independent human assurance** — the load-bearing independent-review gap
+(`governance/15`) remains open. The `v1.0` release tag was **re-cut on the remediated commit**. The
+amendments correct methodology and overclaims; the core finding (TreeSHAP faithful under a movement
+diagnostic, corroborated by ROAR; GMSC replication) held.
 
-- **A1 (Blocker).** The committed `metrics/faithfulness_german_credit.json` had been overwritten by a
-  debug `n_eval=2` smoke run and shipped, contradicting its own headline (`validated:false`). Re-ran the
-  full **n=300** benchmark (now `bb9bdfae` = EV-009) and added `tests/test_metrics_integrity.py`
-  (CI-enforced) so any smoke-scale **or hash-drifted** metrics artifact fails the build.
-- **LIME correctness.** `make_lime_explainer` now passes `categorical_features` (the one-hot dummy
-  indices), so LIME samples them as categorical rather than off-manifold continuous. Re-ran faithfulness
-  (German Credit + GMSC) and ROAR; the finding held and LIME strengthened slightly (abs **+0.082** vs
-  +0.076; ROAR LIME **0.113** ≈ TreeSHAP 0.108). New hashes: EV-011 `f3cc4f48`, EV-015 `04664b46`.
-- **Wording / hygiene.** Opinion "demonstrably faithful" → "shown faithful … corroborated by ROAR";
-  governance-doc integrity reframed to git blob-SHA content-addressing at the release tag; small-n
-  fairness CI-vs-permutation divergence noted; GMSC prose figures reconciled to the n=300 re-run;
-  reproduce path prepends data generation; risk register finalised; unused deps pruned.
+Corrections:
+- **LIME made group-valid.** The earlier `categorical_features` fix still sampled one-hot dummies
+  independently (~99.9% of neighbourhoods off-manifold). LIME now runs in the **label-encoded logical
+  space** with a re-expanding predict wrapper, so every sampled neighbour is a valid one-hot
+  (100%). Re-ran German faithfulness + ROAR.
+- **Recourse direction-constrained.** The grid counted perverse *increases* (borrow more/longer) as
+  recourse. Restricted to actionable **reductions** (shorter term / lower amount); recourse recomputed
+  (≈94% → ≈87%). Coupling/affordability constraints disclosed as unmodelled.
+- **Signed result stated precisely.** Reframed from a uniform "underpowered null": TreeSHAP is
+  inconclusive; LIME separated below the floor under the pre-registered signed estimand.
+- **Movement metric = exploratory.** Dropped the "validated" construct claim — the clean control is a
+  calibration check (same family as the floor) and the confounded control clears the bar; corroborated
+  by ROAR, not asserted as validated.
+- **ROAR scoped to global ranking utility**, not proof of local-explanation faithfulness.
+- **Fairness statistics corrected.** FPR permutation now permutes within actual negatives (+1
+  correction) with a Fisher-exact cross-check and an omnibus test for age; sex FPR p ≈ 0.096 (was a
+  miscomputed 0.086). Conclusion (no disparity significant at 0.05) unchanged.
+- **GMSC leakage fixed** (median imputation now fit on the train split only) + GMSC model AUROC stored
+  as a hashed artifact (was orphaned). GDPR Art. 13–15 wording separated from optional model-side
+  recourse. Environment re-locked (`uv.lock`), LICENSE completed, package version aligned to 1.0.0,
+  stale cross-references cleared, honesty wording corrected throughout.
 
-Because the tag was moved, a clone pinned to the *previous* `v1.0` differs — use the current tag. The
-pre-registration (`prereg-v1`, `HYPOTHESES.md`, OpenTimestamps Bitcoin-confirmed block 956533) is
+The pre-registration (`prereg-v1`, `HYPOTHESES.md`, OpenTimestamps Bitcoin-confirmed block 956533) is
 **unchanged** and independent of this release tag.
 
-## v1.0 — 2026-07-05 (initial)
+## v1.0 — 2026-07-05 (initial + first amendment)
 
 Initial public release: pre-registered self-assessment audit of a high-risk EU AI Act credit-scoring
-model — explanation faithfulness, fairness, robustness, recourse — with a governance/conformity pack,
-signed audit opinion, and Bitcoin-timestamped pre-registration.
+model (faithfulness, fairness, robustness, recourse) with a governance/conformity pack, signed opinion,
+and Bitcoin-timestamped pre-registration. A same-day amendment restored a full-scale faithfulness
+artifact after a smoke-test file had been committed, and added a CI integrity guard.

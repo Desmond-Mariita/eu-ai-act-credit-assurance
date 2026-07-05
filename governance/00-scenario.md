@@ -43,7 +43,9 @@ Both roles are simulated; obligations are assessed as *readiness*, not real conf
   control route). **Application date for stand-alone Annex III systems: 2 December 2027** *if* the
   Digital Omnibus is adopted; the **statutory baseline is 2 August 2026** (Art. **113**) absent it.
   Art. **111** separately governs systems already placed on the market. *AI Act consolidated-text
-  version to be dated on freeze; verify against the final Official Journal text.*
+  status (2026-07-06): the Digital Omnibus received Council final approval on 29 June 2026 (OJ
+publication / entry into force still pending), so the 2 Dec 2027 Annex III application date is
+conditional on it; verify against the final Official Journal text.*
 - **GDPR** — Arts. **5** (principles), **6/9** (lawful basis / special-category — only where
   actually processed or proxy-inferred), **13–15** ("meaningful information"), **22(3)** (automated-
   decision safeguards — subject to the Art. 22 trigger analysis), **35** (DPIA).
@@ -53,8 +55,12 @@ Both roles are simulated; obligations are assessed as *readiness*, not real conf
 ## 5. Model version & dataset snapshot (pinned on freeze)
 - **Model:** LightGBM (audited) — artifact `models/lightgbm.txt`, **SHA256
   `1456b07fb365dcbc91d6b139c51e1269976509249bdb8d7d4b4cd8e48ab5eab5`** (deterministic; frozen at
-  plan Task 8). Stratified holdout (seed 0, leakage check passed): **test AUROC 0.769, Brier 0.178**,
-  cost-sensitive threshold **1/6**; EBM challenger AUROC 0.794. Full metrics: `metrics/models.json`.
+  plan Task 8). **Single** stratified holdout (seed 0; point estimates, no resampling uncertainty):
+  **test AUROC 0.769, Brier 0.178**. The "leakage check" is a **narrow guard** (no single encoded
+  column has |Pearson| ≥ 0.95 with y) — it does **not** exclude nonlinear/multivariate/duplicate
+  leakage. The **1/6 Bayes threshold** follows from the 5:1 cost ratio *assuming calibrated* `P(bad)`;
+  no calibration step is applied and `models.json` shows material miscalibration (a threshold-sensitivity
+  caveat for fairness/robustness/recourse). EBM challenger AUROC 0.794. Full metrics: `metrics/models.json`.
 - **Datasets:** German Credit (UCI Statlog, CC BY 4.0) mainline + Give Me Some Credit (generalization
   check) — **snapshot SHA256s recorded in `data_manifest.sha256` (plan Task 3)** and referenced here.
 
@@ -68,6 +74,8 @@ Both roles are simulated; obligations are assessed as *readiness*, not real conf
 ## 7. Independence & conflict-of-interest disclosure
 This is a **self-assessment**: the author built the audited model *and* performs the assessment.
 True independence is therefore **not** satisfied. Mitigations: (a) **blind pre-registration** of
-method + hypotheses before results (`HYPOTHESES.md`, tagged); (b) a **provider/auditor code
-boundary** (`src/credit_assurance/system/` vs `audit/`); (c) **≥1 external peer review** with
-sign-off before release (plan Task 24). The "externally reviewed" claim is only made if (c) is met.
+method + hypotheses before results (`HYPOTHESES.md`, tagged); (b) a **SHA-pinned separation** of the
+audited model (`models/lightgbm.txt`, produced by `scripts/10_train.py`) from the audit instrument
+(`src/credit_assurance/` + `scripts/`), so every analysis scores the frozen artifact (hash-verified);
+(c) **≥1 external peer review** with sign-off before release (plan Task 24). The "externally reviewed"
+claim is only made if (c) is met.

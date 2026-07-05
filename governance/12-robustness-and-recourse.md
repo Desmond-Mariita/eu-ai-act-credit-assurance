@@ -31,22 +31,24 @@ bootstrap CI:
 For each of the **151 declined test applicants**, an **exhaustive integer grid/line search** over the
 genuinely actionable, independently-negotiable loan terms — **loan duration** and **credit amount**
 (every valid integer in the train range) — scored by the **pinned model**, asks whether any change
-reaches the **deployed accept** (`P(bad) ≤ 1/6`). (The 94% is grid-resolution-stable: coarse, dense,
-and every-integer grids give identical results, since the tree model is a step function.) (Installment rate is excluded — it is coupled to amount/
-duration/income, not independently actionable; age/residence/dependents are immutable/protected;
-one-hots are never touched.)
+reaches the **deployed accept** (`P(bad) ≤ 1/6`). The search is **direction-constrained** — only
+*reductions* (shorter term / lower amount) count, since "borrow more/longer to be approved" is not
+actionable recourse. (The rate is grid-resolution-stable — coarse, dense, and every-integer grids agree,
+the tree model being a step function. Installment rate is excluded — coupled to amount/duration/income,
+not independently actionable; age/residence/dependents are immutable/protected; one-hots are never
+touched. Coupling/affordability constraints are **not** modelled.)
 
 | Metric | Value | 95% CI (Wilson) |
 |---|---|---|
-| **Have loan-term recourse** (reach P ≤ 1/6) | **94.0%** | [89.1, 96.8] |
-| **No loan-term recourse** (truly infeasible) | **6.0%** | [3.2, 10.9] |
-| Recourse via a **single** feature change | 73.5% | — |
-| Mean actionable features changed | 1.22 | — |
-| Reason-code frequency (range-normalised) | loan_duration 86, credit_amount 87 | — |
+| **Have loan-term recourse** (reduction reaching P ≤ 1/6) | **87.4%** | [81.2, 91.8] |
+| **No loan-term recourse** (no actionable reduction) | **12.6%** | [8.2, 18.8] |
+| Recourse via a **single** feature change | 69.5% | — |
+| Mean actionable features changed | 1.21 | — |
+| Reason-code frequency (range-normalised) | loan_duration 100, credit_amount 59 | — |
 
-- **Recourse is broadly available and simple:** 94% of declined applicants could reach acceptance by
-  changing loan terms, and 73.5% by changing **just one** — **roughly evenly split between shortening
-  the loan term and reducing the amount** (e.g. 60 → 9 months, or 2 124 → 1 479 DM). (The minimal
+- **Recourse is broadly available and simple:** 87% of declined applicants could reach acceptance by an
+  actionable **reduction** in loan terms, and 69.5% by changing **just one** — **more often a shorter
+  loan term than a lower amount** (e.g. 60 → 9 months, or 2 124 → 1 479 DM). (The minimal
   change is chosen by a range-normalised distance, so months and DM are comparable — a raw-unit
   comparison spuriously favours duration.)
 - **A genuine (small) infeasible core:** ~**6%** cannot reach acceptance by *any* loan-term change —
@@ -54,11 +56,11 @@ one-hots are never touched.)
   status). For them, "meaningful information about the logic" (Art. 13–15) must explain *why*, since
   no loan-term recourse exists.
 - **Methodological caution (a reusable audit lesson):** an initial **DiCE random-search** approach
-  found recourse for only **72.5%** (a superseded run — not recomputed in the current script) — a
-  **~20-point under-report** vs the exhaustive grid, and it emitted **non-integer** loan terms (e.g.
-  13.1 months). **Off-the-shelf counterfactual tools can
-  conflate search-failure with infeasibility**; recourse infeasibility should be established by
-  exhaustive/verified search on a valid feature grid, as done here.
+  materially under-reported recourse and emitted **non-integer** loan terms (e.g. 13.1 months). *(That
+  run is superseded and not recomputed, so its figure is not reported as a hashed result.)*
+  **Off-the-shelf counterfactual tools can conflate search-failure with infeasibility**; recourse
+  infeasibility should be established by exhaustive/verified search on a valid, direction-constrained
+  feature grid, as done here.
 
 ## Limitations
 Robustness: synthetic Gaussian noise (not calibrated to real data-quality evidence), continuous
@@ -68,11 +70,13 @@ cases); it is **model-side** — real-world feasibility (can an applicant actual
 shorter term?) and business rules are **not** assessed; targets `P(bad) ≤ 1/6` only. Self-assessment,
 not independent.
 
-## Governance implication (Art. 15, GDPR Arts. 13–15)
+## Governance implication (AI Act Art. 15/86; GDPR Arts. 13–15, 22)
 Art. 15: the model is moderately robust but has a **~13% near-threshold population** whose decisions
 flip under small input noise — the deployer should monitor stability there and consider review/
-abstention bands. GDPR 13–15: **actionable recourse exists for ~94% of declined applicants** (mostly a
-shorter loan term) and should be surfaced as reason codes; the **~6% without loan-term recourse** need
-a genuine explanation of the driving factors, not a false promise of recourse. No "compliant/robust
-enough" opinion is expressed — this is the evidence Arts. 15 / 13–15 require the provider/deployer to
-act on.
+abstention bands. **On the legal framing:** GDPR Arts. 13–15 (and AI Act Art. 86) create a duty to give
+**meaningful information about the logic** of the decision — an *explanation* duty (engaged for Art. 22
+automated decisions), **not a statutory right to a favourable counterfactual**. Recourse feasibility is
+therefore reported here as **good practice / reason-code support**, not as a 13–15 compliance test:
+direction-constrained loan-term recourse is available for a large majority of declined applicants and
+should be surfaced as reason codes; those without it need a genuine explanation of the driving factors,
+not a false promise of recourse. No "compliant" opinion is expressed.

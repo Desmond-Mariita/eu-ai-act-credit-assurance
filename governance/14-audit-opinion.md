@@ -24,34 +24,36 @@ lawfulness, security posture, and any system other than the audited model on Ger
 Me Some Credit generalization check).
 
 ## 3. Summary of findings (each hardened through internal + external *model-reviewer* gauntlets — a quality control, not independent human review)
-1. **Faithfulness — favourable, nuanced.** Under a **validated** direction-agnostic movement metric,
-   **both TreeSHAP and LIME are faithful** (TreeSHAP > LIME *under this metric*); a **retrain-based
-   ROAR anchor (8 splits) independently corroborates that both are faithful** (0.108 / 0.113 vs 0.036
-   random, both beat the floor on every split) — though ROAR finds the two **indistinguishable**, so
-   the ordering is metric-dependent. The pre-registered *signed*
-   on-manifold test is an **underpowered null**, not evidence of unfaithfulness. The core result
-   **replicated on a second dataset.** *Faithfulness is metric-dependent — claims must state the regime
-   and sign convention.*
+1. **Faithfulness — favourable but nuanced; TreeSHAP the stronger explainer.** Under an *exploratory*
+   direction-agnostic movement metric (the clean random control sits at the floor — a **calibration**
+   check, not construct validation), **both TreeSHAP (+0.106) and LIME (+0.090, group-valid) beat the
+   floor**, and a retrain-based **ROAR anchor (8 splits)** confirms both explainers' **global rankings**
+   are strongly predictive (0.108 / 0.109 vs 0.036 random, ≫ every split; indistinguishable on a 2·SE
+   heuristic — ROAR speaks to *global ranking utility*, not local-explanation faithfulness). The picture
+   is nuanced: under the pre-registered *signed* metric **TreeSHAP is inconclusive and LIME separates
+   *below* the floor** — **not a uniform "underpowered null"** — and at baseline only TreeSHAP is
+   faithful. The core movement result **replicated on GMSC.** *Faithfulness is metric-, sign-, and
+   regime-dependent; claims must state all three.*
 2. **Fairness — no significant disparity, but flags.** Group disparities **consistently disadvantage**
    women and younger applicants (the foreign-worker comparison is **not inferable**, n=15) but **none
    is statistically significant at n=300**
-   (sex FPR permutation p=0.086). The model **trains on a sex proxy (personal-status) and age
+   (sex FPR within-negatives permutation p=0.091, Fisher 0.096; age omnibus p=0.39). The model **trains on a sex proxy (personal-status) and age
    directly.** *Monitoring + mitigation-study flags, not established gaps.*
 3. **Robustness — moderate.** 3.6–16.3% of decisions flip under small input noise; a **13.3%
    near-threshold** population is noise-sensitive. *An Art. 15 monitoring concern.*
-4. **Recourse — broadly available.** **94% [89.1, 96.8]** of declined applicants have actionable loan-term
-   recourse; a **~6% infeasible core** rests on non-actionable factors and requires a genuine
-   explanation. *(A popular off-the-shelf CF tool under-reported this by ~20 points — a cautionary
+4. **Recourse — broadly available.** **87.4% [81.2, 91.8]** of declined applicants have an actionable loan-term
+   **reduction** to acceptance; a **~13% infeasible core** rests on non-actionable factors and requires a genuine
+   explanation. *(A popular off-the-shelf CF tool conflated search-failure with infeasibility — a cautionary
    note for auditors.)*
 
 ## 4. Opinion
 On the dimensions assessed and against the pinned criteria, **on the evidence gathered the assessor
 identified no indication that the model is unfit** on faithfulness, fairness, robustness, or recourse —
-the explanations are **shown faithful under the validated (post-hoc) movement metric and corroborated
-by ROAR** (while the pre-registered *signed* metric was an underpowered null) and recourse is broadly
-available — **subject to** the fairness
-monitoring flags, the near-threshold robustness population, and the ~6% recourse-infeasible core being
-addressed by the deployer. **This is NOT an opinion that the system is EU-AI-Act-compliant or
+**TreeSHAP explanations beat the floor under the (exploratory) movement metric and are corroborated by
+ROAR** (LIME does too under the movement / global-ranking view but is the weaker explainer — below the
+floor under the pre-registered signed metric), and **direction-constrained recourse is available to
+~87%** of declined applicants — **subject to** the fairness monitoring flags, the near-threshold
+robustness population, and the **~13% recourse-infeasible core** being addressed by the deployer. **This is NOT an opinion that the system is EU-AI-Act-compliant or
 conformant.** Conformity readiness is **partial** (`13 §F`): several high-risk obligations are **Gap**
 (QMS, logging, cybersecurity, post-market monitoring, DPIA-as-real, CE/registration) and the
 assessment is **not independent**. No opinion is expressed on those.

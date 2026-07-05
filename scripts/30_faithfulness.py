@@ -3,10 +3,13 @@
 Evaluates HYPOTHESES.md H1-H4 for the audited LightGBM model, reported honestly (incl. a deviations
 block). Explainers: TreeSHAP, LIME (discretize=True). Pre-registered negative control: a label-
 shuffled MODEL (reported AS-IS; per-instance floor variance -> it lands at the floor, H3 holds).
-Post-hoc diagnostics: a CLEAN shuffled-SHAP control + a direction-agnostic ABSOLUTE (movement) metric
-for the conditional regime (signed comprehensiveness cancels when erasing risk-increasing vs
-protective features). The absolute metric is validated by running BOTH controls under it — they must
-sit at the absolute floor for a real-explainer "beats floor" to mean anything.
+Post-hoc diagnostics (EXPLORATORY, disclosed): a CLEAN shuffled-SHAP control + a direction-agnostic
+ABSOLUTE (movement) metric for the conditional regime (signed comprehensiveness cancels when erasing
+risk-increasing vs protective features). The clean random-ranking control lands at the absolute floor —
+a CALIBRATION check (a random ranking scores ~0), NOT construct validation against ground-truth
+faithfulness; the confounded label-shuffled control also clears the absolute bar, so the bar is lenient.
+The absolute result is corroborated by the retrain-based ROAR anchor (70_roar), not asserted as a
+"validated" metric.
 
 Comprehensiveness AOPC (top-k logical-group erasure) is reported under all three perturbation regimes
 (conditional / marginal / baseline) with instance-level bootstrap CIs. Faithful bar (per regime):
@@ -23,6 +26,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from sklearn.metrics import roc_auc_score
 
 from credit_assurance import data as D
 from credit_assurance import explainers as E
@@ -63,7 +67,6 @@ def run(dataset: str, n_eval: int, n_perms: int, m: int, k_neighbors: int) -> di
     df = pd.read_parquet(ROOT / "data" / f"{dataset}.parquet")
     y = df["y"].to_numpy()
     cols = list(df.drop(columns=["y"]).columns)
-    cat_idx = [i for i, c in enumerate(cols) if "_" in c]   # one-hot dummy cols -> LIME categorical
     X = df.drop(columns=["y"]).to_numpy(dtype=float)
     fg = D.feature_groups_from_columns(cols)
     logical = list(fg.keys())
@@ -72,6 +75,10 @@ def run(dataset: str, n_eval: int, n_perms: int, m: int, k_neighbors: int) -> di
     ks = list(range(1, K + 1))
 
     X_tr, X_te, y_tr, y_te = M.stratified_split(X, y, test_size=0.3, seed=SEED)
+    if np.isnan(X_tr).any() or np.isnan(X_te).any():   # GMSC: impute with TRAIN medians only (no leak)
+        med = np.nanmedian(X_tr, axis=0)
+        X_tr = np.where(np.isnan(X_tr), med, X_tr)
+        X_te = np.where(np.isnan(X_te), med, X_te)
     model = M.train_lightgbm(X_tr, y_tr, SEED)
     if dataset == "german_credit":     # verify we are auditing the SHA-pinned model
         import lightgbm as lgb
@@ -82,11 +89,21 @@ def run(dataset: str, n_eval: int, n_perms: int, m: int, k_neighbors: int) -> di
     def predict(A):
         return M.predict_bad(model, A)
 
+    model_test_auroc = float(roc_auc_score(y_te, predict(X_te)))   # traceable model quality (esp. GMSC)
+
     perturbers = {r: make_perturber(X_tr, fg, regime=r, seed=SEED, k_neighbors=k_neighbors)
                   for r in REGIMES}
     pc = perturbers["conditional"]
     shap_ex = E.make_shap_explainer(model)
-    lime_ex = E.make_lime_explainer(X_tr, seed=SEED, categorical_features=cat_idx)
+    # group-valid LIME in the label-encoded logical space (preserves one-hot exclusivity)
+    X_log_tr, cat_pos, cat_names, cat_groups, num_groups = E.to_logical_space(X_tr, cols, fg, logical)
+    X_log_te, *_ = E.to_logical_space(X_te, cols, fg, logical)
+    lime_predict = E.logical_predict_fn(model.predict_proba, d, cat_groups, num_groups)
+
+    def lime_factory(s):
+        return E.make_lime_explainer(X_log_tr, cat_pos, cat_names, seed=s)
+
+    lime_ex = lime_factory(SEED)
     rng = np.random.default_rng(SEED)
     shuf_model_ex = E.make_shap_explainer(M.train_lightgbm(X_tr, rng.permutation(y_tr), SEED))
 
@@ -98,7 +115,7 @@ def run(dataset: str, n_eval: int, n_perms: int, m: int, k_neighbors: int) -> di
         x = X_te[i]
         rankings = {
             "treeshap": E.treeshap_ranking(shap_ex, x, fg, logical)[0],
-            "lime": E.lime_ranking(lime_ex, model.predict_proba, x, fg, logical, d)[0],
+            "lime": E.lime_ranking(lime_ex, lime_predict, X_log_te[i], logical, len(logical))[0],
             "shuffled_shap_clean": E.shuffled_shap_ranking(shap_ex, x, fg, logical, seed=i)[0],
             "label_shuffled_model": E.treeshap_ranking(shuf_model_ex, x, fg, logical)[0],
         }
@@ -127,8 +144,8 @@ def run(dataset: str, n_eval: int, n_perms: int, m: int, k_neighbors: int) -> di
                 for i in range(min(30, n))]
         ood[r] = round(float(np.mean(vals)), 4)
 
-    stab = [E.lime_topk_stability(X_tr, model.predict_proba, X_te[i], fg, logical, d,
-                                  seeds=[0, 1, 2], topk=5, categorical_features=cat_idx)
+    stab = [E.lime_topk_stability(lime_factory, lime_predict, X_log_te[i], logical, len(logical),
+                                  seeds=[0, 1, 2], topk=5)
             for i in range(min(20, n))]
     lime_stability = round(float(np.mean(stab)), 4)
 
@@ -137,9 +154,10 @@ def run(dataset: str, n_eval: int, n_perms: int, m: int, k_neighbors: int) -> di
     abs_bars = {e: _beats_floor(absol[e], absol["random_floor"]) for e in EXPLAINERS}
     abs_aopc = {e: _summary(absol[e]) for e in (*EXPLAINERS, "random_floor")}
     ab_ts, ab_lime = abs_bars["treeshap"]["faithful"], abs_bars["lime"]["faithful"]
-    # Validated by the CLEAN (truly-random) control landing at the abs floor. The label-shuffled
-    # control is CONFOUNDED (carries mild real signal), so its passing is expected, not invalidation.
-    abs_validated = bool(not abs_bars["shuffled_shap_clean"]["faithful"])
+    # CALIBRATION check (not construct validation): the CLEAN truly-random control lands at the abs
+    # floor (a random ranking scores ~0). The confounded label-shuffled control clears the bar, so the
+    # absolute bar is lenient; the absolute result is treated as exploratory, corroborated by ROAR.
+    abs_clean_at_floor = bool(not abs_bars["shuffled_shap_clean"]["faithful"])
     base_bar = by_regime["baseline"]["faithfulness_bar_vs_floor"]
 
     hypotheses = {
@@ -154,7 +172,7 @@ def run(dataset: str, n_eval: int, n_perms: int, m: int, k_neighbors: int) -> di
     post_hoc = {
         "clean_control_lands_at_floor_conditional": bool(not prim["shuffled_shap_clean"]["faithful"]),
         "absolute_movement_conditional": {
-            "controls_at_absolute_floor_validated": abs_validated,
+            "clean_control_at_absolute_floor": abs_clean_at_floor,   # calibration check, not validation
             "aopc": abs_aopc, "beats_floor": abs_bars},
         "baseline_leverage_ordering_faithful":
             {"treeshap": base_bar["treeshap"]["faithful"], "lime": base_bar["lime"]["faithful"],
@@ -175,6 +193,7 @@ def run(dataset: str, n_eval: int, n_perms: int, m: int, k_neighbors: int) -> di
         "(shuffled_shap_clean) does sit at the floor.")
     out = {
         "dataset": dataset,
+        "model_test_auroc": round(model_test_auroc, 4),
         "params": {"n_eval": n, "n_perms": n_perms, "m_donors": m, "k_neighbors": k_neighbors,
                    "top_k": K, "n_logical_features": len(logical), "seed": SEED,
                    "primary_regime": "conditional", "metric": "signed AOPC comprehensiveness",
@@ -201,14 +220,15 @@ def run(dataset: str, n_eval: int, n_perms: int, m: int, k_neighbors: int) -> di
             "The pre-registered signed AOPC-vs-floor test does NOT detect faithfulness under the "
             "conditional regime at n=300 (high per-instance variance + sign cancellation) — absence "
             "of evidence, not evidence of unfaithfulness. " + (
-                (f"Under a direction-agnostic ABSOLUTE (movement) metric — validated by the clean "
-                 f"random control landing at the absolute floor — TreeSHAP "
+                (f"Under a direction-agnostic ABSOLUTE (movement) metric — an EXPLORATORY diagnostic "
+                 f"(the clean random control sits at the absolute floor: a calibration check, NOT "
+                 f"construct validation) — TreeSHAP "
                  f"{'beats' if ab_ts else 'does NOT beat'} and LIME "
-                 f"{'beats' if ab_lime else 'does NOT beat'} the floor (the CONFOUNDED label-shuffled "
-                 f"control also beats it, consistent with its mild real signal). ")
-                if abs_validated else
-                "The ABSOLUTE (movement) metric is NOT validated (the clean control also beats its "
-                "absolute floor), so no movement-based faithfulness claim is made. ") +
+                 f"{'beats' if ab_lime else 'does NOT beat'} the floor; the CONFOUNDED label-shuffled "
+                 f"control ALSO clears the bar, so the bar is lenient — corroborated by ROAR. ")
+                if abs_clean_at_floor else
+                "The ABSOLUTE (movement) metric's clean control does NOT sit at its floor, so no "
+                "movement-based faithfulness claim is made. ") +
             "Under baseline (off-manifold leverage) both explainers beat the floor; the clean "
             "control stays at the floor there."),
     }
@@ -220,7 +240,7 @@ def run(dataset: str, n_eval: int, n_perms: int, m: int, k_neighbors: int) -> di
               f"{a['shuffled_shap_clean']['aopc_mean']} | prereg-ctrl "
               f"{a['label_shuffled_model']['aopc_mean']} | floor {a['random_floor']['aopc_mean']} "
               f"|| faithful TS={b['treeshap']['faithful']} prereg-ctrl={b['label_shuffled_model']['faithful']}")
-    print(f"ABS(cond) validated={abs_validated}: " + " | ".join(
+    print(f"ABS(cond) clean_at_floor={abs_clean_at_floor}: " + " | ".join(
         f"{e} {abs_bars[e]['diff_mean']}({abs_bars[e]['faithful']})" for e in EXPLAINERS))
     print(f"OOD(diag) {ood} | LIME stab {lime_stability} | H {hypotheses}")
     return out

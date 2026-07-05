@@ -58,22 +58,46 @@ def _fpr(y_true, y_pred):
     return float(y_pred[neg].mean()) if neg.any() else np.nan
 
 
-def _perm_p(y_hat, g, a, b, y_te, n_perm=2000, seed=99):
-    """Two-sided permutation p for the signed FPR diff (b - a): shuffle group labels, recompute."""
-    obs = _fpr(y_te[g == b], y_hat[g == b]) - _fpr(y_te[g == a], y_hat[g == a])
-    if np.isnan(obs):
-        return None
-    mask = np.isin(g, [a, b])
-    ga, yt, yp = g[mask], y_te[mask], y_hat[mask]
+def _fpr_perm_fisher(y_hat, g, a, b, y_te, n_perm=2000, seed=99):
+    """FPR conditions on y==0, so exchangeable units are the NEGATIVES: permute group labels among
+    actual negatives (not across pos+neg). Returns (two-sided perm p with +1 correction, Fisher-exact
+    two-sided p on the 2x2 group x false-positive among negatives) — an exact cross-check."""
+    from scipy.stats import fisher_exact
+    neg = y_te == 0
+    mask = neg & np.isin(g, [a, b])
+    ga, yp = g[mask], y_hat[mask].astype(float)      # negatives in a,b; yp==1 => false positive
+    na, nb = int((ga == a).sum()), int((ga == b).sum())
+    if na == 0 or nb == 0:
+        return None, None
+    obs = yp[ga == b].mean() - yp[ga == a].mean()
     rng = np.random.default_rng(seed)
-    ge, valid = 0, 0
-    for _ in range(n_perm):
-        pg = rng.permutation(ga)
-        dd = _fpr(yt[pg == b], yp[pg == b]) - _fpr(yt[pg == a], yp[pg == a])
-        if not np.isnan(dd):
-            valid += 1
-            ge += abs(dd) >= abs(obs) - 1e-12
-    return round(ge / valid, 4) if valid else None
+    ge = sum(abs(yp[(pg := rng.permutation(ga)) == b].mean() - yp[pg == a].mean()) >= abs(obs) - 1e-12
+             for _ in range(n_perm))
+    perm_p = round((ge + 1) / (n_perm + 1), 4)       # +1 finite-sample correction
+    fp_a, fp_b = int(yp[ga == a].sum()), int(yp[ga == b].sum())
+    fisher_p = round(float(fisher_exact([[fp_b, nb - fp_b], [fp_a, na - fp_a]],
+                                        alternative="two-sided")[1]), 4)
+    return perm_p, fisher_p
+
+
+def _fpr_omnibus_perm_p(y_hat, g, y_te, groups, n_perm=2000, seed=101):
+    """Omnibus permutation p for FPR heterogeneity across >=2 groups (covers multi-group attrs like
+    age that have no pairwise test): statistic = max-min group FPR among negatives; permute within
+    negatives; +1 correction."""
+    neg = y_te == 0
+    ga, yp = g[neg], y_hat[neg].astype(float)
+    present = [grp for grp in groups if (ga == grp).any()]
+    if len(present) < 2:
+        return None
+
+    def rng_stat(gg):
+        fprs = [yp[gg == grp].mean() for grp in present if (gg == grp).any()]
+        return max(fprs) - min(fprs)
+
+    obs = rng_stat(ga)
+    rng = np.random.default_rng(seed)
+    ge = sum(rng_stat(rng.permutation(ga)) >= obs - 1e-12 for _ in range(n_perm))
+    return round((ge + 1) / (n_perm + 1), 4)
 
 
 def main() -> None:
@@ -103,11 +127,16 @@ def main() -> None:
         "note": "decisions at the cost-sensitive 5:1 threshold; 'bad'==1==declined; selection_rate = "
                 "fraction DECLINED. DP/EO are non-negative (folded) max-differences -> bootstrap CIs "
                 "are biased away from 0; for the binary attributes the SIGNED pairwise diff (with a CI "
-                "that can include 0) is the valid significance test. The audited model TRAINS ON "
-                "personal-status (sex proxy) + age directly. n<30 groups -> disparities not inferable.",
+                "that can include 0) is the valid test. FPR significance: the permutation p permutes "
+                "group labels WITHIN actual negatives (FPR conditions on y==0) with a +1 correction, "
+                "cross-checked by a Fisher-exact two-sided p on the 2x2; multi-group attributes (age) "
+                "get an OMNIBUS within-negatives permutation p (max-min group FPR). 'No disparity "
+                "significant at 0.05' refers to these tested statistics. Inferability: total-n gates "
+                "the group rows, class-conditional negatives gate the FPR comparator. The audited model "
+                "TRAINS ON personal-status (sex proxy) + age directly.",
         "by_attribute": {},
     }
-    for attr, g_all in prot.items():
+    for ai, (attr, g_all) in enumerate(prot.items()):
         g = g_all[idx_te]
         mf = MetricFrame(metrics=METRIC_FNS, y_true=y_te, y_pred=y_hat, sensitive_features=g)
         by_group = {}
@@ -131,17 +160,22 @@ def main() -> None:
             "demographic_parity_difference": round(dp, 4),
             "dp_ci95_folded": _boot_ci(
                 lambda idx, g=g: demographic_parity_difference(
-                    y_te[idx], y_hat[idx], sensitive_features=g[idx]), n, seed=SEED),
+                    y_te[idx], y_hat[idx], sensitive_features=g[idx]), n, seed=SEED + ai * 10),
             "equalized_odds_difference": round(eo, 4),
             "eo_ci95_folded": _boot_ci(
                 lambda idx, g=g: equalized_odds_difference(
-                    y_te[idx], y_hat[idx], sensitive_features=g[idx]), n, seed=SEED + 1),
+                    y_te[idx], y_hat[idx], sensitive_features=g[idx]), n, seed=SEED + 1 + ai * 10),
         }
         groups = sorted(set(g))
-        if len(groups) == 2:      # signed diff (b - a): the valid significance test
+        neg = y_te == 0
+        entry["fpr_omnibus_perm_p"] = _fpr_omnibus_perm_p(y_hat, g, y_te, groups, seed=101 + ai)
+        if len(groups) == 2:      # signed diff (b - a): the valid pairwise significance test
             a, b = groups
             counts = {grp: int((g == grp).sum()) for grp in groups}
+            neg_counts = {grp: int(((g == grp) & neg).sum()) for grp in groups}
             entry["comparator_inferable"] = bool(min(counts.values()) >= MIN_N)
+            entry["fpr_comparator_inferable"] = bool(min(neg_counts.values()) >= MIN_N)  # class-conditional
+            entry["negatives_per_group"] = neg_counts
             for si, (name, fn) in enumerate((("decline_rate", lambda yt, yp: float(yp.mean())),
                                              ("fpr", _fpr))):
                 point = fn(y_te[g == b], y_hat[g == b]) - fn(y_te[g == a], y_hat[g == a])
@@ -150,8 +184,10 @@ def main() -> None:
                     gg, yt, yp = g[idx], y_te[idx], y_hat[idx]
                     return fn(yt[gg == b], yp[gg == b]) - fn(yt[gg == a], yp[gg == a])
                 entry[f"signed_{name}_diff_{b}_minus_{a}"] = _clean(point)
-                entry[f"signed_{name}_diff_ci95"] = _boot_ci(stat, n, seed=SEED + 2 + si)
-            entry["signed_fpr_diff_perm_p"] = _perm_p(y_hat, g, a, b, y_te)
+                entry[f"signed_{name}_diff_ci95"] = _boot_ci(stat, n, seed=SEED + 2 + si + ai * 10)
+            perm_p, fisher_p = _fpr_perm_fisher(y_hat, g, a, b, y_te)
+            entry["signed_fpr_diff_perm_p"] = perm_p
+            entry["fpr_fisher_exact_p"] = fisher_p
         out["by_attribute"][attr] = entry
         print(f"[{attr}] DP {dp:.3f} ci{entry['dp_ci95_folded']} | EO {eo:.3f} ci{entry['eo_ci95_folded']}")
 

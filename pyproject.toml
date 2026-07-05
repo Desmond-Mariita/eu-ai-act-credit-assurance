@@ -1,10 +1,11 @@
 [project]
 name = "credit-assurance"
-version = "0.1.0"
+version = "1.0.0"
 requires-python = ">=3.11,<3.13"
 # Core deps used by the frozen instrument, data loaders, and the manifest/DQ script.
+# scipy is a scikit-learn transitive dep but is imported directly (fisher_exact) so it is declared.
 dependencies = [
-  "numpy", "pandas", "pyarrow", "scikit-learn", "ucimlrepo",
+  "numpy", "pandas", "pyarrow", "scikit-learn", "scipy", "ucimlrepo",
 ]
 [project.optional-dependencies]
 # Model / explainer / plotting stack — needed from Phase 2 (train + benchmark) onward.

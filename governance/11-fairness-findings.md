@@ -35,7 +35,7 @@ obliges the provider/deployer to examine; it expresses **no opinion** that the m
 ## Statistical significance (this is the correction the review demanded)
 | Attribute | DP diff [folded CI] | EO diff [folded CI] | **valid signed test** |
 |---|---|---|---|
-| sex | 0.10 [0.01, 0.22] | 0.12 [0.03, 0.27] | **FPR diff (♀−♂) 95% CI includes 0** (≈[−0.03, 0.26]); decline-diff CI includes 0; **permutation p = 0.086** |
+| sex | 0.10 [0.01, 0.22] | 0.12 [0.03, 0.27] | **FPR diff (♀−♂) 95% CI includes 0**; decline-diff CI includes 0; **within-negatives permutation p = 0.091, Fisher-exact p = 0.096** |
 | foreign_worker | 0.25 [0.03, 0.47] | 0.25 [0.17, 0.81] | **decline diff (yes−no) 95% CI includes 0** ([−0.02, 0.47]) — *comparator n=15, not inferable* |
 | age_band | 0.24 [0.12, 0.64] | 0.35 [0.23, 0.90] | multi-group; folded only — treat as exploratory |
 
@@ -48,8 +48,10 @@ direction, but **not statistically significant** at this sample size.
 ## Interpretation (honest)
 - **Sex** is the largest well-powered *point* estimate — women face a ~10-pt higher decline rate and a
   higher FPR (0.47 vs 0.35, i.e. good female applicants wrongly declined more) — **but it is not
-  significant** (signed FPR-diff CI spans 0, permutation p = 0.086; the FPR rests on only 66
-  true-good women).
+  significant** (signed FPR-diff CI spans 0; **within-negatives permutation p = 0.091, Fisher-exact
+  p = 0.096**; the FPR rests on only 66 true-good women). *(Multi-group **age** has no pairwise test but
+  an omnibus within-negatives FPR permutation p = 0.39 — also not significant; **foreign-worker** n=15
+  is not inferable.)*
   Threshold-independent AUROC mildly corroborates slightly worse ranking for women (0.74 vs 0.78).
   Base rates differ (female 0.34 vs male 0.28 bad), so *some* decline-rate gap is expected under a
   single threshold on calibrated scores; the FPR/EO view conditions on the true label and would, if

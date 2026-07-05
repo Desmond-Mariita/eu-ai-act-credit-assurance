@@ -48,7 +48,6 @@ def main() -> None:
     df = pd.read_parquet(ROOT / "data" / "german_credit.parquet")
     y = df["y"].to_numpy()
     cols = list(df.drop(columns=["y"]).columns)
-    cat_idx = [i for i, c in enumerate(cols) if "_" in c]   # one-hot dummy cols -> LIME categorical
     X = df.drop(columns=["y"]).to_numpy(dtype=float)
     fg = D.feature_groups_from_columns(cols)
     logical = list(fg.keys())
@@ -67,15 +66,18 @@ def main() -> None:
             raise SystemExit("ROAR seed-0 model != pinned audited model")
 
         shap_ex = E.make_shap_explainer(full)
-        lime_ex = E.make_lime_explainer(X[tr], seed=seed, categorical_features=cat_idx)
+        # group-valid LIME in label-encoded logical space (X_log_tr rows align to tr order)
+        X_log_tr, cat_pos, cat_names, cat_groups, num_groups = E.to_logical_space(X[tr], cols, fg, logical)
+        lime_predict = E.logical_predict_fn(full.predict_proba, d, cat_groups, num_groups)
+        lime_ex = E.make_lime_explainer(X_log_tr, cat_pos, cat_names, seed=seed)
         ts_imp = {g: 0.0 for g in logical}
         for i in tr:
             _, v = E.treeshap_ranking(shap_ex, X[i], fg, logical)
             for g in logical:
                 ts_imp[g] += abs(v[g])
         lm_imp = {g: 0.0 for g in logical}
-        for i in tr[:N_LIME]:
-            _, v = E.lime_ranking(lime_ex, full.predict_proba, X[i], fg, logical, d)
+        for j in range(min(N_LIME, len(tr))):
+            _, v = E.lime_ranking(lime_ex, lime_predict, X_log_tr[j], logical, len(logical))
             for g in logical:
                 lm_imp[g] += abs(v[g])
         gain = full.booster_.feature_importance(importance_type="gain")

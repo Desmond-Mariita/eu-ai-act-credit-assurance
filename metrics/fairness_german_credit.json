@@ -5,7 +5,7 @@
   "n_test": 300,
   "n_bootstrap": 2000,
   "min_group_n": 30,
-  "note": "decisions at the cost-sensitive 5:1 threshold; 'bad'==1==declined; selection_rate = fraction DECLINED. DP/EO are non-negative (folded) max-differences -> bootstrap CIs are biased away from 0; for the binary attributes the SIGNED pairwise diff (with a CI that can include 0) is the valid significance test. The audited model TRAINS ON personal-status (sex proxy) + age directly. n<30 groups -> disparities not inferable.",
+  "note": "decisions at the cost-sensitive 5:1 threshold; 'bad'==1==declined; selection_rate = fraction DECLINED. DP/EO are non-negative (folded) max-differences -> bootstrap CIs are biased away from 0; for the binary attributes the SIGNED pairwise diff (with a CI that can include 0) is the valid test. FPR significance: the permutation p permutes group labels WITHIN actual negatives (FPR conditions on y==0) with a +1 correction, cross-checked by a Fisher-exact two-sided p on the 2x2; multi-group attributes (age) get an OMNIBUS within-negatives permutation p (max-min group FPR). 'No disparity significant at 0.05' refers to these tested statistics. Inferability: total-n gates the group rows, class-conditional negatives gate the FPR comparator. The audited model TRAINS ON personal-status (sex proxy) + age directly.",
   "by_attribute": {
     "sex": {
       "by_group": {
@@ -40,7 +40,13 @@
         0.0322,
         0.2694
       ],
+      "fpr_omnibus_perm_p": 0.1,
       "comparator_inferable": true,
+      "fpr_comparator_inferable": true,
+      "negatives_per_group": {
+        "female": 66,
+        "male": 144
+      },
       "signed_decline_rate_diff_male_minus_female": -0.1,
       "signed_decline_rate_diff_ci95": [
         -0.2185,
@@ -51,7 +57,8 @@
         -0.26,
         0.021
       ],
-      "signed_fpr_diff_perm_p": 0.0855
+      "signed_fpr_diff_perm_p": 0.091,
+      "fpr_fisher_exact_p": 0.0957
     },
     "foreign_worker": {
       "by_group": {
@@ -78,26 +85,33 @@
       },
       "demographic_parity_difference": 0.2491,
       "dp_ci95_folded": [
-        0.025,
-        0.4662
+        0.0312,
+        0.4596
       ],
       "equalized_odds_difference": 0.2472,
       "eo_ci95_folded": [
-        0.1728,
-        0.8143
+        0.1758,
+        0.8182
       ],
+      "fpr_omnibus_perm_p": 0.087,
       "comparator_inferable": false,
+      "fpr_comparator_inferable": false,
+      "negatives_per_group": {
+        "no": 13,
+        "yes": 197
+      },
       "signed_decline_rate_diff_yes_minus_no": 0.2491,
       "signed_decline_rate_diff_ci95": [
-        -0.01,
-        0.4667
+        0.0049,
+        0.4771
       ],
       "signed_fpr_diff_yes_minus_no": 0.2472,
       "signed_fpr_diff_ci95": [
-        0.0082,
-        0.4286
+        0.0133,
+        0.4314
       ],
-      "signed_fpr_diff_perm_p": 0.126
+      "signed_fpr_diff_perm_p": 0.0815,
+      "fpr_fisher_exact_p": 0.086
     },
     "age_band": {
       "by_group": {
@@ -144,14 +158,15 @@
       },
       "demographic_parity_difference": 0.2389,
       "dp_ci95_folded": [
-        0.1229,
-        0.6439
+        0.127,
+        0.6353
       ],
       "equalized_odds_difference": 0.35,
       "eo_ci95_folded": [
-        0.2381,
-        0.898
-      ]
+        0.2374,
+        0.9118
+      ],
+      "fpr_omnibus_perm_p": 0.3888
     }
   }
 }
