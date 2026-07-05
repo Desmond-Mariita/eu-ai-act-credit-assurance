@@ -62,9 +62,13 @@ merely asserted.
   perfectly, stable.
 
 ## Deviations from pre-registration (full list in the metrics JSON)
-1. **LIME fix.** The first run used `discretize_continuous=False`, under which LIME weights are raw
-   scaled sensitivities, not instance contributions. Corrected to `discretize=True` and re-run (also
-   removed a spurious stability = 1.0).
+1. **LIME fix + residual limitation.** The first run used `discretize_continuous=False`, under which
+   LIME weights are raw scaled sensitivities, not instance contributions. Corrected to `discretize=True`
+   and re-run (also removed a spurious stability = 1.0). **Known residual limitation:**
+   `categorical_features` is *not* passed to `LimeTabularExplainer`, so one-hot dummies are sampled as
+   continuous (off-manifold fractional-dummy states) in LIME's neighbourhood — the **naive off-the-shelf
+   LIME baseline** as practitioners commonly use it; passing `categorical_features` is the correct-usage
+   alternative (future work). Our evaluation still aggregates LIME's ranking to logical groups.
 2. **Signed → absolute.** The pre-registered metric is signed; a direction-agnostic absolute variant
    (+ its own floor, + both controls) was added post-hoc after review showed sign cancellation drives
    the signed conditional null.
@@ -86,7 +90,9 @@ merely asserted.
 ## Generalization check — Give Me Some Credit (GMSC)
 Second dataset, structurally different: **all-numeric** (10 features, no one-hot groups), **imbalanced**
 (~6.7% default), subsampled to 6,000 for a tractable conditional-kNN donor pool (807 past-due `96/98`
-sentinels + `age<18` cleaned per the DQ profile; `scripts/06_gmsc_prep.py`). LightGBM **AUROC 0.829**;
+sentinels + `age<18` cleaned per the DQ profile; `scripts/06_gmsc_prep.py`). LightGBM **AUROC ≈0.83**
+(a script-printed sanity value for the generalization check — the GMSC model is a throwaway, **not** an
+audited/hashed artifact like the German-Credit ToE);
 benchmark n=200, K=5, n_perms=30. Full numbers: `metrics/faithfulness_gmsc.json`.
 
 **Replicates (the core finding holds on a different dataset):**

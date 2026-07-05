@@ -1,9 +1,9 @@
 {
   "dataset": "german_credit",
   "params": {
-    "n_eval": 300,
-    "n_perms": 40,
-    "m_donors": 25,
+    "n_eval": 2,
+    "n_perms": 2,
+    "m_donors": 4,
     "k_neighbors": 50,
     "top_k": 10,
     "n_logical_features": 20,
@@ -16,81 +16,81 @@
     "conditional": {
       "aopc_comprehensiveness": {
         "treeshap": {
-          "aopc_mean": 0.0099,
+          "aopc_mean": 0.1814,
           "ci95": [
-            -0.0162,
-            0.0385
+            -0.0277,
+            0.3905
           ],
-          "n": 300
+          "n": 2
         },
         "lime": {
-          "aopc_mean": -0.0107,
+          "aopc_mean": 0.0417,
           "ci95": [
-            -0.0323,
-            0.0133
+            -0.0678,
+            0.1513
           ],
-          "n": 300
+          "n": 2
         },
         "shuffled_shap_clean": {
-          "aopc_mean": 0.0009,
+          "aopc_mean": -0.0404,
           "ci95": [
-            -0.0145,
-            0.0162
+            -0.1698,
+            0.089
           ],
-          "n": 300
+          "n": 2
         },
         "label_shuffled_model": {
-          "aopc_mean": 0.0166,
+          "aopc_mean": 0.1865,
           "ci95": [
-            -0.0032,
-            0.0369
+            -0.0354,
+            0.4085
           ],
-          "n": 300
+          "n": 2
         },
         "random_floor": {
-          "aopc_mean": 0.0041,
+          "aopc_mean": 0.0747,
           "ci95": [
-            -0.0063,
-            0.0152
+            -0.032,
+            0.1814
           ],
-          "n": 300
+          "n": 2
         }
       },
       "faithfulness_bar_vs_floor": {
         "treeshap": {
-          "diff_mean": 0.0058,
+          "diff_mean": 0.1067,
           "diff_ci95": [
-            -0.0115,
-            0.0248
+            0.0043,
+            0.2091
           ],
-          "se_bootstrap": 0.0092,
+          "se_bootstrap": 0.0712,
           "faithful": false
         },
         "lime": {
-          "diff_mean": -0.0148,
+          "diff_mean": -0.033,
           "diff_ci95": [
-            -0.0295,
-            0.0002
+            -0.0358,
+            -0.0301
           ],
-          "se_bootstrap": 0.0077,
+          "se_bootstrap": 0.002,
           "faithful": false
         },
         "shuffled_shap_clean": {
-          "diff_mean": -0.0032,
+          "diff_mean": -0.1151,
           "diff_ci95": [
-            -0.0136,
-            0.0069
+            -0.1379,
+            -0.0924
           ],
-          "se_bootstrap": 0.0053,
+          "se_bootstrap": 0.0158,
           "faithful": false
         },
         "label_shuffled_model": {
-          "diff_mean": 0.0125,
+          "diff_mean": 0.1118,
           "diff_ci95": [
-            -0.0001,
-            0.0255
+            -0.0035,
+            0.2271
           ],
-          "se_bootstrap": 0.0065,
+          "se_bootstrap": 0.0801,
           "faithful": false
         }
       }
@@ -98,182 +98,182 @@
     "marginal": {
       "aopc_comprehensiveness": {
         "treeshap": {
-          "aopc_mean": -0.0161,
+          "aopc_mean": 0.1408,
           "ci95": [
-            -0.0433,
-            0.0138
+            -0.0604,
+            0.342
           ],
-          "n": 300
+          "n": 2
         },
         "lime": {
-          "aopc_mean": -0.0403,
+          "aopc_mean": 0.0628,
           "ci95": [
-            -0.0632,
-            -0.0155
+            -0.0751,
+            0.2007
           ],
-          "n": 300
+          "n": 2
         },
         "shuffled_shap_clean": {
-          "aopc_mean": -0.0056,
+          "aopc_mean": -0.0353,
           "ci95": [
-            -0.0207,
-            0.01
+            -0.1415,
+            0.0708
           ],
-          "n": 300
+          "n": 2
         },
         "label_shuffled_model": {
-          "aopc_mean": 0.0043,
+          "aopc_mean": 0.2165,
           "ci95": [
-            -0.0159,
-            0.0251
+            0.0267,
+            0.4063
           ],
-          "n": 300
+          "n": 2
         },
         "random_floor": {
-          "aopc_mean": -0.0022,
+          "aopc_mean": 0.0595,
           "ci95": [
-            -0.0133,
-            0.0095
+            -0.0593,
+            0.1783
           ],
-          "n": 300
+          "n": 2
         }
       },
       "faithfulness_bar_vs_floor": {
         "treeshap": {
-          "diff_mean": -0.0139,
+          "diff_mean": 0.0814,
           "diff_ci95": [
-            -0.0311,
-            0.0049
+            -0.001,
+            0.1637
           ],
-          "se_bootstrap": 0.0094,
+          "se_bootstrap": 0.0573,
           "faithful": false
         },
         "lime": {
-          "diff_mean": -0.0381,
+          "diff_mean": 0.0033,
           "diff_ci95": [
-            -0.0522,
-            -0.0228
+            -0.0158,
+            0.0225
           ],
-          "se_bootstrap": 0.0075,
+          "se_bootstrap": 0.0133,
           "faithful": false
         },
         "shuffled_shap_clean": {
-          "diff_mean": -0.0034,
+          "diff_mean": -0.0948,
           "diff_ci95": [
-            -0.0139,
-            0.0067
+            -0.1075,
+            -0.0821
           ],
-          "se_bootstrap": 0.0053,
+          "se_bootstrap": 0.0088,
           "faithful": false
         },
         "label_shuffled_model": {
-          "diff_mean": 0.0065,
+          "diff_mean": 0.1571,
           "diff_ci95": [
-            -0.0069,
-            0.0195
+            0.086,
+            0.2281
           ],
-          "se_bootstrap": 0.0067,
-          "faithful": false
+          "se_bootstrap": 0.0494,
+          "faithful": true
         }
       }
     },
     "baseline": {
       "aopc_comprehensiveness": {
         "treeshap": {
-          "aopc_mean": 0.1051,
+          "aopc_mean": 0.3186,
           "ci95": [
-            0.0756,
-            0.137
+            0.1859,
+            0.4513
           ],
-          "n": 300
+          "n": 2
         },
         "lime": {
-          "aopc_mean": 0.1058,
+          "aopc_mean": 0.217,
           "ci95": [
-            0.0811,
-            0.1325
+            0.1626,
+            0.2714
           ],
-          "n": 300
+          "n": 2
         },
         "shuffled_shap_clean": {
-          "aopc_mean": 0.0322,
+          "aopc_mean": 0.0772,
           "ci95": [
-            0.0131,
-            0.0519
+            -0.0645,
+            0.219
           ],
-          "n": 300
+          "n": 2
         },
         "label_shuffled_model": {
-          "aopc_mean": 0.0436,
+          "aopc_mean": 0.2941,
           "ci95": [
-            0.0184,
-            0.0674
+            0.1556,
+            0.4327
           ],
-          "n": 300
+          "n": 2
         },
         "random_floor": {
-          "aopc_mean": 0.0313,
+          "aopc_mean": 0.1482,
           "ci95": [
-            0.0199,
-            0.0432
+            0.0473,
+            0.2491
           ],
-          "n": 300
+          "n": 2
         }
       },
       "faithfulness_bar_vs_floor": {
         "treeshap": {
-          "diff_mean": 0.0737,
+          "diff_mean": 0.1704,
           "diff_ci95": [
-            0.0534,
-            0.095
+            0.1386,
+            0.2023
           ],
-          "se_bootstrap": 0.0105,
+          "se_bootstrap": 0.0221,
           "faithful": true
         },
         "lime": {
-          "diff_mean": 0.0744,
+          "diff_mean": 0.0688,
           "diff_ci95": [
-            0.058,
-            0.0911
+            0.0223,
+            0.1154
           ],
-          "se_bootstrap": 0.0086,
+          "se_bootstrap": 0.0323,
           "faithful": true
         },
         "shuffled_shap_clean": {
-          "diff_mean": 0.0008,
+          "diff_mean": -0.0709,
           "diff_ci95": [
-            -0.0138,
-            0.0154
+            -0.1118,
+            -0.03
           ],
-          "se_bootstrap": 0.0076,
+          "se_bootstrap": 0.0284,
           "faithful": false
         },
         "label_shuffled_model": {
-          "diff_mean": 0.0122,
+          "diff_mean": 0.146,
           "diff_ci95": [
-            -0.0058,
-            0.0293
+            0.1083,
+            0.1837
           ],
-          "se_bootstrap": 0.009,
-          "faithful": false
+          "se_bootstrap": 0.0262,
+          "faithful": true
         }
       }
     }
   },
   "sufficiency_treeshap_conditional": {
-    "aopc_mean": -0.007,
+    "aopc_mean": -0.0371,
     "ci95": [
-      -0.0175,
-      0.0039
+      -0.0479,
+      -0.0264
     ],
-    "n": 300
+    "n": 2
   },
   "ood_top3_first30_diagnostic": {
-    "conditional": 5.45,
-    "marginal": 5.7022,
-    "baseline": 5.04
+    "conditional": 6.3423,
+    "marginal": 6.0708,
+    "baseline": 5.5492
   },
-  "lime_topk_stability_discretized": 0.7897,
+  "lime_topk_stability_discretized": 0.8333,
   "hypotheses_preregistered": {
     "H1_treeshap_faithful_conditional_signed": false,
     "H2_lime_below_treeshap_conditional_signed": true,
@@ -283,84 +283,84 @@
   "post_hoc_diagnostics": {
     "clean_control_lands_at_floor_conditional": true,
     "absolute_movement_conditional": {
-      "controls_at_absolute_floor_validated": true,
+      "controls_at_absolute_floor_validated": false,
       "aopc": {
         "treeshap": {
-          "aopc_mean": 0.2086,
+          "aopc_mean": 0.254,
           "ci95": [
-            0.1934,
-            0.2243
+            0.1175,
+            0.3905
           ],
-          "n": 300
+          "n": 2
         },
         "lime": {
-          "aopc_mean": 0.1785,
+          "aopc_mean": 0.1832,
           "ci95": [
-            0.1662,
-            0.1904
+            0.1288,
+            0.2377
           ],
-          "n": 300
+          "n": 2
         },
         "shuffled_shap_clean": {
-          "aopc_mean": 0.1057,
+          "aopc_mean": 0.2093,
           "ci95": [
-            0.0964,
-            0.1155
+            0.1781,
+            0.2405
           ],
-          "n": 300
+          "n": 2
         },
         "label_shuffled_model": {
-          "aopc_mean": 0.1461,
+          "aopc_mean": 0.2781,
           "ci95": [
-            0.1344,
-            0.159
+            0.1478,
+            0.4085
           ],
-          "n": 300
+          "n": 2
         },
         "random_floor": {
-          "aopc_mean": 0.1024,
+          "aopc_mean": 0.1422,
           "ci95": [
-            0.0967,
-            0.1083
+            0.0908,
+            0.1936
           ],
-          "n": 300
+          "n": 2
         }
       },
       "beats_floor": {
         "treeshap": {
-          "diff_mean": 0.1061,
+          "diff_mean": 0.1118,
           "diff_ci95": [
-            0.0944,
-            0.1181
+            0.0267,
+            0.1969
           ],
-          "se_bootstrap": 0.006,
-          "faithful": true
+          "se_bootstrap": 0.0592,
+          "faithful": false
         },
         "lime": {
-          "diff_mean": 0.0761,
+          "diff_mean": 0.041,
           "diff_ci95": [
-            0.0656,
-            0.0856
+            0.038,
+            0.0441
           ],
-          "se_bootstrap": 0.0051,
+          "se_bootstrap": 0.0021,
           "faithful": true
         },
         "shuffled_shap_clean": {
-          "diff_mean": 0.0033,
+          "diff_mean": 0.0671,
           "diff_ci95": [
-            -0.0047,
-            0.0116
+            0.0469,
+            0.0873
           ],
-          "se_bootstrap": 0.0042,
-          "faithful": false
+          "se_bootstrap": 0.0141,
+          "faithful": true
         },
         "label_shuffled_model": {
-          "diff_mean": 0.0437,
+          "diff_mean": 0.136,
           "diff_ci95": [
-            0.0344,
-            0.0533
+            0.057,
+            0.2149
           ],
-          "se_bootstrap": 0.0049,
+          "se_bootstrap": 0.0549,
           "faithful": true
         }
       }
@@ -378,5 +378,5 @@
     "OOD is a DIAGNOSTIC (TreeSHAP top-3 erasure, first 30 instances) \u2014 not a regime characterisation; do not infer on/off-manifoldness from it.",
     "'baseline' (median/modal replacement) behaves as an off-manifold GLOBAL-LEVERAGE ordering test, not a local on-distribution faithfulness test."
   ],
-  "interpretation": "The pre-registered signed AOPC-vs-floor test does NOT detect faithfulness under the conditional regime at n=300 (high per-instance variance + sign cancellation) \u2014 absence of evidence, not evidence of unfaithfulness. Under a direction-agnostic ABSOLUTE (movement) metric \u2014 validated by the clean random control landing at the absolute floor \u2014 TreeSHAP beats and LIME beats the floor (the CONFOUNDED label-shuffled control also beats it, consistent with its mild real signal). Under baseline (off-manifold leverage) both explainers beat the floor; the clean control stays at the floor there."
+  "interpretation": "The pre-registered signed AOPC-vs-floor test does NOT detect faithfulness under the conditional regime at n=300 (high per-instance variance + sign cancellation) \u2014 absence of evidence, not evidence of unfaithfulness. The ABSOLUTE (movement) metric is NOT validated (the clean control also beats its absolute floor), so no movement-based faithfulness claim is made. Under baseline (off-manifold leverage) both explainers beat the floor; the clean control stays at the floor there."
 }

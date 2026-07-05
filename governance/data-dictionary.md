@@ -72,7 +72,7 @@ Representation of protected/proxy groups in German Credit (n = 1,000):
 |-----------|--------|--------|
 | Sex (from Attr. 9) | male / female | **690 / 310** (69 % / 31 %) |
 | Foreign worker (Attr. 20) | foreign / non-foreign | **963 / 37** (96.3 % / 3.7 %) |
-| Age band (Attr. 13) | ≤25 / 26–40 / 41–60 / >60 | **190 / 536 / 229 / 45** |
+| Age band (Attr. 13; `<25 / 25-39 / 40-59 / 60+`, per `data._age_band`, shared with the fairness test) | <25 / 25-39 / 40-59 / 60+ | **149 / 552 / 248 / 51** |
 
 **Representation risks:**
 - **Severe skew in `foreign_worker`** (only 37 non-foreign) → any subgroup fairness/performance claim

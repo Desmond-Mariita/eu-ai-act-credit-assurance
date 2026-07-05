@@ -75,6 +75,12 @@ def make_lime_explainer(X_train, seed=0):
     from lime.lime_tabular import LimeTabularExplainer
     # discretize_continuous=True (LIME's default): weights act as instance-specific CONTRIBUTIONS
     # (active bin == 1), not raw scaled-feature sensitivities — the correct attribution to rank.
+    # KNOWN LIMITATION (documented in finding 10 §Deviations): `categorical_features` is NOT passed, so
+    # LIME treats the one-hot dummies as continuous in its neighbourhood sampling (it evaluates the model
+    # on off-manifold fractional-dummy states). This is the *naive off-the-shelf LIME baseline* as
+    # practitioners commonly use it — part of what the audit surfaces; our faithfulness EVALUATION still
+    # aggregates LIME's ranking to logical groups via a one-hot-respecting perturber. Passing
+    # `categorical_features` (from feature_groups) is the correct-usage alternative (future work).
     return LimeTabularExplainer(np.asarray(X_train, dtype=float), mode="classification",
                                 discretize_continuous=True, random_state=seed)
 

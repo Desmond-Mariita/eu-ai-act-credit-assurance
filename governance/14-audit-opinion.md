@@ -23,7 +23,7 @@ the ISAE-3000 sense. A stronger opinion is conditional on the items in §5.
 lawfulness, security posture, and any system other than the audited model on German Credit (+ a Give
 Me Some Credit generalization check).
 
-## 3. Summary of findings (each internally + externally reviewed to consensus)
+## 3. Summary of findings (each hardened through internal + external *model-reviewer* gauntlets — a quality control, not independent human review)
 1. **Faithfulness — favourable, nuanced.** Under a **validated** direction-agnostic movement metric,
    **both TreeSHAP and LIME are faithful** (TreeSHAP > LIME *under this metric*); a **retrain-based
    ROAR anchor (8 splits) independently corroborates that both are faithful** (0.108 / 0.111 vs 0.036
@@ -47,7 +47,8 @@ Me Some Credit generalization check).
 ## 4. Opinion
 On the dimensions assessed and against the pinned criteria, **on the evidence gathered the assessor
 identified no indication that the model is unfit** on faithfulness, fairness, robustness, or recourse —
-indeed the explanations are demonstrably faithful and recourse is broadly available — **subject to** the fairness
+indeed the explanations are **demonstrably faithful under the validated (post-hoc) movement metric + ROAR** (the
+pre-registered *signed* metric was an underpowered null) and recourse is broadly available — **subject to** the fairness
 monitoring flags, the near-threshold robustness population, and the ~6% recourse-infeasible core being
 addressed by the deployer. **This is NOT an opinion that the system is EU-AI-Act-compliant or
 conformant.** Conformity readiness is **partial** (`13 §F`): several high-risk obligations are **Gap**

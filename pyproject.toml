@@ -10,8 +10,7 @@ dependencies = [
 # Model / explainer / plotting stack — needed from Phase 2 (train + benchmark) onward.
 # numba is pinned so shap's transitive llvmlite resolves on Python 3.12 (old llvmlite < 0.42 fails).
 models = [
-  "lightgbm", "interpret-core", "fairlearn", "shap", "lime", "dice-ml", "matplotlib",
-  "numba>=0.60", "requests",
+  "lightgbm", "interpret-core", "fairlearn", "shap", "lime", "numba>=0.60",
 ]
 dev = ["pytest", "pytest-cov", "ruff"]
 notebooks = ["jupytext", "nbconvert", "ipykernel"]

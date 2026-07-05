@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -18,6 +19,7 @@ from sklearn.metrics import average_precision_score, confusion_matrix, roc_auc_s
 from credit_assurance import models as M
 from credit_assurance.data import cost_sensitive_threshold
 
+warnings.filterwarnings("ignore")
 ROOT = Path(__file__).resolve().parents[1]
 METRICS = ROOT / "metrics"
 MODELS = ROOT / "models"

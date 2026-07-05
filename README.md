@@ -37,7 +37,7 @@ Full write-ups: [`governance/10`](governance/10-faithfulness-findings.md) ·
 
 ## What makes it credible
 - **Pre-registration:** the method + hypotheses (H1–H4) were fixed **before results** —
-  [`HYPOTHESES.md`](HYPOTHESES.md), signed tag [`prereg-v1`](../../releases/tag/prereg-v1),
+  [`HYPOTHESES.md`](HYPOTHESES.md), signed tag [`prereg-v1`](https://github.com/Desmond-Mariita/eu-ai-act-credit-assurance/releases/tag/prereg-v1),
   **OpenTimestamps Bitcoin-confirmed** (block 956533). The absolute-movement metric + ROAR were
   disclosed post-hoc additions.
 - **Adversarial review:** every finding was hardened through internal (Claude) + external

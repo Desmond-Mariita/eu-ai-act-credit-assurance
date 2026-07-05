@@ -7,5 +7,5 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v3
       - run: uv venv && uv pip install -e ".[dev]"
-      - run: uv run ruff check src/ tests/
+      - run: uv run ruff check src/ tests/ scripts/
       - run: uv run pytest -q

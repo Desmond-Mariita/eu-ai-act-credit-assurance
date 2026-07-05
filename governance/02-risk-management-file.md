@@ -1,22 +1,24 @@
 # 02 — Risk Management File (EU AI Act Art. 9) + Assumptions Log
 
-**Status:** Phase 0.5 — the **Assumptions log (§2) is initiated now, before any results**; the risk
-register (§1) is seeded here and finalized in plan Task 16.
+**Status:** v1.0 — **risk register (§1) finalised from the completed findings** (`10`–`12`, `06`); the
+Assumptions log (§2) was initiated Phase 0.5, before results.
 
-## 1. Risk register (Art. 9) — seed
-Likelihood/Impact on a defined scale (see `10-severity-rubric.md`, plan Task 19). Owner = the role
-accountable in the scenario.
+## 1. Risk register (Art. 9) — finalised
+Scale: Likelihood / Residual ∈ {Low, Med, High}; **assessed 2026-07-05 from findings `10`–`12` + DPIA
+`06`**. Owner = the accountable role. The DPIA (`06 §5`) scores the data-protection subset consistently
+(discrimination / proxy / opacity / instability ≈ Med×Med).
 
-| ID | Hazard | Likelihood | Impact | Mitigation | Residual | Owner |
+| ID | Hazard | Likelihood | Impact | Mitigation performed | Residual | Owner |
 |----|--------|-----------|--------|-----------|----------|-------|
-| R1 | Proxy discrimination via `personal_status`/`foreign_worker`/`age` | TBD | High | Fairness audit + one mitigation pass; protected/proxy policy | TBD | **Provider** (build-time, Art. 10(2)(f)) |
-| R2 | Unfaithful explanations shown to officers/applicants | TBD | High | Perturbation-faithfulness benchmark + negative controls | TBD | Provider |
-| R3 | Covariate drift degrades performance post-deployment | TBD | Med | Drift mini-audit; monitoring plan (simulated) | TBD | **Provider** (build) / **Deployer** (Art. 26 monitoring) |
-| R4 | Adversarial gaming of visible feature weights | TBD | Med | Gaming probe; feature-exposure review | TBD | Provider |
-| R5 | Data-quality defects (completeness/errors) | TBD | Med | `data_quality.json` profile (Art. 10(3)) | TBD | Provider |
-| R6 | Over-reliance on automation (human oversight fails) | TBD | High | Human-in-the-loop design; Art. 22 trigger analysis | TBD | Deployer |
+| R1 | Proxy discrimination via `personal_status`/`foreign_worker`/`age` | **Med** | High | Fairness audit done (`11`) — **NO mitigation applied**; model still trains on the sex proxy + age | **Med** (disparities directional but **not significant at n=300**; monitored, not mitigated) | **Provider** (Art. 10(2)(f)) |
+| R2 | Unfaithful explanations shown to officers/applicants | **Low–Med** | High | Faithfulness benchmark + ROAR (`10`): explanations faithful under a **validated** metric | **Low–Med** (faithfulness is **metric-dependent**; a naive signed score would mislabel) | Provider |
+| R3 | Covariate drift degrades performance post-deployment | **Med** | Med | **Not performed** — drift / post-market monitoring is a **Gap** (`13 §E`) | **Med–High** (no drift monitoring) | **Provider** (build) / **Deployer** (Art. 26/72) |
+| R4 | Adversarial gaming of visible feature weights | **Low–Med** | Med | **Not performed** — gaming probe is a **Gap** | **Med** (unassessed) | Provider |
+| R5 | Data-quality defects (completeness/errors) | **Med** | Med | DQ profile done (`data_quality.json`, Art. 10(3)); GMSC 96/98 sentinels + age errors cleaned | **Low–Med** (documented + handled) | Provider |
+| R6 | Over-reliance on automation (human oversight fails) | **Med** | High | Human-in-the-loop **design only** — effectiveness **not tested** (`13 §E`) | **High** (the load-bearing safeguard is unverified; robustness `12` shows a 13.3% near-threshold population) | Deployer (Art. 14/22) |
 
-*(Likelihood/Impact/Residual populated in Task 16 once evidence exists.)*
+*Residuals reflect that several mitigations are **assessed but not remediated** (self-assessment); the
+open items (drift/PMM, gaming probe, oversight-effectiveness) are in the dossier gap register `13 §E`.*
 
 ## 2. Assumptions log (initiated Phase 0.5 — before results; Art. 9 / Annex IV)
 Design, method, and data assumptions fixed **before** running, appended as the build proceeds.

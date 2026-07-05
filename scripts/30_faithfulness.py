@@ -72,6 +72,11 @@ def run(dataset: str, n_eval: int, n_perms: int, m: int, k_neighbors: int) -> di
 
     X_tr, X_te, y_tr, y_te = M.stratified_split(X, y, test_size=0.3, seed=SEED)
     model = M.train_lightgbm(X_tr, y_tr, SEED)
+    if dataset == "german_credit":     # verify we are auditing the SHA-pinned model
+        import lightgbm as lgb
+        pinned = lgb.Booster(model_file=str(ROOT / "models" / "lightgbm.txt"))
+        if not np.allclose(M.predict_bad(model, X_te), pinned.predict(X_te), atol=1e-9):
+            raise SystemExit("faithfulness model != pinned audited model (re-run scripts/10_train.py)")
 
     def predict(A):
         return M.predict_bad(model, A)
