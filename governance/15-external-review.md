@@ -5,6 +5,16 @@
 > assessed (out of competency)"** rather than passing it. The final sign-off is only as strong as the
 > competency + independence declared in §0.
 
+> **How to submit this review (keep it independent):**
+> 1. **Fork** this public repo to your own GitHub account (no write access needed).
+> 2. On your fork, complete this file — or add `governance/15-<yourname>-review.md` — and, ideally,
+>    **sign your commit** (`git commit -S…`, GPG or SSH) so it is cryptographically attributable to you.
+> 3. Open a **Pull Request** to `main`. The author will **merge without editing your words** (any
+>    disagreement is handled as PR discussion, not an edit) — this preserves your independence and
+>    leaves a permanent, timestamped, attributable record.
+> Alternatives: a GitHub **Issue** (faster, less formal). *Avoid* being added as a repo collaborator —
+> a fork + PR keeps you cleanly arm's-length. Use a real/verifiable GitHub identity.
+
 ## 0. Reviewer & independence declaration *(reviewer fills in)*
 - **Reviewer:** __________________  **Role / affiliation:** __________________  **Date:** __________
 - **Independence** (tick one):
