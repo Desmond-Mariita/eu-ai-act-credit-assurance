@@ -1,8 +1,9 @@
 """scripts/06_gmsc_prep.py — prepare a benchmark-ready Give Me Some Credit snapshot.
 
-Cleans the documented data errors (past-due sentinels 96/98 -> NaN; age < 18 -> NaN; then median
-impute, matching the DQ profile) and stratified-subsamples to keep the conditional-kNN donor pool
-tractable (the frozen perturber refits NearestNeighbors per call). Writes data/gmsc.parquet (X + y).
+Cleans the documented data errors (past-due sentinels 96/98 -> NaN; age < 18 -> NaN) and
+stratified-subsamples to keep the conditional-kNN donor pool tractable (the frozen perturber refits
+NearestNeighbors per call). NaN is PRESERVED — median imputation is fit on the train split only, in
+30_faithfulness (no leakage). Writes data/gmsc.parquet (X + y). This is the canonical GMSC prep.
 All-numeric -> each column is its own logical feature group. Generalization check only (no protected
 attributes shipped -> not part of the governance dossier).
 """

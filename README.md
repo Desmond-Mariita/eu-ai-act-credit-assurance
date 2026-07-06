@@ -63,6 +63,10 @@ Data: `00_data.py` **fetches German Credit and writes `data/`** (gitignored, so 
 on a fresh clone); **Give Me Some Credit** needs a one-time Kaggle download of `cs-training.csv` into
 `data/` before `06_gmsc_prep.py`.
 
+For byte-identical reproduction, `uv.lock` pins exact transitive versions — install from it with
+`uv sync --frozen --extra models --extra dev` (CI enforces `uv lock --check`). The `uv pip install`
+lines above are the quick path; the lock is authoritative.
+
 ## Honest limitations
 Self-assessment (not independent); single model; mainline dataset + one generalization check; n≈300
 test (low subgroup power); robustness noise synthetic; recourse model-side. Conformity readiness is

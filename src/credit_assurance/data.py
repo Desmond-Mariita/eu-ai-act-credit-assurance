@@ -105,6 +105,8 @@ def load_gmsc() -> dict:
             "(download from the public Kaggle dataset 'GiveMeSomeCredit').")
     df = pd.read_csv(path, index_col=0)
     y = df.pop("SeriousDlqin2yrs").astype(int)
-    X = df.fillna(df.median(numeric_only=True))
-    return {"X": X, "y": y, "feature_names": list(X.columns),
-            "feature_groups": feature_groups_from_columns(X.columns), "name": "gmsc"}
+    # keep NaN — median imputation is fit on the TRAIN split only (30_faithfulness), never full-data.
+    # NB: the audited GMSC benchmark parquet is produced by scripts/06_gmsc_prep.py (sentinel cleaning
+    # + stratified subsample), not by this convenience loader.
+    return {"X": df, "y": y, "feature_names": list(df.columns),
+            "feature_groups": feature_groups_from_columns(df.columns), "name": "gmsc"}

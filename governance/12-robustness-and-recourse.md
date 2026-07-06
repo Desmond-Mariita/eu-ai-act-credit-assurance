@@ -51,7 +51,7 @@ touched. Coupling/affordability constraints are **not** modelled.)
   loan term than a lower amount** (e.g. 60 → 9 months, or 2 124 → 1 479 DM). (The minimal
   change is chosen by a range-normalised distance, so months and DM are comparable — a raw-unit
   comparison spuriously favours duration.)
-- **A genuine (small) infeasible core:** ~**6%** cannot reach acceptance by *any* loan-term change —
+- **A genuine infeasible core:** ~**13%** cannot reach acceptance by any actionable loan-term *reduction* —
   their decline rests on **non-actionable creditworthiness factors** (history, purpose, account
   status). For them, "meaningful information about the logic" (Art. 13–15) must explain *why*, since
   no loan-term recourse exists.

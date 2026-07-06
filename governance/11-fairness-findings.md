@@ -36,7 +36,7 @@ obliges the provider/deployer to examine; it expresses **no opinion** that the m
 | Attribute | DP diff [folded CI] | EO diff [folded CI] | **valid signed test** |
 |---|---|---|---|
 | sex | 0.10 [0.01, 0.22] | 0.12 [0.03, 0.27] | **FPR diff (♀−♂) 95% CI includes 0**; decline-diff CI includes 0; **within-negatives permutation p = 0.091, Fisher-exact p = 0.096** |
-| foreign_worker | 0.25 [0.03, 0.47] | 0.25 [0.17, 0.81] | **decline diff (yes−no) 95% CI includes 0** ([−0.02, 0.47]) — *comparator n=15, not inferable* |
+| foreign_worker | 0.25 [0.03, 0.47] | 0.25 [0.17, 0.81] | **decline diff (yes−no) 0.25 [0.005, 0.477]** (CI excludes 0) but *comparator n=15, **not inferable*** — within-negatives perm p=0.082 / Fisher 0.086 do **not** reject (small-n CI↔permutation divergence) |
 | age_band | 0.24 [0.12, 0.64] | 0.35 [0.23, 0.90] | multi-group; folded only — treat as exploratory |
 
 **Read this carefully:** DP and EO are **non-negative max-difference** statistics, so their bootstrap
