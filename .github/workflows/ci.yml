@@ -8,6 +8,9 @@ jobs:
         with:
           fetch-depth: 0              # full history + tags, so signed-tag verification below can run
       - name: Verify signed release tags (self-contained trust anchor)
+        # Skip on tag-push events: actions/checkout leaves the built tag ref peeled to its commit, so
+        # `verify-tag <that tag>` sees a commit not a tag object. Branch/PR builds are the verify gate.
+        if: github.ref_type != 'tag'
         env:
           # Fork PRs won't have the maintainer's tags — only ENFORCE presence on the canonical repo
           # (external reviewers' fork PRs skip gracefully); every tag that IS present must still verify.
