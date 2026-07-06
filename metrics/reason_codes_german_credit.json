@@ -14,10 +14,51 @@
     0.8118,
     0.9179
   ],
-  "infeasible_rate": 0.1258,
-  "infeasible_wilson95": [
+  "reduction_infeasible_rate": 0.1258,
+  "reduction_infeasible_wilson95": [
     0.0821,
     0.1882
+  ],
+  "reduction_infeasible_count": 19,
+  "of_which_flip_via_increase": 4,
+  "of_which_no_flip_any_single_feature": 15,
+  "increase_flip_examples": [
+    {
+      "orig_P_bad": 0.734,
+      "increase": {
+        "credit_amount": [
+          652.0,
+          3516.0
+        ]
+      }
+    },
+    {
+      "orig_P_bad": 0.549,
+      "increase": {
+        "credit_amount": [
+          409.0,
+          980.0
+        ]
+      }
+    },
+    {
+      "orig_P_bad": 0.63,
+      "increase": {
+        "credit_amount": [
+          959.0,
+          3516.0
+        ]
+      }
+    },
+    {
+      "orig_P_bad": 0.772,
+      "increase": {
+        "credit_amount": [
+          741.0,
+          3516.0
+        ]
+      }
+    }
   ],
   "mean_features_changed": 1.205,
   "single_feature_recourse_rate": 0.6954,
@@ -81,5 +122,5 @@
       }
     }
   ],
-  "note": "Recourse = a valid integer REDUCTION in loan duration and/or credit amount (shorter term / lower amount) reaching P(bad)<=1/6 (deployed accept). Grid is every integer in the train range BELOW the applicant's current value, so 'infeasible' means no actionable reduction works (decline rests on non-actionable factors, or only borrowing more/longer would flip it). Reason-code attribution uses a range-normalised minimal change (months vs DM comparable). Coupling/affordability constraints (installment vs income) are NOT modelled; a superseded DiCE random search under-reported recourse (no longer computed). Real-world feasibility (can an applicant actually borrow less?) is not assessed."
+  "note": "Recourse = a valid integer REDUCTION in loan duration and/or credit amount (shorter term / lower amount) reaching P(bad)<=1/6 (deployed accept). Grid is every integer in the train range BELOW the applicant's current value. 'reduction_infeasible' means NO actionable reduction reaches acceptance under this two-feature action set \u2014 it does NOT establish the decline rests on non-actionable factors: of the 19 reduction-infeasible declines, 4 flip to ACCEPT by INCREASING a single feature (perverse model non-monotonicity, see increase_flip_examples) and 15 do not flip under any single-feature move in-grid. Reason-code attribution uses a range-normalised minimal change (months vs DM comparable). Coupling/affordability constraints (installment vs income) are NOT modelled; an initial DiCE random search was superseded by this exhaustive grid (its cross-tool comparison is not reproduced at v1.0 and no under-reporting cause is claimed). Real-world feasibility (can an applicant actually borrow less?) is not assessed."
 }

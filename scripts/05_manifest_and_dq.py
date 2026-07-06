@@ -11,8 +11,13 @@ any column without `_` is a numeric singleton. Grouping validates full coverage 
 RAISES on violation (not `assert`, so it holds under `python -O`).
 
 Usage:
-  python scripts/05_manifest_and_dq.py          # (re)generate all artifacts
-  python scripts/05_manifest_and_dq.py verify    # verify data files against the manifest
+  python scripts/05_manifest_and_dq.py           # rebuild DQ + feature groups, then VERIFY (fail-closed)
+  python scripts/05_manifest_and_dq.py verify     # verify integrity files against the manifest only
+  python scripts/05_manifest_and_dq.py freeze     # MAINTAINER-ONLY: (re)write the manifest (re-baseline)
+
+The manifest is committed; the default/verify paths never mutate it, so a `just data` run authenticates
+the audited snapshot instead of silently re-blessing upstream drift (audit R2). Only an explicit
+`freeze` re-baselines — do that deliberately, when the audited data snapshot legitimately changes.
 """
 from __future__ import annotations
 
@@ -24,8 +29,13 @@ from pathlib import Path
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-# The data snapshot under audit, as repo-relative paths (sha256sum-compatible).
+# Raw/derived data sources profiled for data-quality + feature groups.
 DATA_FILES = ["data/german_credit.parquet", "data/cs-training.csv"]
+# The integrity manifest: EVERY load-bearing data artifact under audit, incl. the DERIVED GMSC snapshot
+# (audit R2 — gmsc.parquet is EV-011's data input and must be verifier-covered). Pinned models are
+# verified separately by their own sha256 (models.json for German; EV-011 + an in-script allclose guard
+# in 30_faithfulness for GMSC), mirroring the existing German-model design.
+MANIFEST_FILES = ["data/german_credit.parquet", "data/cs-training.csv", "data/gmsc.parquet"]
 MANIFEST = ROOT / "data_manifest.sha256"
 DQ_JSON = ROOT / "data_quality.json"
 FG_JSON = ROOT / "feature_groups.json"
@@ -39,6 +49,14 @@ SOURCES = {
 
 
 def sha256(path: Path) -> str:
+    """Stream a file through SHA256 in 1 MiB chunks (memory-bounded for large data files).
+
+    Args:
+        path: File to hash.
+
+    Returns:
+        The hex SHA256 digest.
+    """
     h = hashlib.sha256()
     with path.open("rb") as fh:
         for chunk in iter(lambda: fh.read(1 << 20), b""):
@@ -47,43 +65,71 @@ def sha256(path: Path) -> str:
 
 
 def write_manifest() -> None:
-    missing = [f for f in DATA_FILES if not (ROOT / f).exists()]
-    if missing:
-        print(f"ERROR: acquire data first — missing: {missing}\n"
-              f"  (Give Me Some Credit needs a manual Kaggle download of cs-training.csv into data/.)")
+    """MAINTAINER-ONLY re-freeze — the sole path that MUTATES the manifest. Reproduction must VERIFY,
+    never re-freeze (regenerating from whatever files are present silently blesses upstream drift —
+    audit R2). Absent integrity files are reported, not silently dropped."""
+    absent = [f for f in MANIFEST_FILES if not (ROOT / f).exists()]
+    if absent:   # REFUSE an incomplete freeze — a partial manifest would later pass a coverage check
+        print(f"ERROR: refusing incomplete freeze — {len(absent)} required integrity file(s) absent: "
+              f"{absent}\n  (a COMPLETE freeze needs the Kaggle GMSC data + scripts/06_gmsc_prep.py.)")
         sys.exit(2)
-    lines = [f"{sha256(ROOT / f)}  {f}" for f in DATA_FILES]
+    lines = [f"{sha256(ROOT / f)}  {f}" for f in MANIFEST_FILES]
     MANIFEST.write_text("\n".join(lines) + "\n")
-    print(f"manifest -> {MANIFEST.relative_to(ROOT)} ({len(lines)} files)")
+    print(f"manifest (re-frozen) -> {MANIFEST.relative_to(ROOT)} ({len(lines)} files)")
 
 
 def verify_manifest() -> bool:
+    """Fail-closed integrity check: a hash MISMATCH, a listed-but-MISSING file, or a present-but-
+    UNTRACKED integrity file all fail. Never mutates the manifest."""
     if not MANIFEST.exists():
-        print("FAIL: no manifest; run without 'verify' first")
+        print("FAIL: no manifest; a maintainer must run 'python scripts/05_manifest_and_dq.py freeze'")
         return False
     ok = True
+    tracked = set()
     for line in MANIFEST.read_text().splitlines():
         if not line.strip():
             continue
         want, name = line.split("  ", 1)
+        tracked.add(name)
         path = ROOT / name
         if not path.exists():
-            print(f"MISSING {name}")
+            print(f"MISSING {name}")            # fail-closed: a listed file that is gone is a FAIL
             ok = False
             continue
         got = sha256(path)
         print(f"{'OK  ' if got == want else 'FAIL'} {name}")
         ok &= got == want
-    print("manifest verify:", "OK" if ok else "MISMATCH/MISSING")
+    for f in MANIFEST_FILES:                     # coverage: EVERY required integrity file must be tracked
+        if f not in tracked:                     # (fail-closed even if the file is also absent on disk)
+            state = "present on disk" if (ROOT / f).exists() else "absent on disk"
+            print(f"UNCOVERED {f} (required integrity file not in manifest; {state}) — re-freeze")
+            ok = False
+    print("manifest verify:", "OK" if ok else "MISMATCH/MISSING/UNCOVERED")
     return ok
 
 
 def _numeric_cols(df: pd.DataFrame) -> list[str]:
+    """Return the genuinely numeric (non-boolean) column names.
+
+    Args:
+        df: The dataframe to inspect.
+
+    Returns:
+        Names of numeric, non-bool columns.
+    """
     return [c for c in df.columns
             if pd.api.types.is_numeric_dtype(df[c]) and not pd.api.types.is_bool_dtype(df[c])]
 
 
 def _column_profile(df: pd.DataFrame) -> dict:
+    """Per-column dtype / missingness / cardinality (+ numeric min/max/p99) profile.
+
+    Args:
+        df: The feature dataframe (target dropped).
+
+    Returns:
+        ``{column: {dtype, missing, missing_frac, n_unique, [min, max, p99]}}``.
+    """
     out = {}
     for col in df.columns:
         s = df[col]
@@ -104,7 +150,17 @@ def _column_profile(df: pd.DataFrame) -> dict:
 
 
 def _anomalies(df: pd.DataFrame) -> list[str]:
-    """Art. 10(3) 'errors' — flag domain-implausible values, sentinels, and extreme outliers."""
+    """Flag Art. 10(3) 'errors': domain-implausible values, sentinel codes, and extreme outliers.
+
+    Checks negatives, implausible ages (<18 or >110), past-due sentinel codes 96/98, and values whose
+    max exceeds 100x the 99th percentile (probable sentinels/outliers).
+
+    Args:
+        df: The feature dataframe (target dropped).
+
+    Returns:
+        Human-readable anomaly strings (empty if none).
+    """
     flags = []
     for c in _numeric_cols(df):
         s = df[c].dropna()
@@ -128,6 +184,17 @@ def _anomalies(df: pd.DataFrame) -> list[str]:
 
 
 def _profile(name: str, df: pd.DataFrame, target: str, target_meaning: str) -> dict:
+    """Assemble the source/shape/target/columns/anomalies profile for one dataset.
+
+    Args:
+        name: Dataset key (``"german_credit"`` or ``"gmsc"``).
+        df: The full dataframe including the target column.
+        target: Target column name.
+        target_meaning: Human description of the positive class.
+
+    Returns:
+        A JSON-serialisable data-quality profile dict.
+    """
     y = df[target]
     return {
         "source": SOURCES[name],
@@ -141,6 +208,11 @@ def _profile(name: str, df: pd.DataFrame, target: str, target_meaning: str) -> d
 
 
 def data_quality() -> dict:
+    """Build + write ``data_quality.json`` (Art. 10(3) completeness + error profile) for both datasets.
+
+    Returns:
+        The profiles dict (also written to disk); absent datasets are marked ``{"status": "absent"}``.
+    """
     profiles = {}
     gc_path, gmsc_path = ROOT / DATA_FILES[0], ROOT / DATA_FILES[1]
     if gc_path.exists():
@@ -192,12 +264,27 @@ def feature_groups() -> dict:
 
 
 def main() -> None:
-    if len(sys.argv) > 1 and sys.argv[1] == "verify":
+    """CLI entry: ``verify`` (default, fail-closed), ``freeze`` (maintainer re-baseline), or rebuild DQ.
+
+    Exits non-zero on a manifest verification failure so ``just data`` / CI gate on integrity.
+    """
+    arg = sys.argv[1] if len(sys.argv) > 1 else ""
+    if arg == "verify":
         sys.exit(0 if verify_manifest() else 1)
-    write_manifest()
+    if arg == "freeze":                       # maintainer-only: (re)write the integrity manifest
+        write_manifest()
+        data_quality()
+        feature_groups()
+        print("Phase 0.5 data artifacts (re-)frozen.")
+        return
+    # default (e.g. `just data`): rebuild DQ + feature groups, then VERIFY fail-closed — never re-freeze.
     data_quality()
     feature_groups()
-    print("Phase 0.5 data artifacts written.")
+    if MANIFEST.exists():
+        print("(verifying committed manifest — use 'freeze' to intentionally re-baseline)")
+        sys.exit(0 if verify_manifest() else 1)
+    print("FAIL: no manifest — a maintainer must run 'python scripts/05_manifest_and_dq.py freeze'.")
+    sys.exit(1)   # fail-closed: absence of the integrity manifest is not a pass
 
 
 if __name__ == "__main__":

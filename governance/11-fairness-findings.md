@@ -13,8 +13,8 @@ and younger applicants are declined more (the **foreign-worker comparison is not
 reference group is n=15) — **but at n=300 none is statistically distinguishable from zero** on the
 valid (signed) test. These are **directional flags
 for monitoring and a mitigation trade-off study, not established gaps.** Two things to be careful
-about: (1) the model **trains on personal-status (a sex proxy) and age directly**, so these protected
-attributes are *model inputs* — a bias source Art. 10 requires flagging; (2) the folded DP/EO
+about: (1) the model **trains on personal-status (a sex proxy), age, and foreign-worker status
+directly**, so these protected attributes are *model inputs* — a bias source Art. 10 requires flagging; (2) the folded DP/EO
 statistics can *look* significant but are not (see below). This section provides the evidence Art. 10
 obliges the provider/deployer to examine; it expresses **no opinion** that the model is or isn't "fair".
 
@@ -75,7 +75,7 @@ Self-assessment, not independent.
 ## Governance implication (Art. 10(2)(f-g), Art. 15)
 Art. 10 requires examining datasets/models for bias. This audit documents disparities that are
 **directionally consistent but not statistically significant** at n=300, and flags that the model
-**uses personal-status and age as inputs**. A deployer should (a) treat these as **monitoring flags**
+**uses personal-status, age, and foreign-worker status as inputs**. A deployer should (a) treat these as **monitoring flags**
 and re-run at larger n, (b) study whether excluding/mitigating the protected inputs (Fairlearn
 reductions / per-group thresholds / feature removal) is warranted against the cost trade-off, and (c)
 examine the **training-data base rates** as a likely upstream source. No "fair/unfair" opinion is

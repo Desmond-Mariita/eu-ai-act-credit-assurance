@@ -6,7 +6,8 @@ the SHA-pinned model against the DEPLOYED 1/6 accept threshold. The search is **
 only *reductions* (shorter term, lower amount) count as recourse — an "accept if you borrow MORE/LONGER"
 flip is not actionable recourse. (Installment rate is dropped: coupled to amount/duration/income, not
 independently actionable. Age/residence/dependents are immutable/protected; one-hots are never touched.)
-This replaces an initial DiCE random search that conflated search-failure with infeasibility. Reason-code
+This supersedes an initial DiCE random search (not reproduced at v1.0; not an apples-to-apples
+comparison, so no under-reporting cause is claimed). Reason-code
 attribution uses a **range-normalised** minimal change (so months and DM are comparable). Reports
 recourse availability + sparsity + reason-code features, with Wilson CIs. Neutral report.
 NB: coupling/affordability constraints (e.g. installment rate vs income) are NOT modelled, so this is a
@@ -34,7 +35,25 @@ SEED = 0
 COL = {"Attribute2": "loan_duration_months", "Attribute5": "credit_amount"}   # actionable, negotiable
 
 
-def _wilson(k, n, z=1.96):
+def _wilson(k: int, n: int, z: float = 1.96) -> list[float] | None:
+    r"""Wilson score confidence interval for a binomial proportion k/n.
+
+    Preferred over the normal (Wald) interval at small n / extreme p because it stays within [0, 1]
+    and has better coverage.
+
+    LaTeX: with \hat p = k/n and denominator D = 1 + \frac{z^2}{n},
+    centre = \dfrac{\hat p + \frac{z^2}{2n}}{D}, \quad
+    half = \dfrac{z\,\sqrt{\frac{\hat p(1-\hat p)}{n} + \frac{z^2}{4n^2}}}{D}; \quad
+    \text{CI} = [\,centre - half,\; centre + half\,].
+
+    Args:
+        k: Number of successes.
+        n: Number of trials.
+        z: Standard-normal quantile (1.96 -> 95%).
+
+    Returns:
+        ``[lo, hi]`` rounded to 4 dp, or None if ``n == 0``.
+    """
     if n == 0:
         return None
     p = k / n
@@ -45,6 +64,15 @@ def _wilson(k, n, z=1.96):
 
 
 def main() -> None:
+    """Compute direction-constrained recourse for declined applicants and write the reason-codes JSON.
+
+    Loads + SHA-verifies the pinned model, finds the declined test applicants, and for each searches an
+    exhaustive integer REDUCTION grid over duration/amount for acceptance; then probes the
+    reduction-infeasible set for perverse acceptance under a single-feature INCREASE.
+
+    Raises:
+        SystemExit: If the on-disk model hash does not match the pinned ``models.json`` hash.
+    """
     df = pd.read_parquet(ROOT / "data" / "german_credit.parquet")
     y = df["y"].to_numpy()
     cols = list(df.drop(columns=["y"]).columns)
@@ -68,9 +96,20 @@ def main() -> None:
     p_all = booster.predict(X)
     declined = [i for i in idx_te if p_all[i] > thr]
 
-    def line(x, col, grid):
-        """min-|Δ| single-feature REDUCTION reaching P(bad)<=thr, else None. Actionable recourse is a
-        *shorter term / lower amount* only — increases (borrow more/longer) are not counted."""
+    def line(x: np.ndarray, col: str, grid: np.ndarray) -> float | None:
+        r"""Smallest single-feature REDUCTION of ``col`` that reaches acceptance, else None.
+
+        LaTeX: \arg\min_{v < x_{col}}\; |v - x_{col}| \;\text{s.t.}\; f(x \text{ with } col{=}v) \le t.
+        Actionable recourse is a shorter term / lower amount only — increases are not counted.
+
+        Args:
+            x: The declined applicant, shape (d,).
+            col: Actionable feature key ("Attribute2" or "Attribute5").
+            grid: Candidate integer values for ``col`` (train range).
+
+        Returns:
+            The nearest accepting reduced value, or None if no reduction accepts.
+        """
         cur = x[ci[col]]
         g = grid[grid < cur]                                  # direction constraint: reduce only
         if len(g) == 0:
@@ -80,8 +119,18 @@ def main() -> None:
         ok = g[booster.predict(rows) <= thr]
         return float(ok[np.argmin(np.abs(ok - cur))]) if len(ok) else None   # smallest actionable change
 
-    def two_feature(x):
-        """any (shorter duration, lower amount) integer pair reaching acceptance? (reduce-only)."""
+    def two_feature(x: np.ndarray) -> bool:
+        """Whether any (shorter duration, lower amount) integer pair reaches acceptance (reduce-only).
+
+        Exhaustive 2-D search over the joint reduction grid — recourse may need BOTH levers even when
+        neither single-feature reduction suffices.
+
+        Args:
+            x: The declined applicant, shape (d,).
+
+        Returns:
+            True iff some reduced (duration, amount) pair scores ``P(bad) <= t``.
+        """
         dg = dur_grid[dur_grid < x[ci["Attribute2"]]]
         ag = amt_grid[amt_grid < x[ci["Attribute5"]]]
         if len(dg) == 0 or len(ag) == 0:
@@ -95,7 +144,30 @@ def main() -> None:
                 return True
         return False
 
-    feasible, sparsity, feat_freq, examples = 0, [], Counter(), []
+    def line_up(x: np.ndarray, col: str, grid: np.ndarray) -> float | None:
+        r"""Smallest single-feature INCREASE of ``col`` that reaches acceptance, else None.
+
+        Not recourse — a perverse non-monotonicity probe (a decline no reduction fixes but "borrow
+        MORE/LONGER" would flip). LaTeX: \arg\min_{v > x_{col}} |v - x_{col}| \text{ s.t. } f(\cdot) \le t.
+
+        Args:
+            x: The declined applicant, shape (d,).
+            col: Actionable feature key.
+            grid: Candidate integer values for ``col`` (train range).
+
+        Returns:
+            The nearest accepting increased value, or None if no increase accepts.
+        """
+        cur = x[ci[col]]
+        g = grid[grid > cur]
+        if len(g) == 0:
+            return None
+        rows = np.tile(x, (len(g), 1))
+        rows[:, ci[col]] = g
+        ok = g[booster.predict(rows) <= thr]
+        return float(ok[np.argmin(np.abs(ok - cur))]) if len(ok) else None
+
+    feasible, sparsity, feat_freq, examples, infeasible_idx = 0, [], Counter(), [], []
     for i in declined:
         x = X[i]
         found = {c: line(x, c, grids[c]) for c in COL}
@@ -114,6 +186,24 @@ def main() -> None:
             sparsity.append(2)
             feat_freq[COL["Attribute2"]] += 1
             feat_freq[COL["Attribute5"]] += 1
+        else:                                       # no reduction reaches acceptance in-grid
+            infeasible_idx.append(i)
+
+    # Perverse non-monotonicity probe over the reduction-infeasible set: how many flip to ACCEPT by
+    # INCREASING a single actionable feature? (audit finding: 'reduction-infeasible' must NOT be read as
+    # 'rests on non-actionable factors' — some declines flip if the applicant borrows MORE.)
+    inc_flip = []
+    for i in infeasible_idx:
+        x = X[i]
+        ups = {c: line_up(x, c, grids[c]) for c in COL}
+        ups = {c: v for c, v in ups.items() if v is not None}
+        if ups:
+            best = min(ups, key=lambda c: abs(ups[c] - x[ci[c]]) / rng_span[c])
+            inc_flip.append({"orig_P_bad": round(float(p_all[i]), 3),
+                             "increase": {COL[best]: [round(float(x[ci[best]]), 1),
+                                                      round(float(ups[best]), 1)]}})
+    n_infeasible = len(infeasible_idx)
+    n_inc_flip = len(inc_flip)
 
     n = len(declined)
     out = {
@@ -124,25 +214,35 @@ def main() -> None:
         "actionable_features": COL, "action_direction": "reduce_only",
         "policy_recourse_rate": round(feasible / n, 4),
         "policy_recourse_wilson95": _wilson(feasible, n),
-        "infeasible_rate": round((n - feasible) / n, 4),
-        "infeasible_wilson95": _wilson(n - feasible, n),
+        "reduction_infeasible_rate": round(n_infeasible / n, 4),
+        "reduction_infeasible_wilson95": _wilson(n_infeasible, n),
+        "reduction_infeasible_count": n_infeasible,
+        "of_which_flip_via_increase": n_inc_flip,          # perverse non-monotonicity, NOT non-actionable
+        "of_which_no_flip_any_single_feature": n_infeasible - n_inc_flip,
+        "increase_flip_examples": inc_flip[:6],
         "mean_features_changed": round(float(np.mean(sparsity)), 3) if sparsity else None,
         "single_feature_recourse_rate": round(sum(s == 1 for s in sparsity) / n, 4),
         "reason_code_feature_frequency_range_normalised": dict(feat_freq),
         "example_recourse": examples,
         "note": "Recourse = a valid integer REDUCTION in loan duration and/or credit amount (shorter "
                 "term / lower amount) reaching P(bad)<=1/6 (deployed accept). Grid is every integer in "
-                "the train range BELOW the applicant's current value, so 'infeasible' means no "
-                "actionable reduction works (decline rests on non-actionable factors, or only borrowing "
-                "more/longer would flip it). Reason-code attribution uses a range-normalised minimal "
-                "change (months vs DM comparable). Coupling/affordability constraints (installment vs "
-                "income) are NOT modelled; a superseded DiCE random search under-reported recourse (no "
-                "longer computed). Real-world feasibility (can an applicant actually borrow less?) is "
-                "not assessed.",
+                "the train range BELOW the applicant's current value. 'reduction_infeasible' means NO "
+                "actionable reduction reaches acceptance under this two-feature action set — it does "
+                f"NOT establish the decline rests on non-actionable factors: of the {n_infeasible} "
+                f"reduction-infeasible declines, {n_inc_flip} flip to ACCEPT by INCREASING a single "
+                "feature (perverse model non-monotonicity, see increase_flip_examples) and "
+                f"{n_infeasible - n_inc_flip} do not flip under any single-feature move in-grid. "
+                "Reason-code attribution uses a range-normalised minimal change (months vs DM "
+                "comparable). Coupling/affordability constraints (installment vs income) are NOT "
+                "modelled; an initial DiCE random search was superseded by this exhaustive grid (its "
+                "cross-tool comparison is not reproduced at v1.0 and no under-reporting cause is "
+                "claimed). Real-world feasibility (can an applicant actually borrow less?) is not "
+                "assessed.",
     }
     (METRICS / "reason_codes_german_credit.json").write_text(json.dumps(out, indent=2))
     print(f"declined {n} | recourse {out['policy_recourse_rate']} {out['policy_recourse_wilson95']} | "
-          f"infeasible {out['infeasible_rate']} {out['infeasible_wilson95']} | "
+          f"reduction-infeasible {n_infeasible} ({out['reduction_infeasible_rate']}) of which "
+          f"{n_inc_flip} flip-via-increase, {n_infeasible - n_inc_flip} stuck | "
           f"1-feat {out['single_feature_recourse_rate']} | freq(norm) {dict(feat_freq)}")
 
 

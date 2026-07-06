@@ -13,6 +13,7 @@ import hashlib
 import json
 import warnings
 from pathlib import Path
+from typing import Callable
 
 import lightgbm as lgb
 import numpy as np
@@ -37,11 +38,33 @@ METRIC_FNS = {"count": count, "selection_rate_declined": selection_rate,
               "accuracy": accuracy_score}
 
 
-def _clean(v):
+def _clean(v: float | None) -> float | None:
+    """Round a metric to 4 dp, mapping None/NaN to JSON ``null``.
+
+    Args:
+        v: A scalar metric, or None/NaN.
+
+    Returns:
+        ``round(float(v), 4)``, or None for None/NaN.
+    """
     return None if (v is None or pd.isna(v)) else round(float(v), 4)
 
 
-def _boot_ci(stat, n, seed=SEED):
+def _boot_ci(stat: Callable[[np.ndarray], float | None], n: int,
+             seed: int = SEED) -> list[float] | None:
+    r"""Percentile bootstrap 95% CI for a resample statistic.
+
+    LaTeX: for b=1..B draw indices i^{(b)} \sim \text{Unif}(\{0..n-1\})^n and \theta^{*b} = stat(i^{(b)});
+    return the empirical [2.5, 97.5] percentiles of \{\theta^{*b}\}. NaN/None resamples are dropped.
+
+    Args:
+        stat: Maps a bootstrap index array to a scalar (or None/NaN to skip that resample).
+        n: Sample size to resample with replacement.
+        seed: RNG seed.
+
+    Returns:
+        ``[lo, hi]`` rounded to 4 dp, or None if no resample was valid.
+    """
     rng = np.random.default_rng(seed)
     vals = []
     for _ in range(B_BOOT):
@@ -53,15 +76,47 @@ def _boot_ci(stat, n, seed=SEED):
     return [round(float(np.quantile(vals, 0.025)), 4), round(float(np.quantile(vals, 0.975)), 4)]
 
 
-def _fpr(y_true, y_pred):
+def _fpr(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    r"""False-positive rate: P(predict bad | truly good).
+
+    LaTeX: \text{FPR} = \dfrac{\#\{\hat y=1,\, y=0\}}{\#\{y=0\}} = \operatorname{mean}(\hat y \mid y=0).
+
+    Args:
+        y_true: Binary truth (1 = bad), shape (n,).
+        y_pred: Binary decisions (1 = declined), shape (n,).
+
+    Returns:
+        FPR among actual negatives, or NaN if there are none.
+    """
     neg = y_true == 0
     return float(y_pred[neg].mean()) if neg.any() else np.nan
 
 
-def _fpr_perm_fisher(y_hat, g, a, b, y_te, n_perm=2000, seed=99):
-    """FPR conditions on y==0, so exchangeable units are the NEGATIVES: permute group labels among
-    actual negatives (not across pos+neg). Returns (two-sided perm p with +1 correction, Fisher-exact
-    two-sided p on the 2x2 group x false-positive among negatives) — an exact cross-check."""
+def _fpr_perm_fisher(y_hat: np.ndarray, g: np.ndarray, a: str, b: str, y_te: np.ndarray,
+                     n_perm: int = 2000, seed: int = 99) -> tuple[float | None, float | None]:
+    r"""Two-sided significance of the FPR gap between groups a and b, permutation + Fisher-exact.
+
+    FPR conditions on y==0, so the exchangeable units are the NEGATIVES: we permute group labels ONLY
+    among actual negatives (not across pos+neg), preserving the null of equal false-positive propensity.
+
+    LaTeX (permutation p, +1 finite-sample correction):
+    p = \dfrac{1 + \#\{\,\pi : |\Delta\text{FPR}(\pi)| \ge |\Delta\text{FPR}_{\text{obs}}|\,\}}{1 + P},
+    with \Delta\text{FPR} = \text{FPR}_b - \text{FPR}_a over the negatives. Cross-checked by Fisher's
+    exact test on the 2x2 (group x false-positive-among-negatives). ``scipy.stats.fisher_exact`` is an
+    intentional external exact-test cross-check to the hand-rolled permutation test.
+
+    Args:
+        y_hat: Binary decisions (1 = declined), shape (n,).
+        g: Group labels aligned to the test rows, shape (n,).
+        a: First group label.
+        b: Second group label.
+        y_te: Binary truth (1 = bad), shape (n,).
+        n_perm: Number of within-negatives permutations P.
+        seed: RNG seed.
+
+    Returns:
+        ``(perm_p, fisher_p)`` rounded to 4 dp, or ``(None, None)`` if either group has no negatives.
+    """
     from scipy.stats import fisher_exact
     neg = y_te == 0
     mask = neg & np.isin(g, [a, b])
@@ -80,17 +135,35 @@ def _fpr_perm_fisher(y_hat, g, a, b, y_te, n_perm=2000, seed=99):
     return perm_p, fisher_p
 
 
-def _fpr_omnibus_perm_p(y_hat, g, y_te, groups, n_perm=2000, seed=101):
-    """Omnibus permutation p for FPR heterogeneity across >=2 groups (covers multi-group attrs like
-    age that have no pairwise test): statistic = max-min group FPR among negatives; permute within
-    negatives; +1 correction."""
+def _fpr_omnibus_perm_p(y_hat: np.ndarray, g: np.ndarray, y_te: np.ndarray, groups: list,
+                        n_perm: int = 2000, seed: int = 101) -> float | None:
+    r"""Omnibus permutation p for FPR heterogeneity across >=2 groups (e.g. multi-group age bands).
+
+    Covers attributes with no single pairwise test. The statistic is the spread of group FPRs among
+    negatives; group labels are permuted within negatives under the null of exchangeable FPR.
+
+    LaTeX: T = \max_g \text{FPR}_g - \min_g \text{FPR}_g (over negatives);
+    p = \dfrac{1 + \#\{\pi : T(\pi) \ge T_{\text{obs}}\}}{1 + P} (+1 finite-sample correction).
+
+    Args:
+        y_hat: Binary decisions (1 = declined), shape (n,).
+        g: Group labels aligned to the test rows, shape (n,).
+        y_te: Binary truth (1 = bad), shape (n,).
+        groups: Candidate group labels to test.
+        n_perm: Number of within-negatives permutations P.
+        seed: RNG seed.
+
+    Returns:
+        The omnibus permutation p rounded to 4 dp, or None if fewer than two groups have negatives.
+    """
     neg = y_te == 0
     ga, yp = g[neg], y_hat[neg].astype(float)
     present = [grp for grp in groups if (ga == grp).any()]
     if len(present) < 2:
         return None
 
-    def rng_stat(gg):
+    def rng_stat(gg: np.ndarray) -> float:
+        """Omnibus statistic: spread (max-min) of per-group FPR among negatives for labels ``gg``."""
         fprs = [yp[gg == grp].mean() for grp in present if (gg == grp).any()]
         return max(fprs) - min(fprs)
 
@@ -101,6 +174,15 @@ def _fpr_omnibus_perm_p(y_hat, g, y_te, groups, n_perm=2000, seed=101):
 
 
 def main() -> None:
+    """Compute per-attribute group fairness metrics on the pinned model and write the fairness JSON.
+
+    Loads and SHA-verifies the audited model, scores the seed-0 test split, then for each protected
+    attribute reports group metrics + folded DP/EO with bootstrap CIs, signed pairwise diffs for binary
+    attributes, and the within-negatives FPR permutation / Fisher / omnibus significance tests.
+
+    Raises:
+        SystemExit: If the on-disk model hash does not match the pinned ``models.json`` hash.
+    """
     df = pd.read_parquet(ROOT / "data" / "german_credit.parquet")
     y = df["y"].to_numpy()
     X = df.drop(columns=["y"]).to_numpy(dtype=float)
@@ -180,7 +262,9 @@ def main() -> None:
                                              ("fpr", _fpr))):
                 point = fn(y_te[g == b], y_hat[g == b]) - fn(y_te[g == a], y_hat[g == a])
 
-                def stat(idx, fn=fn, a=a, b=b, g=g):
+                def stat(idx: np.ndarray, fn: Callable = fn, a: str = a, b: str = b,
+                         g: np.ndarray = g) -> float:
+                    """Resampled signed group diff (b - a) of metric ``fn`` on bootstrap indices ``idx``."""
                     gg, yt, yp = g[idx], y_te[idx], y_hat[idx]
                     return fn(yt[gg == b], yp[gg == b]) - fn(yt[gg == a], yp[gg == a])
                 entry[f"signed_{name}_diff_{b}_minus_{a}"] = _clean(point)

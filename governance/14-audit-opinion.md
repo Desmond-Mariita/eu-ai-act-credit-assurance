@@ -5,7 +5,7 @@ GDPR criteria pinned in `00-scenario.md §4`.
 **Target of Evaluation:** the SHA-pinned LightGBM model `models/lightgbm.txt`
 (`1456b07f…`, `00-scenario.md §5`).
 **Assessor:** the author (Desmond Mariita), in a methodology-demonstration capacity.
-**Date:** 2026-07-05. **Report basis:** dossier `13`, findings `10`–`12`, `06`, `08`, evidence index
+**Date:** 2026-07-06 (post deep-audit residual remediation). **Report basis:** dossier `13`, findings `10`–`12`, `06`, `08`, evidence index
 `09`, pre-registration `HYPOTHESES.md` (tag `prereg-v1`).
 
 ## 1. Nature and level of assurance
@@ -39,12 +39,15 @@ Me Some Credit generalization check).
    is statistically significant at n=300**
    (sex FPR within-negatives permutation p=0.091, Fisher 0.096; age omnibus p=0.39). The model **trains on a sex proxy (personal-status) and age
    directly.** *Monitoring + mitigation-study flags, not established gaps.*
-3. **Robustness — moderate.** 3.6–16.3% of decisions flip under small input noise; a **13.3%
+3. **Robustness — moderate.** 3.8–16.7% of decisions flip under small input noise; a **13.3%
    near-threshold** population is noise-sensitive. *An Art. 15 monitoring concern.*
 4. **Recourse — broadly available.** **87.4% [81.2, 91.8]** of declined applicants have an actionable loan-term
-   **reduction** to acceptance; a **~13% infeasible core** rests on non-actionable factors and requires a genuine
-   explanation. *(A popular off-the-shelf CF tool conflated search-failure with infeasibility — a cautionary
-   note for auditors.)*
+   **reduction** to acceptance. The remaining **12.6% (19/151) is *reduction-infeasible*** — a statement about
+   the two-feature action set, **not** a causal claim of dependence on non-actionable factors: **4 of the 19
+   flip to accept by *increasing* credit amount** (perverse model non-monotonicity — a model-risk finding),
+   and 15 do not flip under any single-feature move. All 19 need a genuine explanation of the drivers.
+   *(An initial off-the-shelf CF search was superseded by an exhaustive direction-constrained grid; the two
+   are not apples-to-apples, so no under-reporting cause is claimed.)*
 
 ## 4. Opinion
 On the dimensions assessed and against the pinned criteria, **on the evidence gathered the assessor
@@ -53,7 +56,8 @@ identified no indication that the model is unfit** on faithfulness, fairness, ro
 ROAR** (LIME does too under the movement / global-ranking view but is the weaker explainer — below the
 floor under the pre-registered signed metric), and **direction-constrained recourse is available to
 ~87%** of declined applicants — **subject to** the fairness monitoring flags, the near-threshold
-robustness population, and the **~13% recourse-infeasible core** being addressed by the deployer. **This is NOT an opinion that the system is EU-AI-Act-compliant or
+robustness population, and the **12.6% reduction-infeasible set** (including 4/19 perverse
+increase-flips — a model-risk item) being addressed by the deployer. **This is NOT an opinion that the system is EU-AI-Act-compliant or
 conformant.** Conformity readiness is **partial** (`13 §F`): several high-risk obligations are **Gap**
 (QMS, logging, cybersecurity, post-market monitoring, DPIA-as-real, CE/registration) and the
 assessment is **not independent**. No opinion is expressed on those.
@@ -74,6 +78,6 @@ fixed **before results**; the **absolute-movement metric and the ROAR anchor wer
 (disclosed in `10 §Deviations`). Pre-registration (`HYPOTHESES.md`, signed
 tag `prereg-v1`, OpenTimestamps — **Bitcoin-confirmed, block 956533**). Every quantitative claim traces
 to a hashed metrics artifact and a one-command reproduction (`08`, `09`); governance documents are
-content-addressed by git (blob SHA at tag `v1.0`). This document is committed to
+content-addressed by git (blob SHA at tag `v1.1`). This document is committed to
 the public repository under version control; its integrity rests on the git history and the signed
 pre-registration tag, **not** on any claim of independence.

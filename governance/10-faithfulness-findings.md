@@ -112,8 +112,9 @@ audited German-Credit ToE); benchmark n=300, K=5, n_perms=40. Full numbers: `met
 
 **Differs (dataset-specific — and it is the *fragile* pieces that differ):**
 - **Signed on-manifold test has power on GMSC** — TreeSHAP is faithful under the pre-registered signed
-  metric (H1 *supported* here), unlike German Credit's underpowered null. GMSC's all-numeric features
-  suffer less sign-cancellation than German Credit's one-hot groups.
+  metric (H1 *supported* here), unlike German Credit's inconclusive signed result (TreeSHAP CI spans 0,
+  LIME below floor). GMSC's all-numeric features suffer less sign-cancellation than German Credit's
+  one-hot groups.
 - **H3 refuted on GMSC** — the label-shuffled control beats the *signed* floor (holds-fragile on German
   Credit). The confounded control's behaviour is dataset-specific; the clean control is the robust one.
 - **LIME stability higher** (0.92 vs 0.80; fewer features, all numeric).

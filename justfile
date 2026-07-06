@@ -6,8 +6,12 @@ test:
     uv run ruff check src/ tests/ scripts/ && uv run pytest -q
 data:
     uv run python scripts/00_data.py
-    uv run python scripts/05_manifest_and_dq.py
     uv run python scripts/06_gmsc_prep.py
+    uv run python scripts/05_manifest_and_dq.py          # verifies the committed manifest (fail-closed)
+# MAINTAINER-ONLY: deliberately re-baseline the integrity manifest after a legitimate data-snapshot change
+freeze-data:
+    uv run python scripts/06_gmsc_prep.py
+    uv run python scripts/05_manifest_and_dq.py freeze
 train:
     uv run python scripts/10_train.py
 # full audit (needs the [models] extra + data/ present); scripts are numbered in run order

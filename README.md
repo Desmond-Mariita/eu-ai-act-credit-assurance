@@ -4,7 +4,8 @@ A **pre-registered, end-to-end AI-assurance audit** of a high-risk **credit-scor
 the **EU AI Act + GDPR**. Explanation faithfulness, fairness, robustness, and recourse — each with a
 concrete, reproducible finding, wrapped in an Annex IV governance evidence pack.
 
-> **Status:** v1.0 findings complete. **Self-assessment — NOT an independent audit** (the author built
+> **Status:** v1.1 (findings complete + deep-audit residual remediation + code-quality retrofit).
+> **Self-assessment — NOT an independent audit** (the author built
 > the audited model *and* assessed it). The load-bearing gap for *independence* is **human external
 > review** (the model-reviewer gauntlets are a quality control, not a substitute); conformity readiness
 > is otherwise **partial**, with further conditions (QMS, logging, larger-n fairness, post-market
@@ -23,12 +24,16 @@ concrete, reproducible finding, wrapped in an Annex IV governance evidence pack.
 2. **Fairness: disparities disadvantage the worse-off groups, but none is significant at n=300**
    (sex FPR within-negatives permutation p=0.091, Fisher 0.096; age omnibus p=0.39); the model **trains
    on a sex proxy and age directly**. → *Monitoring flags, not established gaps.*
-3. **Robustness: moderate** — ≈4–7% of decisions flip under *small* input noise (rising to 16.3% at
+3. **Robustness: moderate** — ≈4–7% of decisions flip under *small* input noise (rising to 16.7% at
    the largest synthetic noise tested); a **13.3% near-threshold** population is fragile.
 4. **Recourse: 87.4% [81.2, 91.8]** of declined applicants have an actionable loan-term **reduction** to
-   acceptance; a **~13% infeasible core** rests on non-actionable factors. *(A popular off-the-shelf
-   counterfactual tool materially under-reported recourse (conflating search-failure with infeasibility)
-   — a cautionary note for auditors.)*
+   acceptance. The remaining **12.6% (19/151) is *reduction-infeasible*** — a fact about the two-feature
+   action set, **not** a claim that these declines rest on non-actionable factors: **4 of the 19 flip to
+   accept by *increasing* credit amount** (perverse model non-monotonicity — a model-risk finding), and
+   15 do not flip under any single-feature move. *(An initial off-the-shelf counterfactual search was
+   superseded by an exhaustive, direction-constrained integer grid; the two are not apples-to-apples, so
+   no under-reporting magnitude/cause is claimed — exhaustive search remains the sound way to establish
+   infeasibility.)*
 
 Full write-ups: [`governance/10`](governance/10-faithfulness-findings.md) ·
 [`11`](governance/11-fairness-findings.md) · [`12`](governance/12-robustness-and-recourse.md).

@@ -28,11 +28,19 @@ MODELS.mkdir(exist_ok=True)
 
 
 def main() -> None:
+    """Train + freeze the audited LightGBM (and EBM challenger) and write ``metrics/models.json``.
+
+    Runs a univariate leakage check, a stratified holdout, the cost-sensitive decision + calibration
+    report, then serialises the LightGBM to deterministic text and records its SHA256 as the pinned ToE
+    model version. The narrow (univariate, linear) leakage check is intentional and disclosed — it does
+    not test nonlinear or multivariate leakage.
+    """
     df = pd.read_parquet(ROOT / "data" / "german_credit.parquet")
     y = df["y"].to_numpy()
     X = df.drop(columns=["y"]).to_numpy(dtype=float)
 
     # Leakage check: no single feature (near-)perfectly predicts the target.
+    # LaTeX: r_j = |corr(X_{:,j}, y)| = |cov(X_j, y)| / (sigma_{X_j} sigma_y); pass iff max_j r_j < 0.95.
     corr = np.array([abs(np.corrcoef(X[:, j], y)[0, 1]) if np.std(X[:, j]) > 0 else 0.0
                      for j in range(X.shape[1])])
     leakage = {"max_abs_feature_target_corr": round(float(np.nanmax(corr)), 4),

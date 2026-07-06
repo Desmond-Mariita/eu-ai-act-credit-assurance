@@ -21,6 +21,14 @@ _PS = {"A91": "male", "A92": "female", "A93": "male", "A94": "male", "A95": "fem
 
 
 def sex_from_personal_status(s: pd.Series) -> pd.Series:
+    """Map Statlog personal-status/sex codes (A91–A95) to ``"male"``/``"female"``.
+
+    Args:
+        s: Series of Attribute9 codes.
+
+    Returns:
+        Series of ``"male"``/``"female"`` (NaN for unmapped codes). NB: A92 conflates marital status.
+    """
     return s.map(_PS)
 
 
@@ -31,6 +39,14 @@ _AGE_LABELS = ["<25", "25-39", "40-59", "60+"]
 
 
 def _age_band(age: pd.Series) -> pd.Series:
+    """Band ages into ``[0,25), [25,40), [40,60), [60,200)`` (``right=False``).
+
+    Args:
+        age: Numeric age series.
+
+    Returns:
+        Categorical series with labels ``<25 / 25-39 / 40-59 / 60+``.
+    """
     return pd.cut(age, bins=_AGE_BINS, labels=_AGE_LABELS, right=False)
 
 
@@ -40,7 +56,17 @@ def protected_attributes_from_encoded(df: pd.DataFrame) -> dict:
     (Attribute13). Protected under non-discrimination law (NOT GDPR Art. 9). Fairness analysis only.
     NB: sex is derived from personal-status, which conflates marital status (A92 = female
     divorced/separated/**married**); and the audited model trains on Attribute9 + Attribute13
-    directly, so these attributes are model inputs, not merely external labels."""
+    directly, so these attributes are model inputs, not merely external labels.
+
+    Args:
+        df: The encoded German-Credit dataframe (one-hot Attribute9/Attribute20 + numeric Attribute13).
+
+    Returns:
+        ``{"sex": ndarray, "foreign_worker": ndarray, "age_band": ndarray}`` aligned to ``df`` rows.
+
+    Raises:
+        ValueError: If the Attribute9 one-hot rows are not exactly single-active (encoding corruption).
+    """
     a9 = [c for c in df.columns if c.startswith("Attribute9_")]
     onehot = df[a9].astype(int)
     if not (onehot.sum(axis=1) == 1).all():
@@ -54,14 +80,33 @@ def protected_attributes_from_encoded(df: pd.DataFrame) -> dict:
 
 
 def cost_sensitive_threshold(cost_fn: float, cost_fp: float) -> float:
-    # threshold on P(bad): predict 'bad' when P(bad) > cost_fp/(cost_fn+cost_fp)
+    r"""Bayes-optimal decision threshold on P(bad) for asymmetric misclassification costs.
+
+    LaTeX: predicting 'bad' minimises expected cost iff
+    P(\text{bad}) > \dfrac{c_{FP}}{c_{FN} + c_{FP}} \;=\; t.
+    With the pinned 5:1 (``c_fn=5, c_fp=1``) this is ``t = 1/6``.
+
+    Args:
+        cost_fn: Cost of a false negative (approving a bad applicant).
+        cost_fp: Cost of a false positive (declining a good applicant).
+
+    Returns:
+        The threshold ``t`` on P(bad).
+    """
     return cost_fp / (cost_fn + cost_fp)
 
 
 def feature_groups_from_columns(columns: Iterable[str]) -> dict[str, tuple[int, ...]]:
     """Logical feature -> encoded column indices. One-hot columns named `<logical>_<value>`
     (e.g. `Attribute1_A11`) collapse to `<logical>`; columns without `_` are numeric singletons.
-    Feeds the group-aware perturber (perturbation.make_perturber)."""
+    Feeds the group-aware perturber (perturbation.make_perturber).
+
+    Args:
+        columns: Encoded column names in matrix order.
+
+    Returns:
+        Mapping ``{logical_name: (col_index, ...)}`` preserving column order within each group.
+    """
     groups: dict[str, list[int]] = {}
     for idx, col in enumerate(columns):
         logical = col.split("_", 1)[0] if "_" in col else col
@@ -97,7 +142,15 @@ def load_german_credit() -> dict:
 def load_gmsc() -> dict:
     """Give Me Some Credit. Download cs-training.csv into data/ (Kaggle) if absent; target =
     SeriousDlqin2yrs (1=default). All-numeric, so each column is its own feature group. No protected
-    attributes shipped -> the faithfulness generalization check only, not the governance dossier."""
+    attributes shipped -> the faithfulness generalization check only, not the governance dossier.
+
+    Returns:
+        ``{"X": DataFrame (NaN preserved), "y": Series, "feature_names": list, "feature_groups": dict,
+        "name": "gmsc"}``.
+
+    Raises:
+        FileNotFoundError: If ``data/cs-training.csv`` is absent (manual Kaggle download required).
+    """
     path = DATA / "cs-training.csv"
     if not path.exists():
         raise FileNotFoundError(

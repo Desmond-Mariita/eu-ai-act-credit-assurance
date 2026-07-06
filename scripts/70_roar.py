@@ -31,7 +31,25 @@ N_LIME = 80           # LIME global sample per split (per-instance -> capped for
 N_RANDOM = 8          # random orderings per split (floor)
 
 
-def _auroc_after_removing(X, y, fg, drop_groups, tr, te, seed):
+def _auroc_after_removing(X: np.ndarray, y: np.ndarray, fg: dict, drop_groups: list,
+                          tr: np.ndarray, te: np.ndarray, seed: int) -> float:
+    """Held-out AUROC after DROPPING whole logical groups' columns and RETRAINING a fresh model.
+
+    Retraining (vs perturbation-only) removes the off-manifold artefact: the model relearns on the
+    reduced feature set, so the AUROC drop reflects lost predictive information, not distribution shift.
+
+    Args:
+        X: Full design matrix, shape (n, d).
+        y: Binary labels, shape (n,).
+        fg: Logical group -> column indices.
+        drop_groups: Logical groups to remove entirely.
+        tr: Train row indices.
+        te: Test row indices.
+        seed: Training seed for the retrained model.
+
+    Returns:
+        Test AUROC of the retrained model, or 0.5 if every feature was dropped.
+    """
     drop = sorted({c for g in drop_groups for c in fg[g]})
     keep = [j for j in range(X.shape[1]) if j not in drop]
     if not keep:
@@ -40,11 +58,42 @@ def _auroc_after_removing(X, y, fg, drop_groups, tr, te, seed):
     return float(roc_auc_score(y[te], M.predict_bad(m, X[np.ix_(te, keep)])))
 
 
-def _aoc(X, y, fg, ranking, ks, tr, te, seed, base):
+def _aoc(X: np.ndarray, y: np.ndarray, fg: dict, ranking: list, ks: list,
+         tr: np.ndarray, te: np.ndarray, seed: int, base: float) -> float:
+    r"""ROAR Area-Over-the-Curve: mean AUROC drop as top-k ranked groups are removed and retrained.
+
+    LaTeX: \text{AOC} = \frac{1}{|K|}\sum_{k \in K}\big(\text{AUROC}_{\text{base}}
+    - \text{AUROC}_{\text{retrain}(\text{drop }g_{1:k})}\big). Larger = the ranking front-loads the
+    predictive features (more faithful global ranking).
+
+    Args:
+        X: Full design matrix, shape (n, d).
+        y: Binary labels, shape (n,).
+        fg: Logical group -> column indices.
+        ranking: Logical groups ordered most- to least-important.
+        ks: Prefix sizes k to average over.
+        tr: Train row indices.
+        te: Test row indices.
+        seed: Training seed.
+        base: Baseline (no-removal) AUROC on this split.
+
+    Returns:
+        The mean AUROC drop over ``ks``.
+    """
     return float(np.mean([base - _auroc_after_removing(X, y, fg, ranking[:k], tr, te, seed) for k in ks]))
 
 
 def main() -> None:
+    """Run ROAR over N stratified splits and write the ROAR anchor JSON.
+
+    Per split: retrain the full model, verify the seed-0 model equals the pinned audited model, rank
+    logical groups by TreeSHAP / LIME / model-gain global importance, and record each ranking's AOC vs
+    a random floor. Distinguishability of TreeSHAP vs LIME uses a 2*SE heuristic on the paired split
+    differences.
+
+    Raises:
+        SystemExit: If the seed-0 retrained model does not match the pinned audited model.
+    """
     df = pd.read_parquet(ROOT / "data" / "german_credit.parquet")
     y = df["y"].to_numpy()
     cols = list(df.drop(columns=["y"]).columns)
@@ -103,6 +152,8 @@ def main() -> None:
                    "beats_random_every_split": bool(all(a > b for a, b in zip(v, per_split["random"])))}
             for name, v in per_split.items()}
     ts, lm = np.array(per_split["treeshap"]), np.array(per_split["lime"])
+    # Paired-difference SE across splits: SE = sd(TS_i - LIME_i) / sqrt(N); a 2*SE band is the
+    # (heuristic) distinguishability threshold on the mean paired difference (not a formal test).
     diff_se = float((ts - lm).std(ddof=1)) / np.sqrt(N_SPLITS)
     out = {
         "dataset": "german_credit", "model": "models/lightgbm.txt (seed-0 verified == pinned)",

@@ -47,7 +47,9 @@ Target `SeriousDlqin2yrs` (1 = serious delinquency in 2 yrs); features: revolvin
 past-due counts (30-59/60-89/90+), debt ratio, monthly income, open credit lines, real-estate loans,
 dependents. **Class balance:** 139,974 / 10,026 (**6.7 % positive** — imbalanced).
 **Completeness (Art. 10(3)):** `MonthlyIncome` **29,731 missing** (~19.8 %); `NumberOfDependents`
-**3,924 missing** (~2.6 %) — imputed at load; flagged as a documented data-quality risk (R5).
+**3,924 missing** (~2.6 %). **NaN is preserved through data loading and `06_gmsc_prep.py`** and imputed
+with **train-split medians only** inside `scripts/30_faithfulness.py` (no train/test leakage — NOT
+imputed at load); flagged as a documented data-quality risk (R5).
 **Errors / anomalies (Art. 10(3)):** `age` has an implausible value (min = 0); the three past-due-count
 columns each contain **269 sentinel values (96/98)** (likely data-entry codes); `RevolvingUtilization`
 and `MonthlyIncome` show **extreme outliers** (max ≫ p99). Machine-recorded under `data_quality.json`

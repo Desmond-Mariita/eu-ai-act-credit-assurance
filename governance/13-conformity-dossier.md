@@ -53,7 +53,7 @@ design-level · **Gap** = not produced · **Scope** = deliberately out of scope 
 | GDPR 6/9 | Lawful basis / special-category data | `data-dictionary.md`, `11` | Scope/Partial — public research data; **sex/age are NOT GDPR Art. 9 special categories**, and no Art. 9 data is processed (sex is inferred as a proxy from personal-status for the fairness test only) |
 | GDPR 13–15 / AI Act 86 | Meaningful information about the logic (explanation duty; recourse is good-practice support, **not** a statutory 13–15 test) | `10`, `12` | Partial |
 | GDPR 22(3) | Automated-decision safeguards | `00-scenario.md §2` (human review); Art. 22 trigger analysis in DPIA `06 §3` | Partial (safeguards scenario-level; not deployment-tested) |
-| GDPR 35 | DPIA | `06-gdpr-dpia.md` (template) | Partial — template produced; a **real** DPIA needs the deployer (Art. 35(2) DPO, 35(9) data-subject views) |
+| GDPR 35 | DPIA | `06-gdpr-dpia.md` (template) | Partial — template produced; a **real** DPIA is deployer-specific (Art. 35(2) DPO advice **where a DPO is designated**; Art. 35(9) data-subject views **where appropriate**) |
 
 ## C. Consolidated findings (the four analyses — reviewed)
 1. **Faithfulness (`10`, EV-009/011):** explanation faithfulness is **metric-, sign-, and
@@ -65,17 +65,20 @@ design-level · **Gap** = not produced · **Scope** = deliberately out of scope 
    so this is **not a uniform "underpowered null."** **The movement-metric result replicated on GMSC.**
    *Governance: faithfulness claims must name regime + sign convention (Art. 86).*
 2. **Fairness (`11`, EV-012):** disparities are **directionally consistent** (women/young/foreign
-   declined more) **but none is statistically significant at n=300** (signed CIs include 0; sex FPR
-   within-negatives permutation p=0.091, Fisher 0.096; age omnibus p=0.39; foreign n=15 not inferable);
-   the model **trains on personal-status (sex proxy) + age directly**. *Monitoring flags, not
-   established gaps (Art. 10).*
-3. **Robustness (`12`, EV-013):** moderately stable — **3.6–16.3%** decision flips as noise grows;
+   declined more) **but none is statistically significant at n=300** (the **inferable** sex comparison's
+   signed FPR-diff CI includes 0, within-negatives permutation p=0.091, Fisher 0.096; age omnibus p=0.39;
+   the foreign-worker signed CI *excludes* 0 but its comparator n=15 is **not inferable**, so it is
+   excluded from any conclusion); the model **trains on personal-status (sex proxy), age, and
+   foreign-worker status directly**. *Monitoring flags, not established gaps (Art. 10).*
+3. **Robustness (`12`, EV-013):** moderately stable — **3.8–16.7%** decision flips as noise grows;
    **13.3% near-threshold** fragile band. *Art. 15 concern to monitor.*
 4. **Recourse (`12`, EV-013):** **87.4% [81.2, 91.8]** of declined applicants have an actionable
-   loan-term **reduction** to acceptance (more often a shorter term than a lower amount); a **~13%
-   infeasible core** rests on non-actionable factors and needs a genuine explanation. Recourse is
-   offered as good practice, not as a GDPR 13–15 compliance test (an explanation duty, not a right to a
-   counterfactual).
+   loan-term **reduction** to acceptance (more often a shorter term than a lower amount); the remaining
+   **12.6% (19/151) is *reduction-infeasible*** — a fact about the two-feature action set, **not** a
+   causal claim of non-actionable dependence: **4/19 flip to accept by *increasing* credit amount**
+   (perverse model non-monotonicity — a deployer model-risk item), and 15 do not flip under any
+   single-feature move. All 19 need a genuine explanation of the drivers. Recourse is offered as good
+   practice, not as a GDPR 13–15 compliance test (an explanation duty, not a right to a counterfactual).
 
 ## D. Traceability (claim → evidence)
 Each quantitative claim above maps to an `EV-###` row in `09-evidence-index.md` and the producing
@@ -90,7 +93,8 @@ reproduction in `08-traceability-matrix.md`; metrics JSON hashes are recorded in
   assessment (Art. 15), post-market monitoring (Art. 72) & incident reporting (Art. 73), instructions-
   for-use (Art. 13), CE marking (Art. 48), EU-database registration (Art. 49), human-oversight
   *effectiveness* testing (Art. 14), a **real** DPIA (Art. 35 — a template `06` exists; the Art. 35(2)
-  DPO and 35(9) data-subject steps are pending), FRIA (Art. 27 — deployer).
+  DPO advice **where a DPO is designated** and 35(9) data-subject views **where appropriate** are
+  pending), FRIA (Art. 27 — deployer).
 - **Method limits:** single stratified split, small n (≈300 test; subgroup claims low-powered);
   robustness noise is synthetic (not calibrated to real error logs); recourse is model-side; one model,
   mainline dataset + one generalization check.

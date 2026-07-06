@@ -24,6 +24,12 @@ PASTDUE = ["NumberOfTime30-59DaysPastDueNotWorse", "NumberOfTimes90DaysLate",
 
 
 def main() -> None:
+    """Clean documented GMSC data errors, stratified-subsample, and write ``data/gmsc.parquet``.
+
+    Maps past-due sentinels 96/98 and age<18 to NaN (NaN preserved for train-split imputation
+    downstream — no leakage), then takes a class-stratified subsample to keep the conditional-kNN donor
+    pool tractable. Prints the parquet's shape, default rate, and SHA256.
+    """
     df = pd.read_csv(DATA / "cs-training.csv", index_col=0)
     y = df.pop("SeriousDlqin2yrs").astype(int)
 

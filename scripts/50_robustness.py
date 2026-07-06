@@ -30,6 +30,19 @@ CONTINUOUS = ["Attribute2", "Attribute5", "Attribute13"]   # duration, credit am
 
 
 def main() -> None:
+    r"""Measure decision-flip rate under Gaussian input noise at several eps and write the JSON.
+
+    For each noise level eps, continuous features are perturbed and the fraction of decisions that
+    change vs unperturbed is estimated over ``N_DRAWS`` draws, with an instance-bootstrap CI.
+
+    LaTeX (perturbation): \tilde x_j = \operatorname{clip}\big(\operatorname{round}(x_j +
+    \varepsilon\,\sigma_j\,\eta),\; \text{lo}_j, \text{hi}_j\big),\; \eta \sim \mathcal N(0,1).
+    LaTeX (flip rate): \text{flip} = \operatorname{mean}_i \operatorname{mean}_{\text{draws}}
+    \mathbb{1}\{ \hat y(\tilde x_i) \ne \hat y(x_i) \}.
+
+    Raises:
+        SystemExit: If the on-disk model hash does not match the pinned ``models.json`` hash.
+    """
     df = pd.read_parquet(ROOT / "data" / "german_credit.parquet")
     y = df["y"].to_numpy()
     cols = list(df.drop(columns=["y"]).columns)
@@ -49,21 +62,27 @@ def main() -> None:
     std, lo, hi = X[idx_tr].std(axis=0), X[idx_tr].min(axis=0), X[idx_tr].max(axis=0)
     p0 = booster.predict(X_te)
     dec0 = p0 > thr
-    rng = np.random.default_rng(SEED)
+    # Independent, named RNG streams (SeedSequence.spawn): each eps's perturbation draw and its bootstrap
+    # are decoupled from how many draws earlier eps levels consumed. A presentation parameter (bootstrap
+    # count) must not perturb the physical experiment (audit R5). Streams are reproducible under SEED.
+    pert_ss = np.random.SeedSequence(SEED).spawn(len(EPS))
+    boot_ss = np.random.SeedSequence(SEED + 2000).spawn(len(EPS))
 
     near = float(np.mean(np.abs(p0 - thr) < 0.05))
     by_eps = {}
-    for eps in EPS:
+    for e_i, eps in enumerate(EPS):
+        prng = np.random.default_rng(pert_ss[e_i])       # perturbation stream for THIS eps only
         flip_i, dp_i = np.zeros(n), np.zeros(n)          # per-instance means over draws
         for _ in range(N_DRAWS):
             Xp = X_te.copy()
             for j in cont:
-                Xp[:, j] = np.clip(np.round(Xp[:, j] + rng.normal(0, eps * std[j], n)), lo[j], hi[j])
+                Xp[:, j] = np.clip(np.round(Xp[:, j] + prng.normal(0, eps * std[j], n)), lo[j], hi[j])
             pp = booster.predict(Xp)
             flip_i += (pp > thr) != dec0
             dp_i += np.abs(pp - p0)
         flip_i /= N_DRAWS
-        boot = np.array([flip_i[rng.integers(0, n, n)].mean() for _ in range(2000)])   # instance bootstrap
+        brng = np.random.default_rng(boot_ss[e_i])       # independent bootstrap stream for THIS eps
+        boot = np.array([flip_i[brng.integers(0, n, n)].mean() for _ in range(2000)])   # instance bootstrap
         by_eps[str(eps)] = {
             "decision_flip_rate": round(float(flip_i.mean()), 4),
             "flip_ci95": [round(float(np.quantile(boot, 0.025)), 4),
@@ -80,7 +99,9 @@ def main() -> None:
         "by_eps": by_eps,
         "note": "eps = noise sd as a fraction of each feature's train std (a synthetic probe, not "
                 "calibrated to real error logs). flip = fraction of decisions changed vs unperturbed; "
-                "flip_ci95 = 95% instance-bootstrap CI. Age is perturbed as generic input noise.",
+                "flip_ci95 = 95% instance-bootstrap CI. Age is perturbed as generic input noise. "
+                "Per-eps perturbation and bootstrap use independent SeedSequence-spawned RNG streams, so "
+                "flip rates do not depend on the bootstrap replicate count.",
     }
     (METRICS / "robustness_german_credit.json").write_text(json.dumps(out, indent=2))
     for eps, v in by_eps.items():

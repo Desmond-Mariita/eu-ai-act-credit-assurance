@@ -66,9 +66,11 @@ with the supervisory authority** may be required. **No opinion** is expressed th
 acceptable — that is the controller's decision.
 
 ## 8. Limitations
-Template on public research data (no real data subjects, no real controller). **Mandatory Art. 35
-procedural elements NOT performed:** Art. **35(2)** DPO advice, Art. **35(9)** data-subject views, and
-the controller identity / retention / recipients / **Chapter V international-transfer** assessment (all
-deployer-specific). Legal bases and retention are illustrative; human-oversight effectiveness and the
+Template on public research data (no real data subjects, no real controller). **Conditional Art. 35
+procedural elements NOT performed:** Art. **35(2)** DPO advice — required **where a DPO is designated**
+(or otherwise obtained where the controller has one; a real deployer must first determine designation
+under Art. 37); Art. **35(9)** data-subject views — to be sought **where appropriate**, subject to the
+protection of commercial/public interests and security; and the controller identity / retention /
+recipients / **Chapter V international-transfer** assessment (all deployer-specific). Legal bases and retention are illustrative; human-oversight effectiveness and the
 Art. 22 "meaningfulness" question are **not empirically tested**; single dataset/model; self-assessment,
 not a lawyer-reviewed DPIA.

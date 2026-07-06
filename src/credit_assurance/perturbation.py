@@ -32,22 +32,40 @@ from dataclasses import dataclass
 from typing import Callable, Sequence
 
 import numpy as np
-from sklearn.neighbors import NearestNeighbors
-from sklearn.preprocessing import StandardScaler
+from sklearn.neighbors import NearestNeighbors      # kNN index (donor search) — standard utility
+from sklearn.preprocessing import StandardScaler    # per-column standardisation — standard utility
 
+# Logical feature name -> the tuple of encoded column indices that make up that group.
 FeatureGroups = dict[str, tuple[int, ...]]
 
 
 @dataclass(frozen=True)
 class PerturbResult:
+    """Result of one group-erasure call.
+
+    Attributes:
+        X: The (m, d) matrix of donor-perturbed rows.
+        ood_distance: Mean standardised nearest-neighbour distance of ``X`` to the donor pool.
+    """
     X: np.ndarray          # (m, d) donor draws
     ood_distance: float    # mean standardised nearest-neighbour distance of X to the donor pool
 
 
+# perturb(x, group_ids, m) -> PerturbResult; the erasure operator returned by make_perturber.
 Perturb = Callable[[np.ndarray, Sequence[str], int], PerturbResult]
 
 
 def _validate_groups(feature_groups: FeatureGroups, d: int) -> None:
+    """Assert the feature-group map is a full, disjoint partition of the ``d`` columns.
+
+    Args:
+        feature_groups: Logical name -> column-index tuple.
+        d: Total number of encoded columns.
+
+    Raises:
+        ValueError: If any group is empty, an index is out of ``[0, d)``, a column is shared by two
+            groups, or the groups do not cover all ``d`` columns.
+    """
     seen: set[int] = set()
     for name, cols in feature_groups.items():
         if len(cols) == 0:
@@ -63,6 +81,15 @@ def _validate_groups(feature_groups: FeatureGroups, d: int) -> None:
 
 
 def _erased_cols(group_ids: Sequence[str], feature_groups: FeatureGroups) -> list[int]:
+    """Flatten the requested logical groups to their sorted, de-duplicated encoded column indices.
+
+    Args:
+        group_ids: Logical group names to erase.
+        feature_groups: Logical name -> column-index tuple.
+
+    Returns:
+        Sorted unique column indices spanned by ``group_ids``.
+    """
     cols: list[int] = []
     for g in group_ids:
         cols.extend(feature_groups[g])
@@ -70,7 +97,20 @@ def _erased_cols(group_ids: Sequence[str], feature_groups: FeatureGroups) -> lis
 
 
 def _call_rng(seed: int, group_ids: Sequence[str], x: np.ndarray) -> np.random.Generator:
-    """Deterministic per-call RNG from (seed, group_ids, x) — order-independent, reproducible."""
+    r"""Deterministic per-call RNG from ``(seed, group_ids, x)`` — order-independent and reproducible.
+
+    LaTeX: \text{state} = \text{seed} \oplus \big(\text{SHA256}(x_{\text{LE}} \,\|\, \text{sorted}(G))_{[0:8]}\big),
+    i.e. the 64-bit low word of a content hash of the instance bytes and the sorted group names is
+    XOR-mixed into the seed. Sorting the group names makes the draw invariant to argument order.
+
+    Args:
+        seed: Base integer seed bound by the factory.
+        group_ids: Logical groups being erased on this call.
+        x: The instance, shape (d,).
+
+    Returns:
+        A NumPy ``Generator`` seeded reproducibly for this exact call.
+    """
     h = hashlib.sha256()
     h.update(np.ascontiguousarray(x, dtype="<f8").tobytes())  # fixed little-endian for portability
     h.update(repr(sorted(group_ids)).encode())
@@ -80,6 +120,21 @@ def _call_rng(seed: int, group_ids: Sequence[str], x: np.ndarray) -> np.random.G
 
 def make_perturber(donor_pool: np.ndarray, feature_groups: FeatureGroups,
                    regime: str = "conditional", seed: int = 0, k_neighbors: int = 50) -> Perturb:
+    """Build a frozen group-erasure operator bound to a held-out donor pool and a regime.
+
+    Args:
+        donor_pool: Held-out rows (training split), shape (n_donor, d), used as replacement values.
+        feature_groups: Logical name -> column-index tuple (must partition all d columns).
+        regime: One of ``"baseline"``, ``"marginal"``, ``"conditional"`` (see module docstring).
+        seed: Base seed mixed per call by ``_call_rng``.
+        k_neighbors: Neighbourhood size for the conditional regime's kNN donor draw.
+
+    Returns:
+        ``perturb(x, group_ids, m) -> PerturbResult`` erasing whole groups atomically.
+
+    Raises:
+        ValueError: If ``regime`` is unknown or ``feature_groups`` is not a full disjoint partition.
+    """
     if regime not in {"baseline", "marginal", "conditional"}:
         raise ValueError(f"unknown regime {regime!r}")
     donor_pool = np.asarray(donor_pool, dtype=float)
@@ -90,10 +145,20 @@ def make_perturber(donor_pool: np.ndarray, feature_groups: FeatureGroups,
     nn_full = NearestNeighbors(n_neighbors=1).fit(donor_scaled)
 
     def _ood(out: np.ndarray) -> float:
+        r"""Mean standardised 1-NN distance of rows ``out`` to the donor pool.
+
+        LaTeX: \text{ood}(out) = \frac{1}{m}\sum_{i} \min_{z \in \text{donor}} \lVert T(out_i) - T(z) \rVert_2,
+        with T the donor-fitted standardisation. A residual off-manifold diagnostic, not a guarantee.
+        """
         dist, _ = nn_full.kneighbors(scaler.transform(out), n_neighbors=1, return_distance=True)
         return float(np.mean(dist))
 
     def _baseline_block(cols: list[int]) -> np.ndarray:
+        r"""Fixed replacement vector for a group: modal one-hot category, or numeric median.
+
+        LaTeX: one-hot group -> \arg\max_{v} \#\{z : z_{cols}=v\} (modal real category); numeric
+        singleton -> \operatorname{median}(donor_{:,col}).
+        """
         block = donor_pool[:, cols]
         if len(cols) > 1:  # one-hot group -> the modal category vector (a real, valid category)
             uniq, counts = np.unique(block, axis=0, return_counts=True)
@@ -101,6 +166,19 @@ def make_perturber(donor_pool: np.ndarray, feature_groups: FeatureGroups,
         return np.array([float(np.median(block[:, 0]))])
 
     def perturb(x: np.ndarray, group_ids: Sequence[str], m: int) -> PerturbResult:
+        """Erase ``group_ids`` from ``x`` under the bound regime, returning m perturbed rows + OOD.
+
+        Args:
+            x: Instance to perturb, shape (d,), must be finite.
+            group_ids: Logical groups to erase (deduplicated + sorted internally for invariance).
+            m: Number of perturbed rows to produce.
+
+        Returns:
+            ``PerturbResult`` with the (m, d) matrix and its mean standardised OOD distance.
+
+        Raises:
+            ValueError: If ``m < 1`` or ``x`` contains non-finite values.
+        """
         if m < 1:
             raise ValueError("m must be >= 1")
         x = np.asarray(x, dtype=float)
@@ -122,7 +200,10 @@ def make_perturber(donor_pool: np.ndarray, feature_groups: FeatureGroups,
                 gc = list(feature_groups[g])
                 donors = rng.integers(0, len(donor_pool), size=m)
                 out[:, gc] = donor_pool[np.ix_(donors, gc)]
-        else:  # conditional (approximate on-manifold)
+        else:  # conditional (approximate on-manifold): draw donors among x's kNN in RETAINED columns
+            # LaTeX: let R = retained columns; N_k(x) = the k donors minimising
+            # || T(x)_R - T(z)_R ||_2 ; draw d_1..d_m ~ Unif(N_k(x)); set out_i[cols] = donor_{d_i}[cols]
+            # (ALL erased columns copied from the SAME donor row -> preserves their joint distribution).
             keep = [j for j in range(d) if j not in cols]
             if keep:
                 nn = NearestNeighbors(n_neighbors=min(k_neighbors, len(donor_pool))).fit(donor_scaled[:, keep])

@@ -23,6 +23,7 @@ import json
 import math
 import warnings
 from pathlib import Path
+from typing import Any, Sequence
 
 import numpy as np
 import pandas as pd
@@ -45,13 +46,34 @@ REGIMES = ("conditional", "marginal", "baseline")
 EXPLAINERS = ("treeshap", "lime", "shuffled_shap_clean", "label_shuffled_model")
 
 
-def _summary(arr) -> dict:
+def _summary(arr: Sequence[float]) -> dict:
+    """Point mean + bootstrap 95% CI + n for a per-instance AOPC array.
+
+    Args:
+        arr: Per-instance AOPC values.
+
+    Returns:
+        ``{"aopc_mean": float, "ci95": [lo, hi], "n": int}``.
+    """
     a = np.asarray(arr, dtype=float)
     mean, lo, hi = bootstrap_ci(a, seed=SEED)
     return {"aopc_mean": round(mean, 4), "ci95": [round(lo, 4), round(hi, 4)], "n": int(len(a))}
 
 
-def _beats_floor(explainer_aopc, floor_aopc) -> dict:
+def _beats_floor(explainer_aopc: Sequence[float], floor_aopc: Sequence[float]) -> dict:
+    r"""Pre-registered faithfulness bar: does the explainer beat the random floor per instance?
+
+    LaTeX: with per-instance \delta_i = \text{AOPC}^{\text{expl}}_i - \text{AOPC}^{\text{floor}}_i,
+    bootstrap the mean \bar\delta; declare FAITHFUL iff the 95% CI lower bound > 0 AND
+    \bar\delta \ge 2\,\widehat{\text{SE}}_{\text{boot}} (both the sign AND the effect-size gate).
+
+    Args:
+        explainer_aopc: Per-instance explainer AOPC.
+        floor_aopc: Per-instance random-floor AOPC (paired to the same instances).
+
+    Returns:
+        ``{"diff_mean", "diff_ci95", "se_bootstrap", "faithful"}``.
+    """
     diff = np.asarray(explainer_aopc) - np.asarray(floor_aopc)
     n = len(diff)
     rng = np.random.default_rng(SEED)
@@ -64,6 +86,26 @@ def _beats_floor(explainer_aopc, floor_aopc) -> dict:
 
 
 def run(dataset: str, n_eval: int, n_perms: int, m: int, k_neighbors: int) -> dict:
+    """Run the pre-registered faithfulness benchmark for one dataset and write its metrics JSON.
+
+    Trains (and, for the audited datasets, verifies against the pinned model) the model, builds the
+    three perturbation regimes and the group-valid LIME explainer, evaluates comprehensiveness/
+    sufficiency + the random floor per instance, and records H1–H4 plus the post-hoc absolute-movement
+    and baseline diagnostics.
+
+    Args:
+        dataset: ``"german_credit"`` or ``"gmsc"``.
+        n_eval: Number of test instances to evaluate.
+        n_perms: Random-floor permutations per instance.
+        m: Donor draws per erasure.
+        k_neighbors: kNN neighbourhood size for the conditional regime.
+
+    Returns:
+        The full results dict (also written to ``metrics/faithfulness_<dataset>.json``).
+
+    Raises:
+        SystemExit: If a retrained audited model diverges from its pinned artifact.
+    """
     df = pd.read_parquet(ROOT / "data" / f"{dataset}.parquet")
     y = df["y"].to_numpy()
     cols = list(df.drop(columns=["y"]).columns)
@@ -85,8 +127,18 @@ def run(dataset: str, n_eval: int, n_perms: int, m: int, k_neighbors: int) -> di
         pinned = lgb.Booster(model_file=str(ROOT / "models" / "lightgbm.txt"))
         if not np.allclose(M.predict_bad(model, X_te), pinned.predict(X_te), atol=1e-9):
             raise SystemExit("faithfulness model != pinned audited model (re-run scripts/10_train.py)")
+    elif dataset == "gmsc":            # persist + pin the GMSC generalization model (deterministic)
+        import lightgbm as lgb        # training is seeded/single-threaded -> reproducible artifact
+        gmsc_path = ROOT / "models" / "lightgbm_gmsc.txt"
+        if gmsc_path.exists():         # re-run: confirm we reproduce the pinned GMSC model
+            pinned = lgb.Booster(model_file=str(gmsc_path))
+            if not np.allclose(M.predict_bad(model, X_te), pinned.predict(X_te), atol=1e-9):
+                raise SystemExit("GMSC faithfulness model != pinned models/lightgbm_gmsc.txt")
+        else:                          # first run: freeze it so EV-011 resolves to a hashed artifact
+            model.booster_.save_model(str(gmsc_path))
 
-    def predict(A):
+    def predict(A: np.ndarray) -> np.ndarray:
+        """Score rows A with the (retrained/pinned) model -> P(bad)."""
         return M.predict_bad(model, A)
 
     model_test_auroc = float(roc_auc_score(y_te, predict(X_te)))   # traceable model quality (esp. GMSC)
@@ -100,7 +152,8 @@ def run(dataset: str, n_eval: int, n_perms: int, m: int, k_neighbors: int) -> di
     X_log_te, *_ = E.to_logical_space(X_te, cols, fg, logical)
     lime_predict = E.logical_predict_fn(model.predict_proba, d, cat_groups, num_groups)
 
-    def lime_factory(s):
+    def lime_factory(s: int) -> Any:
+        """Build a fresh group-valid LIME explainer at seed ``s`` (for stability across seeds)."""
         return E.make_lime_explainer(X_log_tr, cat_pos, cat_names, seed=s)
 
     lime_ex = lime_factory(SEED)
@@ -159,6 +212,7 @@ def run(dataset: str, n_eval: int, n_perms: int, m: int, k_neighbors: int) -> di
     # absolute bar is lenient; the absolute result is treated as exploratory, corroborated by ROAR.
     abs_clean_at_floor = bool(not abs_bars["shuffled_shap_clean"]["faithful"])
     base_bar = by_regime["baseline"]["faithfulness_bar_vs_floor"]
+    signed_ts = prim["treeshap"]["faithful"]   # H1: drives the dataset-specific interpretation below
 
     hypotheses = {
         "H1_treeshap_faithful_conditional_signed": prim["treeshap"]["faithful"],
@@ -217,9 +271,14 @@ def run(dataset: str, n_eval: int, n_perms: int, m: int, k_neighbors: int) -> di
             "ordering test, not a local on-distribution faithfulness test.",
         ],
         "interpretation": (
-            "The pre-registered signed AOPC-vs-floor test does NOT detect faithfulness under the "
-            "conditional regime at n=300 (high per-instance variance + sign cancellation) — absence "
-            "of evidence, not evidence of unfaithfulness. " + (
+            ("The pre-registered signed AOPC-vs-floor test does NOT detect faithfulness under the "
+             "conditional regime at n=300 (high per-instance variance + sign cancellation) — absence "
+             "of evidence, not evidence of unfaithfulness. "
+             if not signed_ts else
+             "The pre-registered signed AOPC-vs-floor test DOES detect TreeSHAP faithfulness under the "
+             "conditional regime at n=300 (H1 SUPPORTED here — all-numeric features suffer less sign "
+             "cancellation than the mixed-categorical German Credit set, where the signed test is "
+             "inconclusive). ") + (
                 (f"Under a direction-agnostic ABSOLUTE (movement) metric — an EXPLORATORY diagnostic "
                  f"(the clean random control sits at the absolute floor: a calibration check, NOT "
                  f"construct validation) — TreeSHAP "

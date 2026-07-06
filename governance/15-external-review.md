@@ -34,14 +34,14 @@ Credit; GMSC needs a one-time Kaggle `cs-training.csv` in `data/` before `06_gms
 
 | Command | Expected (headline) | Matches? |
 |---|---|---|
-| `python scripts/00_data.py` then `05_manifest_and_dq.py` | writes `data/german_credit.parquet`; `05` writes the manifest + DQ profile | ☐ |
+| `python scripts/00_data.py`; `06_gmsc_prep.py`; `05_manifest_and_dq.py` | writes `data/*.parquet`; `05` (default) rebuilds the DQ profile + **verifies** the committed manifest fail-closed (maintainer-only `freeze` re-baselines it) | ☐ |
 | `python scripts/10_train.py` | AUROC **0.769**, Brier 0.178, model SHA `1456b07f…` | ☐ |
 | `python scripts/30_faithfulness.py` | abs TreeSHAP **+0.106 [.094,.118]**, LIME **+0.090 [.080,.100]** (group-valid); signed: TS inconclusive, LIME below floor | ☐ |
 | `python scripts/40_fairness.py` | sex FPR-diff CI includes 0, **perm p≈0.091 / Fisher 0.096**; age omnibus p≈0.39 | ☐ |
-| `python scripts/50_robustness.py` | flip **3.6%** (eps .05) → **16.3%** (eps .5); near-thr **13.3%** | ☐ |
-| `python scripts/60_reason_codes.py` | recourse **87.4% [81.2,91.8]** (reductions only), infeasible ~13% | ☐ |
+| `python scripts/50_robustness.py` | flip **3.8%** (eps .05) → **16.7%** (eps .5); near-thr **13.3%** | ☐ |
+| `python scripts/60_reason_codes.py` | recourse **87.4% [81.2,91.8]** (reductions only); **12.6% reduction-infeasible**, of which **4/19 flip via *increase*** | ☐ |
 | `python scripts/70_roar.py` | TreeSHAP 0.108±0.017 ≈ LIME 0.109±0.021, both ≫ random 0.036 | ☐ |
-| `uv run pytest -q` / `ruff check` | 32 passed / clean | ☐ |
+| `uv run pytest -q` / `ruff check` | 43 passed / clean (ruff enforces the D+ANN code standard) | ☐ |
 | `git verify-tag prereg-v1`; `ots verify HYPOTHESES.md.ots` | signed; Bitcoin-attested (block 956533) | ☐ |
 
 **Reviewer note:** _______________________________________________
@@ -52,15 +52,18 @@ Pick ≥5 headline numbers from `README`/`14` and confirm each resolves via `08-
 **Reviewer note:** _______________________________________________
 
 ## 3. Method soundness — *competency: ML / statistics (required)*
-- **Faithfulness:** is the movement metric **validated** (clean/random control sits at the floor)? Is
-  the signed-null correctly called *underpowered* (not "unfaithful")? Is the GMSC replication scoped to
-  the *core* result (signed null is dataset-specific)?
+- **Faithfulness:** is the movement metric honestly framed as **exploratory / calibration-checked** (NOT
+  "validated") — clean control at the floor, lenient-bar caveat disclosed, ROAR as corroboration? Is the
+  signed result correctly framed (**TreeSHAP inconclusive; LIME *below* floor** — not a uniform null, not
+  "unfaithful")? Is the GMSC replication scoped to the *core* result (signed result is dataset-specific)?
 - **ROAR:** multi-split, retrain-based, correct global-importance aggregation; is "TreeSHAP ≈ LIME"
   (ordering metric-specific) the right read?
 - **Fairness:** are disparities correctly reported as **not significant at n=300** using the **signed**
   CIs / permutation test — and is the note that folded DP/EO CIs are *not* a significance test correct?
-- **Recourse:** is the grid search genuinely **exhaustive** (integer, pinned model, reductions only), so ~13% is true
-  infeasibility not a solver artifact?
+- **Recourse:** is the grid search genuinely **exhaustive** (integer, pinned model, reductions only), so the
+  **12.6% is *reduction*-infeasibility** (an action-set fact) rather than a solver artifact — and is the
+  perverse-increase breakdown (4/19 flip by *increasing* a feature) reported instead of a causal
+  "non-actionable factors" claim?
 - **Robustness:** is the perturbation model + bootstrap CI reasonable; noise framed as *synthetic*?
 
 **Verdict (this section):** sound / issues below / not assessed — _____________________

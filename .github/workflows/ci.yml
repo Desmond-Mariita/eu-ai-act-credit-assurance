@@ -5,10 +5,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0              # full history + tags, so signed-tag verification below can run
+      - name: Verify signed release tags (self-contained trust anchor)
+        env:
+          # Fork PRs won't have the maintainer's tags — only ENFORCE presence on the canonical repo
+          # (external reviewers' fork PRs skip gracefully); every tag that IS present must still verify.
+          IS_CANONICAL: ${{ github.repository == 'Desmond-Mariita/eu-ai-act-credit-assurance' && github.event.pull_request.head.repo.fork != true }}
+        run: |
+          set -euo pipefail
+          check() {
+            if git rev-parse -q --verify "refs/tags/$1" >/dev/null; then
+              git -c gpg.ssh.allowedSignersFile=.allowed_signers verify-tag "$1"
+            elif [ "$IS_CANONICAL" = "true" ]; then
+              echo "REQUIRED signed tag '$1' is absent on the canonical repo"; exit 1
+            else
+              echo "tag $1 absent (fork/checkout without tags) — skipping"
+            fi
+          }
+          check prereg-v1
+          check v1.0
+          check v1.1
       - uses: astral-sh/setup-uv@v3
         with:
           python-version: "3.12"
       - run: uv lock --check          # fail if uv.lock is stale vs pyproject (reproducibility gate)
       - run: uv venv && uv pip install -e ".[dev]"
-      - run: uv run ruff check src/ tests/ scripts/
+      # Enforces the house code standard: Google-style docstrings + PEP 484 type hints
+      # (ruff D + ANN rules, configured in pyproject.toml [tool.ruff.lint]).
+      - name: Lint + code-standard gate (docstrings, type hints)
+        run: uv run ruff check src/ tests/ scripts/
       - run: uv run pytest -q

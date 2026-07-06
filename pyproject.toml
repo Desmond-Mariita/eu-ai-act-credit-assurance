@@ -1,6 +1,6 @@
 [project]
 name = "credit-assurance"
-version = "1.0.0"
+version = "1.1.0"
 requires-python = ">=3.11,<3.13"
 # Core deps used by the frozen instrument, data loaders, and the manifest/DQ script.
 # scipy is a scikit-learn transitive dep but is imported directly (fisher_exact) so it is declared.
@@ -19,6 +19,21 @@ notebooks = ["jupytext", "nbconvert", "ipykernel"]
 addopts = "--cov=credit_assurance --cov-report=term-missing"
 [tool.ruff]
 line-length = 100
+
+[tool.ruff.lint]
+# CI-enforced house code standard: Google-style docstrings (presence) + PEP 484 type hints everywhere.
+# `D` = pydocstyle, `ANN` = flake8-annotations (both run by the existing `ruff check` CI step).
+extend-select = ["D", "ANN"]
+# ANN401: `Any` is legitimate for the external models/explainers under audit (LightGBM/SHAP/LIME).
+# D205/D209: keep the established multi-line module-summary style — presence is enforced, not reflow.
+ignore = ["ANN401", "D205", "D209"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+# Tests are exempt from docstring/annotation rules (pytest functions are self-describing by name).
+"tests/**" = ["D", "ANN"]
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

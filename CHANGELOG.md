@@ -1,5 +1,47 @@
 # Changelog
 
+## v1.1 — 2026-07-06 (deep-audit residual remediation + code-quality retrofit)
+
+A second, deeper independent-audit round (Codex full-execution + DeepSeek + Gemini, reconciled) returned
+**PASS-WITH-RESERVATIONS** — no numerical headline mismatch, full pipeline byte-reproducible — but
+surfaced residuals now remediated (R1–R7 below). This release ALSO carries a repo-wide **code-quality
+retrofit** (Google-style docstrings + PEP 484 type hints + LaTeX-above-formulas + invariants,
+CI-enforced via ruff `D`+`ANN`), verified behaviourally inert (only the three Part-A metrics changed).
+The batch was itself **reviewed pre-commit** by a fresh 3-model panel → Codex found + I fixed a
+manifest fail-open path, a stale evidence-index hash, an ambiguous Wilson-CI formula, and residual
+"underpowered null" wording → Codex confirmation pass returned **APPROVE-WITH-NITS** (nit fixed). Cut as
+a NEW signed tag `v1.1` — the public `v1.0` tag is left untouched (no moving a published tag).
+**Still model-assisted QA, NOT independent human assurance**; the `governance/15` gap remains the
+load-bearing condition. No reproduced statistic moved except the three explicitly re-run below.
+
+- **R1 — recourse causal overclaim corrected.** The ~13% "infeasible core" was wrongly attributed to
+  "non-actionable factors." It is *reduction*-infeasibility (an action-set fact): of 19/151, **4 flip to
+  accept by *increasing* credit amount** (perverse model non-monotonicity — a deployer model-risk item)
+  and 15 do not flip under any single-feature move. `60_reason_codes.py` now reports the breakdown;
+  README/opinion/dossier/`12` reworded. Recourse rate itself unchanged (87.4%).
+- **R2 — GMSC traceability closed.** The GMSC generalization model is now **persisted + hash-pinned**
+  (`models/lightgbm_gmsc.txt`, verified in-script), and the derived `data/gmsc.parquet` is now covered by
+  `data_manifest.sha256`. The manifest workflow is **fail-closed**: `verify` (default/CI) never mutates
+  the manifest; only an explicit maintainer `freeze` re-baselines it (no more silent drift-blessing).
+- **R3 — stale cross-document narratives reconciled.** GMSC metrics `interpretation` is now derived from
+  its own H1 (was a verbatim copy of German's, which mis-stated the GMSC signed result); `08` FAITH-2
+  reframed off "underpowered null"; data-dictionary "imputed at load" corrected (NaN preserved →
+  train-split imputation); `foreign_worker` named as a model input. Semantic cross-doc tests added.
+- **R4 — GDPR Art. 35 wording made conditional.** 35(2) DPO advice "where a DPO is designated"; 35(9)
+  data-subject views "where appropriate" (was overstated as unconditionally mandatory).
+- **R5 — robustness RNG streams decoupled.** Per-eps perturbation and bootstrap now use independent
+  `SeedSequence`-spawned streams, so flip rates no longer depend on bootstrap count. Re-ran; point
+  estimates shifted ≤0.7pp (3.6–16.3% → 3.8–16.7%).
+- **R6 — tag verification made self-contained.** Ships `.allowed_signers`; `git -c
+  gpg.ssh.allowedSignersFile=.allowed_signers verify-tag prereg-v1 v1.0` now verifies out-of-box, and CI
+  verifies the signed tags.
+- **R7 — DiCE claim scoped down.** Removed the unverified causal "off-the-shelf tool conflated
+  search-failure with infeasibility / under-reported" claim (no apples-to-apples v1.0 evidence); kept the
+  neutral "superseded by exhaustive grid" note.
+
+Re-ran: `50_robustness` (R5), `60_reason_codes` (R1), `30_faithfulness` both datasets (R2 model pin + R3
+interpretation; German byte-identical). Evidence index + integrity tests re-frozen in lockstep.
+
 ## v1.0 — amended 2026-07-06 (post-audit remediation)
 
 After **internal + external model-assisted QA** (four models: internal Claude auditor + external

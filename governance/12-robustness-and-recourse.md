@@ -14,18 +14,20 @@ bootstrap CI:
 
 | eps (× feature std) | decision-flip rate | 95% CI | mean \|ΔP(bad)\| |
 |---|---|---|---|
-| 0.05 | 3.6% | [2.3, 5.0] | 0.025 |
-| 0.10 | 6.9% | [5.2, 8.6] | 0.041 |
-| 0.20 | 10.6% | [8.4, 13.0] | 0.067 |
-| 0.50 | 16.3% | [14.0, 18.8] | 0.110 |
+| 0.05 | 3.8% | [2.5, 5.1] | 0.024 |
+| 0.10 | 6.8% | [5.1, 8.6] | 0.042 |
+| 0.20 | 9.9% | [7.8, 12.1] | 0.064 |
+| 0.50 | 16.7% | [14.4, 19.3] | 0.107 |
 
 - **13.3% of applicants sit within 0.05 of the decision threshold** — the fragile band where flips
   concentrate.
 - **Reading:** under the **chosen synthetic perturbation levels** (`eps` is a fraction of each
   feature's spread — *not* calibrated to real error logs), a small perturbation flips **≈4–7% of
-  decisions**, rising to ~16% at large noise. The model is moderately stable; the sizeable near-
+  decisions**, rising to ~17% at large noise. The model is moderately stable; the sizeable near-
   threshold population means a non-trivial share of decisions are sensitive to small input changes —
-  a documented Art. 15 concern, not a failure.
+  a documented Art. 15 concern, not a failure. *(Per-eps perturbation and bootstrap now use independent
+  RNG streams, so flip rates no longer depend on the bootstrap replicate count — the point estimates
+  shifted by ≤0.7pp from the pre-fix run.)*
 
 ## Recourse / reason codes (GDPR Arts. 13–15)
 For each of the **151 declined test applicants**, an **exhaustive integer grid/line search** over the
@@ -41,7 +43,9 @@ touched. Coupling/affordability constraints are **not** modelled.)
 | Metric | Value | 95% CI (Wilson) |
 |---|---|---|
 | **Have loan-term recourse** (reduction reaching P ≤ 1/6) | **87.4%** | [81.2, 91.8] |
-| **No loan-term recourse** (no actionable reduction) | **12.6%** | [8.2, 18.8] |
+| **Reduction-infeasible** (no actionable *reduction*) | **12.6%** (19/151) | [8.2, 18.8] |
+| — of which flip to accept by *increasing* a feature | 4/19 | — |
+| — of which no single-feature move in-grid flips | 15/19 | — |
 | Recourse via a **single** feature change | 69.5% | — |
 | Mean actionable features changed | 1.21 | — |
 | Reason-code frequency (range-normalised) | loan_duration 100, credit_amount 59 | — |
@@ -51,16 +55,23 @@ touched. Coupling/affordability constraints are **not** modelled.)
   loan term than a lower amount** (e.g. 60 → 9 months, or 2 124 → 1 479 DM). (The minimal
   change is chosen by a range-normalised distance, so months and DM are comparable — a raw-unit
   comparison spuriously favours duration.)
-- **A genuine infeasible core:** ~**13%** cannot reach acceptance by any actionable loan-term *reduction* —
-  their decline rests on **non-actionable creditworthiness factors** (history, purpose, account
-  status). For them, "meaningful information about the logic" (Art. 13–15) must explain *why*, since
-  no loan-term recourse exists.
-- **Methodological caution (a reusable audit lesson):** an initial **DiCE random-search** approach
-  materially under-reported recourse and emitted **non-integer** loan terms (e.g. 13.1 months). *(That
-  run is superseded and not recomputed, so its figure is not reported as a hashed result.)*
-  **Off-the-shelf counterfactual tools can conflate search-failure with infeasibility**; recourse
-  infeasibility should be established by exhaustive/verified search on a valid, direction-constrained
-  feature grid, as done here.
+- **The 12.6% is *reduction-infeasible*, NOT "rests on non-actionable factors".** For 19/151 declines no
+  actionable loan-term *reduction* reaches acceptance under this two-feature action set. That is a
+  statement about the **action set**, not a causal claim: probing the same 19 shows **4 flip to accept by
+  *increasing* credit amount** (e.g. 409 → 980 DM, 652 → 3 516 DM) — **perverse model non-monotonicity**,
+  not dependence on immutable factors — and **15 do not flip under any single-feature move** in the grid
+  (their decline may rest on non-actionable factors, on multi-feature interactions, or on non-monotonicity
+  not captured by a single-feature search — this audit does not disentangle which). For all 19, "meaningful
+  information about the logic" (Art. 13–15) must explain the drivers; a naïve "reduce your loan" reason
+  code would be wrong, and the 4 increase-flips are a **model-risk finding** for the deployer, not recourse
+  to be surfaced.
+- **Methodological note:** an initial **DiCE random-search** approach emitted **non-integer** loan terms
+  (e.g. 13.1 months) and was **superseded** by this exhaustive, direction-constrained integer grid. *(The
+  earlier run is not recomputed and is not an apples-to-apples comparison — different action set,
+  direction, and objective — so no magnitude or cause of under-reporting is claimed here.)* The reusable
+  point stands on its own: recourse infeasibility should be established by **exhaustive/verified search on
+  a valid, direction-constrained grid**, as done here, rather than inferred from a stochastic solver's
+  search failure.
 
 ## Limitations
 Robustness: synthetic Gaussian noise (not calibrated to real data-quality evidence), continuous

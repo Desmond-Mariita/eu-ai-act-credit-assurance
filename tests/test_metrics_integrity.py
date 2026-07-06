@@ -41,10 +41,10 @@ def test_metrics_hashes_match_evidence_index():
     expected = {
         "models.json": "8ef65b5d",
         "faithfulness_german_credit.json": "ce746733",
-        "faithfulness_gmsc.json": "2097fe27",
+        "faithfulness_gmsc.json": "a6304b1a",
         "fairness_german_credit.json": "954d5bb6",
-        "robustness_german_credit.json": "2941addc",
-        "reason_codes_german_credit.json": "a0b17b9d",
+        "robustness_german_credit.json": "56fd9e31",
+        "reason_codes_german_credit.json": "bacc5500",
         "roar_german_credit.json": "ea08b093",
     }
     for name, want in expected.items():
