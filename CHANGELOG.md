@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.1.2 — 2026-07-07 (packaging fix)
+
+Removes an accidental audit-scratch file (`metrics/faithfulness_german_credit.json.committed`, a
+reviewer's byte-compare copy) that slipped into the v1.1.1 commit via `git add -A`, and gitignores the
+`*.committed` scratch pattern. **v1.1.1 is deliberately left untouched** — no published tag is moved,
+even for the author's own packaging slip; the clean release is superseded as v1.1.2 (governance
+content-addressing refs re-pointed to v1.1.2). No code/model/metric artifact changed.
+
 ## v1.1.1 — 2026-07-07 (post-audit polish)
 
 v1.1 was re-audited by a fresh **4-model gauntlet** (Codex + DeepSeek both full-execution; GLM + Gemini

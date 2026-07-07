@@ -10,3 +10,6 @@ __pycache__/
 *.bak
 *.ots.bak
 reviews-audit/
+
+# audit/review byte-compare scratch (never commit)
+*.committed

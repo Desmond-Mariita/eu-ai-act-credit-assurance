@@ -78,6 +78,6 @@ fixed **before results**; the **absolute-movement metric and the ROAR anchor wer
 (disclosed in `10 §Deviations`). Pre-registration (`HYPOTHESES.md`, signed
 tag `prereg-v1`, OpenTimestamps — **Bitcoin-confirmed, block 956533**). Every quantitative claim traces
 to a hashed metrics artifact and a one-command reproduction (`08`, `09`); governance documents are
-content-addressed by git (blob SHA at tag `v1.1.1`). This document is committed to
+content-addressed by git (blob SHA at tag `v1.1.2`). This document is committed to
 the public repository under version control; its integrity rests on the git history and the signed
 pre-registration tag, **not** on any claim of independence.

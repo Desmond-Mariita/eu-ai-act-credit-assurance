@@ -1,6 +1,6 @@
 # 02 — Risk Management File (EU AI Act Art. 9) + Assumptions Log
 
-**Status:** v1.1.1 — **risk register (§1) finalised from the completed findings** (`10`–`12`, `06`); the
+**Status:** v1.1.2 — **risk register (§1) finalised from the completed findings** (`10`–`12`, `06`); the
 Assumptions log (§2) was initiated Phase 0.5, before results.
 
 ## 1. Risk register (Art. 9) — finalised
