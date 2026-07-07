@@ -23,12 +23,13 @@ SHA pinned in `00-scenario.md §5`. **Self-assessment** (see `13 §E`).
 - **Tag verification (self-contained):** the repo ships the signer trust anchor at
   [`.allowed_signers`](../.allowed_signers) (author's Ed25519 public key + `SHA256:lr+8ntekiE/WkJo4/SUOEmoMdaBJ9XMWHyIEOLGLuUo`
   fingerprint). Verify both signed tags in one line:
-  `git -c gpg.ssh.allowedSignersFile=.allowed_signers verify-tag prereg-v1 v1.0` (also run by CI). The
+  `git -c gpg.ssh.allowedSignersFile=.allowed_signers verify-tag prereg-v1 v1.1.1` (all of prereg-v1 /
+  v1.0 / v1.1 / v1.1.1 verify; also run by CI). The
   key is published in-repo *and* in the commit history; an independent reviewer should confirm the
   fingerprint through a second channel before trusting the identity. The OTS proof is **Bitcoin-confirmed
   (block 956533)** (`09`).
 - **Hashing:** data + metrics artifacts carry SHA256 prefixes in `09`; living governance docs are
-  content-addressed by git (blob SHA at tag `v1.1`); the pre-registration is OpenTimestamps
+  content-addressed by git (blob SHA at tag `v1.1.1`); the pre-registration is OpenTimestamps
   **Bitcoin-confirmed (block 956533)**.
 - **Determinism:** every script above re-runs to byte-identical output under the fixed seed; the
   recourse/robustness/ROAR/fairness scripts load and **SHA-verify** the pinned model

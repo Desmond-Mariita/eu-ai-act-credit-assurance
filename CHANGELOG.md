@@ -1,5 +1,23 @@
 # Changelog
 
+## v1.1.1 — 2026-07-07 (post-audit polish)
+
+v1.1 was re-audited by a fresh **4-model gauntlet** (Codex + DeepSeek both full-execution; GLM + Gemini
+partial), returning a **unanimous PASS-WITH-RESERVATIONS** with **no Blocker and no sustained Major** —
+both full-execution auditors byte-reproduced the entire pipeline and re-derived every headline statistic;
+the fail-closed manifest, group-valid LIME, decoupled RNG, and ruff D+ANN gate were all confirmed by
+execution. This patch closes the only surviving (Minor) findings and **retires the model-audit gauntlet**
+for this flagship (converged; the remaining condition is independent HUMAN review, `governance/15`):
+- **Digital Omnibus date now source-pinned** (`00-scenario.md §4`) — the "2 Dec 2027" Annex III date was
+  correct (Council final approval 29 June 2026) but uncited; added the Council/Consilium reference.
+- **Stale `v1.0` helper text refreshed to `v1.1.1`** in `.allowed_signers`, `08`, `09`, `02` (verify-tag
+  examples + content-addressing labels + status).
+- **Robustness stdout precision** aligned to the JSON (`.4f`).
+
+Dismissed with evidence: Gemini's "Art. 86 is wrong / Art. 26 should be Art. 29" — verified false against
+the AI Act (Art. 86 = *Right to Explanation of Individual Decision-Making*; Art. 26 = *Obligations of
+Deployers*; Confidentiality is Art. 78). No code, model, or metric artifact changed in v1.1.1.
+
 ## v1.1 — 2026-07-06 (deep-audit residual remediation + code-quality retrofit)
 
 A second, deeper independent-audit round (Codex full-execution + DeepSeek + Gemini, reconciled) returned

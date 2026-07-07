@@ -1,6 +1,6 @@
 [project]
 name = "credit-assurance"
-version = "1.1.0"
+version = "1.1.1"
 requires-python = ">=3.11,<3.13"
 # Core deps used by the frozen instrument, data loaders, and the manifest/DQ script.
 # scipy is a scikit-learn transitive dep but is imported directly (fisher_exact) so it is declared.

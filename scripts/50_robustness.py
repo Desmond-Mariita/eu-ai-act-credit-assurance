@@ -106,7 +106,7 @@ def main() -> None:
     (METRICS / "robustness_german_credit.json").write_text(json.dumps(out, indent=2))
     for eps, v in by_eps.items():
         print(f"eps={eps}: flip {v['decision_flip_rate']} {v['flip_ci95']} | mean|dP| {v['mean_abs_delta_p']}")
-    print(f"near-threshold share {near:.3f}")
+    print(f"near-threshold share {near:.4f}")   # 4dp to match the JSON precision
 
 
 if __name__ == "__main__":

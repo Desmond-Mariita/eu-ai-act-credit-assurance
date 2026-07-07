@@ -43,9 +43,11 @@ Both roles are simulated; obligations are assessed as *readiness*, not real conf
   control route). **Application date for stand-alone Annex III systems: 2 December 2027** *if* the
   Digital Omnibus is adopted; the **statutory baseline is 2 August 2026** (Art. **113**) absent it.
   Art. **111** separately governs systems already placed on the market. *AI Act consolidated-text
-  status (2026-07-06): the Digital Omnibus received Council final approval on 29 June 2026 (OJ
-publication / entry into force still pending), so the 2 Dec 2027 Annex III application date is
-conditional on it; verify against the final Official Journal text.*
+  status (2026-07-07): the Digital Omnibus (AI-Act simplification package) received **Council final
+  approval on 29 June 2026** (European Parliament endorsement 16 June 2026), deferring the stand-alone
+  Annex III application date to 2 Dec 2027 — see the [Council (Consilium) press releases on the AI Act
+  simplification](https://www.consilium.europa.eu/en/press/press-releases/). OJ publication / entry into
+  force still pending, so the date is conditional on it; verify against the final Official Journal text.*
 - **GDPR** — Arts. **5** (principles), **6/9** (lawful basis / special-category — only where
   actually processed or proxy-inferred), **13–15** ("meaningful information"), **22(3)** (automated-
   decision safeguards — subject to the Art. 22 trigger analysis), **35** (DPIA).

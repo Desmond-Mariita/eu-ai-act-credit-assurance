@@ -1,7 +1,7 @@
 # 09 — Evidence Index (working papers)
 
 **Status:** living evidence index — appended as artifacts are produced; governance docs
-content-addressed by git at tag `v1.1` (see note below). Every figure, metric, and
+content-addressed by git at tag `v1.1.1` (see note below). Every figure, metric, and
 claim referenced by the audit opinion must resolve to a stable **`EV-###`** ID with a content hash,
 so a reviewer can re-perform it (traceability spine: `08-traceability-matrix.md`).
 
@@ -27,9 +27,9 @@ so a reviewer can re-perform it (traceability spine: `08-traceability-matrix.md`
 | EV-018 | `governance/15-external-review.md` (review template; awaiting reviewer) | *on completion* | Task 24 | independence sign-off (open) |
 
 *Data + metrics artifacts carry SHA256 prefixes above (recompute via `sha256sum`). Living **governance
-documents are content-addressed by git**: their blob SHA is frozen at tag `v1.1` — git inherently
-content-addresses versioned text, so `git rev-parse v1.0:governance/<file>` yields the immutable hash
-(no separate hashing needed; "*at v1.0*" marks these rows).*
+documents are content-addressed by git**: their blob SHA is frozen at tag `v1.1.1` — git inherently
+content-addresses versioned text, so `git rev-parse v1.1.1:governance/<file>` yields the immutable hash
+(no separate hashing needed; "*at v1 freeze*" marks these rows).*
 
 ## Pre-registration proof (filled at plan Task 4, verified at Task 26)
 | Item | Value |

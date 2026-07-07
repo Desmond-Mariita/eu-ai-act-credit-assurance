@@ -4,7 +4,8 @@ A **pre-registered, end-to-end AI-assurance audit** of a high-risk **credit-scor
 the **EU AI Act + GDPR**. Explanation faithfulness, fairness, robustness, and recourse — each with a
 concrete, reproducible finding, wrapped in an Annex IV governance evidence pack.
 
-> **Status:** v1.1 (findings complete + deep-audit residual remediation + code-quality retrofit).
+> **Status:** v1.1.1 (findings complete + deep-audit residual remediation + code-quality retrofit;
+> passed a unanimous 4-model audit gauntlet — see CHANGELOG).
 > **Self-assessment — NOT an independent audit** (the author built
 > the audited model *and* assessed it). The load-bearing gap for *independence* is **human external
 > review** (the model-reviewer gauntlets are a quality control, not a substitute); conformity readiness
